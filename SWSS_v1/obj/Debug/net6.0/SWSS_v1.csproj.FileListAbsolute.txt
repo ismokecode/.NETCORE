@@ -1,0 +1,223 @@
+D:\Practice\SWSS_v1\SWSS_v1\bin\Debug\net6.0\appsettings.Development.json
+D:\Practice\SWSS_v1\SWSS_v1\bin\Debug\net6.0\appsettings.json
+D:\Practice\SWSS_v1\SWSS_v1\bin\Debug\net6.0\SWSS_v1.exe
+D:\Practice\SWSS_v1\SWSS_v1\bin\Debug\net6.0\SWSS_v1.deps.json
+D:\Practice\SWSS_v1\SWSS_v1\bin\Debug\net6.0\SWSS_v1.runtimeconfig.json
+D:\Practice\SWSS_v1\SWSS_v1\bin\Debug\net6.0\SWSS_v1.dll
+D:\Practice\SWSS_v1\SWSS_v1\bin\Debug\net6.0\SWSS_v1.pdb
+D:\Practice\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.csproj.AssemblyReference.cache
+D:\Practice\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.GeneratedMSBuildEditorConfig.editorconfig
+D:\Practice\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.AssemblyInfoInputs.cache
+D:\Practice\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.AssemblyInfo.cs
+D:\Practice\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.csproj.CoreCompileInputs.cache
+D:\Practice\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.MvcApplicationPartsAssemblyInfo.cache
+D:\Practice\SWSS_v1\SWSS_v1\obj\Debug\net6.0\staticwebassets.build.json
+D:\Practice\SWSS_v1\SWSS_v1\obj\Debug\net6.0\staticwebassets.development.json
+D:\Practice\SWSS_v1\SWSS_v1\obj\Debug\net6.0\scopedcss\bundle\SWSS_v1.styles.css
+D:\Practice\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.dll
+D:\Practice\SWSS_v1\SWSS_v1\obj\Debug\net6.0\refint\SWSS_v1.dll
+D:\Practice\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.pdb
+D:\Practice\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.genruntimeconfig.cache
+D:\Practice\SWSS_v1\SWSS_v1\obj\Debug\net6.0\ref\SWSS_v1.dll
+D:\Practice\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.OpenApi.dll
+D:\Practice\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Swashbuckle.AspNetCore.Swagger.dll
+D:\Practice\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+D:\Practice\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+D:\Practice\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.MvcApplicationPartsAssemblyInfo.cs
+D:\Practice\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.csproj.CopyComplete
+D:\Practice\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+D:\Practice\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.IdentityModel.JsonWebTokens.dll
+D:\Practice\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.IdentityModel.Logging.dll
+D:\Practice\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.IdentityModel.Protocols.dll
+D:\Practice\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+D:\Practice\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.IdentityModel.Tokens.dll
+D:\Practice\SWSS_v1\SWSS_v1\bin\Debug\net6.0\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\appsettings.Development.json
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\appsettings.json
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\SWSS_v1.exe
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\SWSS_v1.deps.json
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\SWSS_v1.runtimeconfig.json
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\SWSS_v1.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\SWSS_v1.pdb
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Azure.Core.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Azure.Identity.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Humanizer.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.AspNetCore.Cryptography.Internal.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.AspNetCore.Cryptography.KeyDerivation.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Bcl.AsyncInterfaces.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Data.SqlClient.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.EntityFrameworkCore.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.EntityFrameworkCore.Abstractions.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.EntityFrameworkCore.Design.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.EntityFrameworkCore.Relational.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.EntityFrameworkCore.SqlServer.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Extensions.Caching.Abstractions.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Extensions.Caching.Memory.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Extensions.Configuration.Abstractions.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Extensions.DependencyInjection.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Extensions.Identity.Core.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Extensions.Identity.Stores.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Extensions.Logging.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Extensions.Options.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Extensions.Primitives.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Identity.Client.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Identity.Client.Extensions.Msal.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.IdentityModel.Logging.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.IdentityModel.Protocols.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.IdentityModel.Tokens.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.OpenApi.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.SqlServer.Server.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Win32.SystemEvents.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Swashbuckle.AspNetCore.Swagger.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\System.Configuration.ConfigurationManager.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\System.Drawing.Common.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\System.Memory.Data.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\System.Runtime.Caching.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\System.Security.Cryptography.ProtectedData.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\System.Security.Permissions.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\System.Windows.Extensions.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\unix\lib\netcoreapp3.1\Microsoft.Data.SqlClient.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\win\lib\netcoreapp3.1\Microsoft.Data.SqlClient.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\win-arm\native\Microsoft.Data.SqlClient.SNI.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\win-arm64\native\Microsoft.Data.SqlClient.SNI.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\win\lib\netcoreapp3.0\Microsoft.Win32.SystemEvents.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\unix\lib\netcoreapp3.0\System.Drawing.Common.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\win\lib\netcoreapp3.0\System.Drawing.Common.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\win\lib\netstandard2.0\System.Runtime.Caching.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\win\lib\netcoreapp3.0\System.Windows.Extensions.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.csproj.AssemblyReference.cache
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.AssemblyInfoInputs.cache
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.AssemblyInfo.cs
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.csproj.CoreCompileInputs.cache
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\obj\Debug\net6.0\staticwebassets.build.json
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\obj\Debug\net6.0\staticwebassets.development.json
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\obj\Debug\net6.0\scopedcss\bundle\SWSS_v1.styles.css
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.csproj.CopyComplete
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\obj\Debug\net6.0\refint\SWSS_v1.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.pdb
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.genruntimeconfig.cache
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\obj\Debug\net6.0\ref\SWSS_v1.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Extensions.DependencyModel.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Mono.TextTemplating.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\System.CodeDom.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\System.Text.Encodings.Web.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\System.Text.Json.dll
+C:\Users\RAJEEV\Downloads\New folder\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\browser\lib\net6.0\System.Text.Encodings.Web.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\SWSS_v1.exe
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\appsettings.Development.json
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\appsettings.json
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Azure.Core.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Azure.Identity.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Humanizer.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\System.Net.Http.Formatting.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\System.Web.Http.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.AspNetCore.Cryptography.Internal.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.AspNetCore.Cryptography.KeyDerivation.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.AspNetCore.Identity.EntityFrameworkCore.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Bcl.AsyncInterfaces.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Data.SqlClient.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.EntityFrameworkCore.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.EntityFrameworkCore.Abstractions.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.EntityFrameworkCore.Design.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.EntityFrameworkCore.Relational.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.EntityFrameworkCore.SqlServer.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Extensions.Caching.Abstractions.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Extensions.Caching.Memory.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Extensions.Configuration.Abstractions.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Extensions.DependencyInjection.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Extensions.DependencyModel.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Extensions.Identity.Core.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Extensions.Identity.Stores.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Extensions.Logging.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Extensions.Logging.Abstractions.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Extensions.Options.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Extensions.Primitives.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Identity.Client.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Identity.Client.Extensions.Msal.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.IdentityModel.Abstractions.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.IdentityModel.JsonWebTokens.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.IdentityModel.Logging.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.IdentityModel.Protocols.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.IdentityModel.Tokens.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.OpenApi.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.SqlServer.Server.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Microsoft.Win32.SystemEvents.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Mono.TextTemplating.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Newtonsoft.Json.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Newtonsoft.Json.Bson.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\NLog.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\NLog.Extensions.Logging.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\NLog.Web.AspNetCore.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Swashbuckle.AspNetCore.Swagger.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\System.CodeDom.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\System.Configuration.ConfigurationManager.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\System.Drawing.Common.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\System.IdentityModel.Tokens.Jwt.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\System.Memory.Data.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\System.Runtime.Caching.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\System.Security.Cryptography.ProtectedData.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\System.Security.Permissions.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\System.Text.Encodings.Web.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\System.Text.Json.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\System.Windows.Extensions.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\unix\lib\netcoreapp3.1\Microsoft.Data.SqlClient.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\win\lib\netcoreapp3.1\Microsoft.Data.SqlClient.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\win-arm\native\Microsoft.Data.SqlClient.SNI.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\win-arm64\native\Microsoft.Data.SqlClient.SNI.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\win-x64\native\Microsoft.Data.SqlClient.SNI.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\win\lib\netcoreapp3.0\Microsoft.Win32.SystemEvents.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\unix\lib\netcoreapp3.0\System.Drawing.Common.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\win\lib\netcoreapp3.0\System.Drawing.Common.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\win\lib\netstandard2.0\System.Runtime.Caching.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\browser\lib\net6.0\System.Text.Encodings.Web.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\runtimes\win\lib\netcoreapp3.0\System.Windows.Extensions.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.csproj.AssemblyReference.cache
+E:\NewProjects\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.GeneratedMSBuildEditorConfig.editorconfig
+E:\NewProjects\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.AssemblyInfoInputs.cache
+E:\NewProjects\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.AssemblyInfo.cs
+E:\NewProjects\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.csproj.CoreCompileInputs.cache
+E:\NewProjects\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.MvcApplicationPartsAssemblyInfo.cs
+E:\NewProjects\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.MvcApplicationPartsAssemblyInfo.cache
+E:\NewProjects\SWSS_v1\SWSS_v1\obj\Debug\net6.0\staticwebassets\msbuild.SWSS_v1.Microsoft.AspNetCore.StaticWebAssets.props
+E:\NewProjects\SWSS_v1\SWSS_v1\obj\Debug\net6.0\staticwebassets\msbuild.build.SWSS_v1.props
+E:\NewProjects\SWSS_v1\SWSS_v1\obj\Debug\net6.0\staticwebassets\msbuild.buildMultiTargeting.SWSS_v1.props
+E:\NewProjects\SWSS_v1\SWSS_v1\obj\Debug\net6.0\staticwebassets\msbuild.buildTransitive.SWSS_v1.props
+E:\NewProjects\SWSS_v1\SWSS_v1\obj\Debug\net6.0\staticwebassets.pack.json
+E:\NewProjects\SWSS_v1\SWSS_v1\obj\Debug\net6.0\staticwebassets.build.json
+E:\NewProjects\SWSS_v1\SWSS_v1\obj\Debug\net6.0\staticwebassets.development.json
+E:\NewProjects\SWSS_v1\SWSS_v1\obj\Debug\net6.0\scopedcss\bundle\SWSS_v1.styles.css
+E:\NewProjects\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.csproj.CopyComplete
+E:\NewProjects\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\obj\Debug\net6.0\refint\SWSS_v1.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.pdb
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\nLog.config
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\SWSS_v1.deps.json
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\SWSS_v1.runtimeconfig.json
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\SWSS_v1.dll
+E:\NewProjects\SWSS_v1\SWSS_v1\bin\Debug\net6.0\SWSS_v1.pdb
+E:\NewProjects\SWSS_v1\SWSS_v1\obj\Debug\net6.0\SWSS_v1.genruntimeconfig.cache
+E:\NewProjects\SWSS_v1\SWSS_v1\obj\Debug\net6.0\ref\SWSS_v1.dll
