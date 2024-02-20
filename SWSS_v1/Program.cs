@@ -70,18 +70,18 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
 #endregion
 
 #region Authentication Filter
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-    //Add JwtBearer inside here token will validation code
-    .AddJwtBearer(options => {
-        options.SaveToken = true;
-        options.RequireHttpsMetadata = false;
-        options.TokenValidationParameters = tokenValidationParameters;
-    });
+//builder.Services.AddAuthentication(options =>
+//{
+//    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+//    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+//    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+//})
+//    //Add JwtBearer inside here token will validation code
+//    .AddJwtBearer(options => {
+//        options.SaveToken = true;
+//        options.RequireHttpsMetadata = false;
+//        options.TokenValidationParameters = tokenValidationParameters;
+//    });
 builder.Services.AddSingleton<FactoryMiddleware>();
 
 #endregion
@@ -141,7 +141,7 @@ AppDbInitializer.SeedRolesToDb(app).Wait();
    
 app.UseStaticFiles();
 app.MapEndpoints();
-app.UseAuthentication();
+//app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 //app.RajeevMiddleWare();

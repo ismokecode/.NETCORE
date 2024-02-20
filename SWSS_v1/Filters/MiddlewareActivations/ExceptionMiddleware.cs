@@ -4,7 +4,7 @@ using SWSS_v1.Filters.Exceptions;
 
 namespace SWSS_v1.Filters.MiddlewareActivations
 {
-    public class ExceptionMiddleware
+    public class ExceptionMiddleware    
     {
         private readonly RequestDelegate _next;
         public ExceptionMiddleware(RequestDelegate next)
