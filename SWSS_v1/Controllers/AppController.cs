@@ -8,6 +8,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using SWSS_v1.Filters.Exceptions;
+using SWSS_v1.API;
+using Newtonsoft.Json.Linq;
 
 namespace SWSS_v1.Controllers;
 
@@ -43,15 +45,16 @@ public class AppController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Register([FromBody] RegisterVM registerVM)
     {
+        List<Error> lstError = new List<Error>();
         try 
-        {
+        {  
             _logger.LogInformation("Fetching all the Students from the storage");
             //check user exists
             var userExist = await _userManager.FindByEmailAsync(registerVM.Email);
             if (userExist != null)
             {
                 return StatusCode(StatusCodes.Status403Forbidden,
-                    new APIResponse<string>(StatusCodes.Status409Conflict, "", null,null) { }); ;
+                    new APIResponse<string>(StatusCodes.Status409Conflict, null, null,null) { }); ;
             }
 
             //Add the user to db
@@ -68,25 +71,26 @@ public class AppController : ControllerBase
                 var result = await _userManager.CreateAsync(user, registerVM.Password);
                 if (result.Errors.Count() > 0)
                 {
-                    List<Error> lstError = new List<Error>();
+                    
                     foreach (var error in result.Errors)
                     {
                         lstError.Add(new Error { _error = error.Code, _description = error.Description });
                         return StatusCode(StatusCodes.Status403Forbidden,
-                                new APIResponse<string>(StatusCodes.Status409Conflict, "User exists",null, null) { }); ;
+                                new APIResponse<string>(StatusCodes.Status409Conflict, null, null, null) { }); ;
                     }
                 }
                 else if (result.Succeeded)
                 {
                     await _userManager.AddToRoleAsync(user, registerVM.UserRole);
                     StatusCode(StatusCodes.Status201Created,
-                        new APIResponse<string>(StatusCodes.Status201Created, "User created successfully",null, null) { });  
+                        new APIResponse<string>(StatusCodes.Status201Created,null,null, null) { });  
                 }
             }
             else 
             {
+                lstError.Add(new Error { _error = "", _description = "Role doesn't exist" });
                 return StatusCode(StatusCodes.Status500InternalServerError,
-                    new APIResponse<string>(StatusCodes.Status500InternalServerError,"Error",null, null));
+                    new APIResponse<string>(StatusCodes.Status500InternalServerError,null,null,null));
             }
             //assign role to user
 
@@ -94,10 +98,10 @@ public class AppController : ControllerBase
         catch(Exception ex)
         {
             return StatusCode(StatusCodes.Status500InternalServerError,
-                    new APIResponse<string>(StatusCodes.Status500InternalServerError, "Error", null,null));
+                    new APIResponse<string>(StatusCodes.Status500InternalServerError, null, null, null));
         }
         return StatusCode(StatusCodes.Status500InternalServerError,
-                   new APIResponse<string>(StatusCodes.Status500InternalServerError, "Error",null, null));
+                    new APIResponse<string>(StatusCodes.Status500InternalServerError, null, null, null));
     }
     [HttpPost]
     public async Task<APIResponse<string>> Login([FromBody] LoginVM loginVM)
@@ -107,18 +111,18 @@ public class AppController : ControllerBase
         {
             List<String> _lsts = new List<string>();
             _lsts = null;
-            return new APIResponse<string>(StatusCodes.Status400BadRequest, "Loggin successful.",null,null);
+            return new APIResponse<string>(StatusCodes.Status500InternalServerError, null, null, null);
 
         }
         var _userExists = await _userManager.FindByEmailAsync(loginVM.Email);
         if (_userExists != null && await _userManager.CheckPasswordAsync(_userExists, loginVM.Password))
         {
             var tokenValue = await GenerateJWTTokenAsync(_userExists, null);
-            return new APIResponse<string>(StatusCodes.Status200OK, tokenValue.Token,null, "Rajeev");
+            return new APIResponse<string>(StatusCodes.Status500InternalServerError, null, null, null);
         }
-        else
+        else 
         {
-            return new APIResponse<string>(StatusCodes.Status401Unauthorized, "User not found.",null, "Rajeev");
+            return new APIResponse<string>(StatusCodes.Status500InternalServerError, null, null, null);
         }
     }
     [HttpPost(Name = "VerifyAndGenerateTokenAsync")]
@@ -152,6 +156,11 @@ public class AppController : ControllerBase
         //check validation of data
         var result = await VerifyAndGenerateTokenAsync(tokenRequestVM);
         return result;
+    }
+    [HttpPost(Name = "TestToken")]
+    public string TestToken()
+    {
+        return "JWT Token is working";
     }
     [HttpPost(Name = "GenerateJWTTokenAsync")]
     private async Task<AuthResultVM> GenerateJWTTokenAsync(IdentityUser user, RefreshToken rToken)
@@ -221,13 +230,13 @@ public class AppController : ControllerBase
     public APIResponse<string> GetJWTToken()
     {
         var _token = GenerateJSONWebToken();
-        return new APIResponse<string>(StatusCodes.Status200OK, "Data saved successful.",null, null);
+        return new APIResponse<string>(StatusCodes.Status200OK, null,null, null);
     }
     [HttpPost(Name = "GetEmployeeDetails")]
     public APIResponse<string> GetEmployeeDetails([FromServices] IEmployee service, Employee emp)
     {
         var _token = GenerateJSONWebToken();
-        return new APIResponse<string>(StatusCodes.Status200OK, "Data saved successful.",null, _token);
+        return new APIResponse<string>(StatusCodes.Status200OK, null,null, _token);
     }
     [HttpPost(Name = "GenerateJSONWebToken")]
     private string GenerateJSONWebToken()
@@ -247,7 +256,7 @@ public class AppController : ControllerBase
     [HttpPost(Name = "GetAuth")]
     public APIResponse<string> GetAuth()
     {
-        return new APIResponse<string>(StatusCodes.Status200OK, "Successful",null, null);
+        return new APIResponse<string>(StatusCodes.Status200OK, null, null, null);
     }
     #endregion
 
@@ -295,6 +304,10 @@ public class AppController : ControllerBase
         else if (number == 4)
         {
             throw new UnauthorizedException("Number = 4 is the unauthorized exception");
+        }
+        else if (number == 5)
+        {
+            throw new Exception();
         }
     }
     #endregion
