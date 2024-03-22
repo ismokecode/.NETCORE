@@ -10,6 +10,7 @@ using System.Security.Claims;
 using SWSS_v1.Filters.Exceptions;
 using SWSS_v1.API;
 using Newtonsoft.Json.Linq;
+using Azure;
 
 namespace SWSS_v1.Controllers;
 
@@ -104,7 +105,7 @@ public class AppController : ControllerBase
                     new APIResponse<string>(StatusCodes.Status500InternalServerError, null, null, null));
     }
     [HttpPost]
-    public async Task<APIResponse<string>> Login([FromBody] LoginVM loginVM)
+    public async Task<APIResponse<string>>Login([FromBody] LoginVM loginVM)
     {
         //check validation of data
         if (loginVM.Password == null)
@@ -117,149 +118,91 @@ public class AppController : ControllerBase
         var _userExists = await _userManager.FindByEmailAsync(loginVM.Email);
         if (_userExists != null && await _userManager.CheckPasswordAsync(_userExists, loginVM.Password))
         {
-            var tokenValue = await GenerateJWTTokenAsync(_userExists, null);
-            return new APIResponse<string>(StatusCodes.Status500InternalServerError, null, null, null);
+            var tokenString = GenerateJSONWebToken(loginVM);
+
+            var response = Ok(tokenString);
+            return new APIResponse<string>(StatusCodes.Status200OK, null, null, tokenString);
         }
         else 
         {
             return new APIResponse<string>(StatusCodes.Status500InternalServerError, null, null, null);
         }
     }
-    [HttpPost(Name = "VerifyAndGenerateTokenAsync")]
-    private async Task<AuthResultVM> VerifyAndGenerateTokenAsync(TokenRequestVM tokenRequestVM)
+    private string GenerateJSONWebToken(LoginVM userInfo)
     {
-        var jwtTokenHandler = new JwtSecurityTokenHandler();
-        var storedToken = await _context.RefreshTokens.FirstOrDefaultAsync(x => x.token == tokenRequestVM.RefreshToken);
-        var dbUser = await _userManager.FindByIdAsync(storedToken.UserId);
-        try
-        {
-            var tokenCheckResult = jwtTokenHandler.ValidateToken(tokenRequestVM.Token, _tokenValidationParameters,
-                out var validatedToken);
-            return await GenerateJWTTokenAsync(dbUser, storedToken);
-        }
-        catch (SecurityTokenExpiredException)
-        {
-            if (storedToken.DateExpire >= DateTime.UtcNow)
-            {
-                return await GenerateJWTTokenAsync(dbUser, storedToken);
-            }
-            //if refresh token is not valid
-            else
-            {
-                return await GenerateJWTTokenAsync(dbUser, null);
-            }
-        }
-    }
-    [HttpPost(Name = "RefreshToken")]
-    public async Task<AuthResultVM> RefreshToken([FromBody] TokenRequestVM tokenRequestVM)
-    {
-        //check validation of data
-        var result = await VerifyAndGenerateTokenAsync(tokenRequestVM);
-        return result;
-    }
-    [HttpPost(Name = "TestToken")]
-    public string TestToken()
-    {
-        return "JWT Token is working";
-    }
-    [HttpPost(Name = "GenerateJWTTokenAsync")]
-    private async Task<AuthResultVM> GenerateJWTTokenAsync(IdentityUser user, RefreshToken rToken)
-    {
-        var authClaims = new List<Claim>()
-         {
-            new Claim(ClaimTypes.Name,user.UserName),
-            new Claim(ClaimTypes.NameIdentifier,user.Id),
-            new Claim(JwtRegisteredClaimNames.Email,user.Email),
-            new Claim(JwtRegisteredClaimNames.Sub,user.UserName),
-            new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
-         };
-        //add user role to claim
-        var userRoles = await _userManager.GetRolesAsync(user);
-        foreach (var userRole in userRoles)
-        {
-            authClaims.Add(new Claim(ClaimTypes.Role, userRole));
-        }
-        var authSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes("This-is-token-key"));
-        var token = new JwtSecurityToken(
-        issuer: _configuration["Jwt2:Issuer"],
-        audience: _configuration["Jwt2:Audience"],
-        expires: DateTime.UtcNow.AddMinutes(1),
-        claims: authClaims,
-        signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
-        );
-        var jwtToken = new JwtSecurityTokenHandler().WriteToken(token);
-
-        //if we refresh token is not nul then generate a new access token
-        if (rToken != null)
-        {
-            var rTokenResponse = new AuthResultVM()
-            {
-                Token = jwtToken,
-                RefreshToken = rToken.token,
-                ExpiresAt = token.ValidTo
-            };
-        }
-
-        var refreshToken = new RefreshToken()
-        {
-            JwtId = token.Id,
-            IsRevoked = false,
-            UserId = user.Id,
-            DateAdded = DateTime.UtcNow,
-            DateExpire = DateTime.UtcNow.AddMonths(6),
-            token = Guid.NewGuid().ToString() + "-" + Guid.NewGuid().ToString()
-        };
-        //add refresh token to the database
-        await _context.RefreshTokens.AddAsync(refreshToken);
-        await _context.SaveChangesAsync();
-
-        var response = new AuthResultVM()
-        {
-            Token = jwtToken,
-            RefreshToken = refreshToken.token,
-            ExpiresAt = token.ValidTo
-        };
-        return response;
-    }
-    //#endregion
-    //[Authorize(Roles = UserRoles.Student)]
-    //[Authorize(Roles = UserRoles.Student+","+UserRoles.Manager)]
-
-
-    [HttpPost(Name = "GetJWTToken")]
-    public APIResponse<string> GetJWTToken()
-    {
-        var _token = GenerateJSONWebToken();
-        return new APIResponse<string>(StatusCodes.Status200OK, null,null, null);
-    }
-    [HttpPost(Name = "GetEmployeeDetails")]
-    public APIResponse<string> GetEmployeeDetails([FromServices] IEmployee service, Employee emp)
-    {
-        var _token = GenerateJSONWebToken();
-        return new APIResponse<string>(StatusCodes.Status200OK, null,null, _token);
-    }
-    [HttpPost(Name = "GenerateJSONWebToken")]
-    private string GenerateJSONWebToken()
-    {
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("ThisismySecretKey"));//_config["Jwt:Key"]
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-        var token = new JwtSecurityToken("Test.com", //_config["Jwt:Issuer"]
-          "Test.com",
+        var token = new JwtSecurityToken(_configuration["Jwt:Issuer"],
+          _configuration["Jwt:Issuer"],
           null,
           expires: DateTime.Now.AddMinutes(120),
           signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
-    [Authorize]
-    [HttpPost(Name = "GetAuth")]
-    public APIResponse<string> GetAuth()
+
+    private string GenerateJSONWebTokenClaimsAddedInfo(LoginVM userInfo)
     {
-        return new APIResponse<string>(StatusCodes.Status200OK, null, null, null);
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+        var claims = new[] {
+        new Claim(JwtRegisteredClaimNames.Sub, userInfo.UserName),
+        new Claim(JwtRegisteredClaimNames.Email, userInfo.Email),
+        new Claim("DateOfJoing", userInfo.DateOfJoing.ToString("yyyy-MM-dd")),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+    };
+
+        var token = new JwtSecurityToken(_configuration["Jwt:Issuer"],
+            _configuration["Jwt:Issuer"],
+            claims,
+            expires: DateTime.Now.AddMinutes(120),
+            signingCredentials: credentials);
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+    [HttpGet]
+    [Authorize]
+    public ActionResult<IEnumerable<string>> GetClaimsRelatedInfo()
+    {
+        var currentUser = HttpContext.User;
+        int spendingTimeWithCompany = 0;
+
+        if (currentUser.HasClaim(c => c.Type == "DateOfJoing"))
+        {
+            DateTime date = DateTime.Parse(currentUser.Claims.FirstOrDefault(c => c.Type == "DateOfJoing").Value);
+            spendingTimeWithCompany = DateTime.Today.Year - date.Year;
+        }
+
+        if (spendingTimeWithCompany > 5)
+        {
+            return new string[] { "High Time1", "High Time2", "High Time3", "High Time4", "High Time5" };
+        }
+        else
+        {
+            return new string[] { "value1", "value2", "value3", "value4", "value5" };
+        }
+    }
+    private LoginVM AuthenticateUser(LoginVM login)
+    {
+        LoginVM user = null;
+
+        //Validate the User Credentials
+        //Demo Purpose, I have Passed HardCoded User Information
+        if (login.UserName == "Jignesh")
+        {
+            user = new LoginVM { UserName = "Jignesh Trivedi", Email = "test.btest@gmail.com" };
+        }
+        return user;
+    }
+
+    [HttpPost(Name = "GetEmployeeDetails")]
+    public APIResponse<string> GetEmployeeDetails([FromServices] IEmployee service, Employee emp)
+    {
+        return new APIResponse<string>(StatusCodes.Status200OK, null,null, "Hello World");
     }
     #endregion
-
     #region ExceptionHandling
     [HttpGet]
     public IActionResult Get()
@@ -305,10 +248,16 @@ public class AppController : ControllerBase
         {
             throw new UnauthorizedException("Number = 4 is the unauthorized exception");
         }
-        else if (number == 5)
-        {
-            throw new Exception();
-        }
+        throw new Exception();
+
     }
+
+
     #endregion
+    [HttpGet]
+    [Authorize]
+    public ActionResult<string> GetValue()
+    {
+        return "Authorization is working.";
+    }
 }

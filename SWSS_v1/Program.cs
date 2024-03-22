@@ -1,21 +1,16 @@
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Protocols;
 using NLog.Extensions.Logging;
 using SWSS_v1.Filters.MiddlewareActivations;
 using SWSS_v1.Filters.MiddlewareExtensibles;
-//using SWSS_v1.Filters.ExceptionHandlings;
 using SWSS_v1.Services;
-using System.Data.Common;
 
+//Returns WebApplicationBuilder class
 var builder = WebApplication.CreateBuilder(args);
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
-builder.Logging.AddNLog();
 
 //var connectionString = "Data Source = DESKTOP-9H0UC46; Initial Catalog=SWSS; User Id=ss; password=12345678; TrustServerCertificate=True";
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+//builder.Configuration.GetSection("");
+
+#region services
 /*
 When we removed below AddEndPointsApiExplorer and run our application,
  we only see the /WeatherForecast endpoint in the Swagger UI documentation.
@@ -27,15 +22,23 @@ When we removed below AddEndPointsApiExplorer and run our application,
  However, if we remove both AddControllers() and AddEndpointsApiExplorer() 
  calls from our service registration, we get an error running the application. 
  This is because after removing the method calls,
-  registration of services required by Swagger does not happen.
+ registration of services required by Swagger does not happen.
 */
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.MyDependencyInjection();
 builder.Services.AddScoped<IEmployee, EmployeeService>();
-builder.Services.AddAuthentication();
-builder.Services.AddAuthorization();
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddNLog();
+
+
+//builder.Services.JWTConfigureServices();
+//builder.Services.AddAuthorization();
+//builder.Services.AddAuthentication();
+#endregion
 
 #region EFConnection and Identity and Roles
 var tokenValidationParameters = new TokenValidationParameters()
@@ -70,18 +73,20 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
 #endregion
 
 #region Authentication Filter
-//builder.Services.AddAuthentication(options =>
-//{
-//    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-//    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-//    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-//})
-//    //Add JwtBearer inside here token will validation code
-//    .AddJwtBearer(options => {
-//        options.SaveToken = true;
-//        options.RequireHttpsMetadata = false;
-//        options.TokenValidationParameters = tokenValidationParameters;
-//    });
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+   .AddJwtBearer(options =>
+   {
+       options.TokenValidationParameters = new TokenValidationParameters
+       {
+           ValidateIssuer = true,
+           ValidateAudience = true,
+           ValidateLifetime = true,
+           ValidateIssuerSigningKey = true,
+           ValidIssuer = "Test.com",
+           ValidAudience = "Test.com",
+           IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("ThisismySecretKey"))
+       };
+   });
 builder.Services.AddSingleton<FactoryMiddleware>();
 
 #endregion
@@ -99,13 +104,7 @@ APIAssembly.GetAssemblies();
 //builder.RegisterApis(modules);
 #endregion
 
-#region JWT Auth
-//builder.Services.JWTConfigureServices();
-//builder.Services.AddAuthorization();
-//builder.Services.AddAuthentication();
-#endregion
-
-
+//Return WebApplication class
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -114,42 +113,31 @@ if(app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+#region redirection
+//When a web browser attempts to open a URL that has been redirected, a page with a different URL is opened.
+//The UseHttpsRedirection() method invocation enables the HTTPS redirection middleware.
+//This means that each request to your application will be inspected and possibly
+//redirected by the middleware. You don't need to look for pages missing the RequireHttps attribute. All the pages of your application will require HTTPS.
 app.UseHttpsRedirection();
+#endregion
 
-#region <<<exceptionHandling>>>
-    //1st old way conventional middleware
-    //app.UseMiddleware<ConventionMiddleware>();
-
-    //second way
-    //builder.Services.AddTransient<FactoryMiddleware>();
-    //app.UseMiddleware<FactoryMiddleware>();
-
-    //3rd new way
-    //builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-    //builder.Services.AddProblemDetails();
-
-    //to add the exception handler in request pipeline
-    //app.UseExceptionHandler();
-#endregion  <<<exceptionHandling>>>
-
-#region <<<dbInitializer>>>
+#region dbInitializer
 AppDbInitializer.SeedRolesToDb(app).Wait();
 #endregion
 
-#region <<<Middleware>>>
-   
+#region middleware 
+
 app.UseStaticFiles();
 app.MapEndpoints();
-//app.UseAuthentication();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-//app.RajeevMiddleWare();
-app.UseConventionalMiddleware();
 app.UseMiddleware<FactoryMiddleware>();
-app.ErrorHandler();
-//app.MapControllerRoute(name:"default",
-//    pattern:"{controller}/{action}/{id?}");
+
+#region exceptionHandling
+app.ErrorHandler(); // directly used by extension method of IApplicationBuilder
+app.UseMiddleware<ExceptionMiddleware>();
+#endregion
 
 app.Run();
 #endregion Middleware
