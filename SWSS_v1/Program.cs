@@ -1,3 +1,4 @@
+using Microsoft.OpenApi.Models;
 using NLog.Extensions.Logging;
 using SWSS_v1.Filters.MiddlewareActivations;
 using SWSS_v1.Filters.MiddlewareExtensibles;
@@ -26,7 +27,39 @@ When we removed below AddEndPointsApiExplorer and run our application,
 */
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+//builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(option =>
+{
+    option.SwaggerDoc("v1", new OpenApiInfo { Title = "Demo API", Version = "v1" });
+    option.AddSecurityDefinition(
+        "Bearer",
+        new OpenApiSecurityScheme
+        {
+            In = ParameterLocation.Header,
+            Description = "Please enter a valid token",
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            BearerFormat = "JWT",
+            Scheme = "Bearer"
+        }
+    );
+    option.AddSecurityRequirement(
+        new OpenApiSecurityRequirement
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                new string[] { }
+            }
+        }
+    );
+});
 builder.Services.MyDependencyInjection();
 builder.Services.AddScoped<IEmployee, EmployeeService>();
 
@@ -73,22 +106,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
 #endregion
 
 #region Authentication Filter
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-   .AddJwtBearer(options =>
-   {
-       options.TokenValidationParameters = new TokenValidationParameters
-       {
-           ValidateIssuer = true,
-           ValidateAudience = true,
-           ValidateLifetime = true,
-           ValidateIssuerSigningKey = true,
-           ValidIssuer = "Test.com",
-           ValidAudience = "Test.com",
-           IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("ThisismySecretKey"))
-       };
-   });
 builder.Services.AddSingleton<FactoryMiddleware>();
-
 #endregion
 
 APIAssembly.GetAssemblies();
@@ -103,6 +121,29 @@ APIAssembly.GetAssemblies();
 //var modules = APIAssembly.DiscoverModules(AppDomain.CurrentDomain.GetAssemblies());
 //builder.RegisterApis(modules);
 #endregion
+
+#region Jwt token configuration
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(o =>
+{
+    o.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey
+        (Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = false,
+        ValidateIssuerSigningKey = true
+    };
+});
+builder.Services.AddAuthorization();
+#endregion Jwt token configuration
 
 //Return WebApplication class
 var app = builder.Build();
@@ -142,6 +183,4 @@ app.UseMiddleware<ExceptionMiddleware>();
 app.Run();
 #endregion Middleware
 
-//Save roles to db 
 //Before Tools > NPM > Package Manager Console > Update-Database 
-

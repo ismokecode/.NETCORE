@@ -42,7 +42,7 @@ public class AppController : ControllerBase
         _tokenValidationParameters = tokenValidationParameters;
         _logger = logger;
     }
-    #region linkdin jwt user registration
+    #region user registration
     [HttpPost]
     public async Task<IActionResult> Register([FromBody] RegisterVM registerVM)
     {
@@ -118,83 +118,14 @@ public class AppController : ControllerBase
         var _userExists = await _userManager.FindByEmailAsync(loginVM.Email);
         if (_userExists != null && await _userManager.CheckPasswordAsync(_userExists, loginVM.Password))
         {
-            var tokenString = GenerateJSONWebToken(loginVM);
-
-            var response = Ok(tokenString);
+            var tokenString = CreateToken(loginVM);
+            var response = Ok();
             return new APIResponse<string>(StatusCodes.Status200OK, null, null, tokenString);
         }
         else 
         {
             return new APIResponse<string>(StatusCodes.Status500InternalServerError, null, null, null);
         }
-    }
-    private string GenerateJSONWebToken(LoginVM userInfo)
-    {
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-        var token = new JwtSecurityToken(_configuration["Jwt:Issuer"],
-          _configuration["Jwt:Issuer"],
-          null,
-          expires: DateTime.Now.AddMinutes(120),
-          signingCredentials: credentials);
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
-    }
-
-    private string GenerateJSONWebTokenClaimsAddedInfo(LoginVM userInfo)
-    {
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-        var claims = new[] {
-        new Claim(JwtRegisteredClaimNames.Sub, userInfo.UserName),
-        new Claim(JwtRegisteredClaimNames.Email, userInfo.Email),
-        new Claim("DateOfJoing", userInfo.DateOfJoing.ToString("yyyy-MM-dd")),
-        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-    };
-
-        var token = new JwtSecurityToken(_configuration["Jwt:Issuer"],
-            _configuration["Jwt:Issuer"],
-            claims,
-            expires: DateTime.Now.AddMinutes(120),
-            signingCredentials: credentials);
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
-    }
-    [HttpGet]
-    [Authorize]
-    public ActionResult<IEnumerable<string>> GetClaimsRelatedInfo()
-    {
-        var currentUser = HttpContext.User;
-        int spendingTimeWithCompany = 0;
-
-        if (currentUser.HasClaim(c => c.Type == "DateOfJoing"))
-        {
-            DateTime date = DateTime.Parse(currentUser.Claims.FirstOrDefault(c => c.Type == "DateOfJoing").Value);
-            spendingTimeWithCompany = DateTime.Today.Year - date.Year;
-        }
-
-        if (spendingTimeWithCompany > 5)
-        {
-            return new string[] { "High Time1", "High Time2", "High Time3", "High Time4", "High Time5" };
-        }
-        else
-        {
-            return new string[] { "value1", "value2", "value3", "value4", "value5" };
-        }
-    }
-    private LoginVM AuthenticateUser(LoginVM login)
-    {
-        LoginVM user = null;
-
-        //Validate the User Credentials
-        //Demo Purpose, I have Passed HardCoded User Information
-        if (login.UserName == "Jignesh")
-        {
-            user = new LoginVM { UserName = "Jignesh Trivedi", Email = "test.btest@gmail.com" };
-        }
-        return user;
     }
 
     [HttpPost(Name = "GetEmployeeDetails")]
@@ -203,6 +134,7 @@ public class AppController : ControllerBase
         return new APIResponse<string>(StatusCodes.Status200OK, null,null, "Hello World");
     }
     #endregion
+
     #region ExceptionHandling
     [HttpGet]
     public IActionResult Get()
@@ -254,10 +186,44 @@ public class AppController : ControllerBase
 
 
     #endregion
+
+    #region JWT token starts
+    [HttpGet]
+    public string CreateToken(LoginVM user)
+    {
+        var issuer = _configuration["Jwt:Issuer"];
+        var audience = _configuration["Jwt:Audience"];
+        var key = Encoding.ASCII.GetBytes
+        (_configuration["Jwt:Key"]);
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(new[]
+            {
+                new Claim("Id", Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim(JwtRegisteredClaimNames.Jti,
+                Guid.NewGuid().ToString())
+             }),
+            Expires = DateTime.UtcNow.AddMinutes(5),
+            Issuer = issuer,
+            Audience = audience,
+            SigningCredentials = new SigningCredentials
+            (new SymmetricSecurityKey(key),
+            SecurityAlgorithms.HmacSha512Signature)
+        };
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        var jwtToken = tokenHandler.WriteToken(token);
+        var stringToken = tokenHandler.WriteToken(token);
+        return stringToken;
+    }
     [HttpGet]
     [Authorize]
     public ActionResult<string> GetValue()
     {
         return "Authorization is working.";
     }
+    #endregion End Jwt token
+
 }

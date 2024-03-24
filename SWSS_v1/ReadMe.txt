@@ -165,7 +165,7 @@ public class TransientService:ITransientService
     @inject ITransientService Transient
     @Transient.GetGuid();
     
->>JWT Authentication
+>>JWT Authentication https://www.infoworld.com/article/3669188/how-to-implement-jwt-authentication-in-aspnet-core.html
 
 >>login test data
 {
