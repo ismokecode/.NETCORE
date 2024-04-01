@@ -68,7 +68,8 @@ builder.Logging.AddConsole();
 builder.Logging.AddNLog();
 
 
-//builder.Services.JWTConfigureServices();
+//builder.Services.JWTConfigureServices()
+//;
 //builder.Services.AddAuthorization();
 //builder.Services.AddAuthentication();
 #endregion
@@ -145,11 +146,16 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 #endregion Jwt token configuration
 
+
+
 //Return WebApplication class
 var app = builder.Build();
+#region dbInitializer
+AppDbInitializer.SeedRolesToDb(app).Wait();
+#endregion
 
 // Configure the HTTP request pipeline.
-if(app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -162,9 +168,7 @@ if(app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 #endregion
 
-#region dbInitializer
-AppDbInitializer.SeedRolesToDb(app).Wait();
-#endregion
+
 
 #region middleware 
 

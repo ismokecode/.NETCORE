@@ -177,4 +177,4 @@ public class TransientService:ITransientService
   "dateOfJoing": "2024-03-21T15:31:17.878Z"
 }
 
-
+>>https://www.infoworld.com/article/3692811/how-to-use-the-unit-of-work-pattern-in-aspnet-core.html
