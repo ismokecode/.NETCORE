@@ -1,22 +1,22 @@
 ﻿namespace SWSS_v1.UnitOfBox
 {
     public class AuthorRepository : IRepository<Author>
-    {  
+    {
+        UnitOfWork entities = new UnitOfWork(new CustomDbContext());
         //Write code here to implement the members of the IRepository interface
         public void Add(Author entity)
         {
-            
-            throw new NotImplementedException();
+            entities.Repository<Author>().Add(entity);
         }
 
         public IList<Author> GetAll()
         {
-            throw new NotImplementedException();
+            return entities.Repository<Author>().GetAll();
         }
 
         public Author GetById(object id)
         {
-            throw new NotImplementedException();
+            return entities.Repository<Author>().GetById(id);
         }
     }
 }

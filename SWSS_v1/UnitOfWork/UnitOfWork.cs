@@ -2,9 +2,9 @@
 {
     public class UnitOfWork: IUnitOfWork, IDisposable
     {
-        private readonly DbContext _dbContext;
+        private readonly CustomDbContext _dbContext;
         private bool _disposed;
-        public UnitOfWork(DbContext dbContext)
+        public UnitOfWork(CustomDbContext dbContext)
         {
             _dbContext = dbContext;
         }

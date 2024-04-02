@@ -1,11 +1,13 @@
-﻿namespace SWSS_v1.UnitOfBox
+﻿using Microsoft.Identity.Client;
+
+namespace SWSS_v1.UnitOfBox
 {
-    public class CustomDbContext: DbContext
+    public class CustomDbContext : DbContext
     {
-        public CustomDbContext(DbContextOptions<CustomDbContext> options)
-       : base(options)
-        {
-        }
+       // public CustomDbContext(DbContextOptions<CustomDbContext> options)
+       //: base(options)
+       // {
+       // }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
         }
@@ -15,3 +17,4 @@
         public DbSet<Author> Authors { get; set; }
     }
 }
+

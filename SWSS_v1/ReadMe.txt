@@ -178,3 +178,9 @@ public class TransientService:ITransientService
 }
 
 >>https://www.infoworld.com/article/3692811/how-to-use-the-unit-of-work-pattern-in-aspnet-core.html
+**Notes:
+    1.Base class always returns and assign left side.
+    2. Method overriding vs hidding
+        base b = new Derived()
+        b.Dis(); // it overriding call the derived class method
+        base b = new Derived() // method hiding call the base class method

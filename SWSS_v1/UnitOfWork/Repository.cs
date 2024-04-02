@@ -8,7 +8,13 @@
         {
             return _dbSet.Find(id);
         }
-        public Repository(DbContext dbContext)
+        //public Repository(DbContext dbContext)
+        //{
+        //    _dbContext = dbContext;
+        //    //dbContext = _dbContext;
+        //    _dbSet = _dbContext.Set<T>();
+        //}
+        public Repository(CustomDbContext dbContext)
         {
             _dbContext = dbContext;
             _dbSet = _dbContext.Set<T>();
