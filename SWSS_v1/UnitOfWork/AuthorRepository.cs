@@ -2,7 +2,11 @@
 {
     public class AuthorRepository : IRepository<Author>
     {
-        UnitOfWork entities = new UnitOfWork(new CustomDbContext());
+        IUnitOfWork entities;
+        public AuthorRepository(IUnitOfWork _entities)
+        {
+            entities = _entities;
+        }
         //Write code here to implement the members of the IRepository interface
         public void Add(Author entity)
         {
