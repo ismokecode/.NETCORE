@@ -3,16 +3,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace SWSS_v1.Models
 {
-    //public class AppDBContext : DbContext
-    //{
-    //    public AppDBContext(DbContextOptions<AppDBContext> options) : base(options)
-    //    {
-
-    //    }
-    //}
     public class AppDBContext : IdentityDbContext<IdentityUser>
     {
-        public AppDBContext(DbContextOptions<AppDBContext> options) : base(options)
+        public AppDBContext()
+        {
+
+        }
+        protected AppDBContext(DbContextOptions<AppDBContext> options) : base(options)
+        {
+
+        }
+        protected AppDBContext(DbContextOptions options) : base(options)
         {
 
         }

@@ -11,6 +11,7 @@ using SWSS_v1.Filters.Exceptions;
 using SWSS_v1.API;
 using Newtonsoft.Json.Linq;
 using Azure;
+using SWSS_v1.UnitOfBox;
 
 namespace SWSS_v1.Controllers;
 
@@ -27,12 +28,14 @@ public class AppController : ControllerBase
     private readonly AppDBContext _context;
     private readonly IConfiguration _configuration;
     private readonly TokenValidationParameters _tokenValidationParameters;
+    private readonly IUnitOfWork _entities;
     public AppController(UserManager<IdentityUser> userManager,
         RoleManager<IdentityRole> roleManager,
         AppDBContext context,
         IConfiguration configuration,
         TokenValidationParameters tokenValidationParameters,
-        ILogger<AppController> logger
+        ILogger<AppController> logger,
+        IUnitOfWork entities
         )
     {
         _userManager = userManager;
@@ -41,6 +44,7 @@ public class AppController : ControllerBase
         _configuration = configuration;
         _tokenValidationParameters = tokenValidationParameters;
         _logger = logger;
+        _entities = entities;
     }
     #region user registration
     [HttpPost]
@@ -107,6 +111,7 @@ public class AppController : ControllerBase
     [HttpPost]
     public async Task<APIResponse<string>>Login([FromBody] LoginVM loginVM)
     {
+        _entities.Repository<Author>().Add(new Author { Name = "Rajeev" });
         //check validation of data
         if (loginVM.Password == null)
         {

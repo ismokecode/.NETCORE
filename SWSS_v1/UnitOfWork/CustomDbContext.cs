@@ -2,7 +2,7 @@
 
 namespace SWSS_v1.UnitOfBox
 {
-    public class CustomDbContext : DbContext
+    public class CustomDbContext : AppDBContext
     {
         public CustomDbContext(DbContextOptions<CustomDbContext> options)
        : base(options)
