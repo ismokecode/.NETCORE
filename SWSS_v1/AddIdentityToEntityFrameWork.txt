@@ -1,0 +1,166 @@
+﻿Ref: https://www.youtube.com/watch?v=5X9ogJVWAjE
+
+Steps:
+	1.Create ASP.NET Core Web App (Authorization Type : None)
+	2. Go To Package Manager console
+	3. 	Install-Package Microsoft.EntityFrameworkCore.Tools -version 5.0.10
+	4. Install-Package Microsoft.EntityFrameworkCore.SqlServer -version 5.0.10
+	5. Download Nortwind Database to SqlServer
+	
+	6. Scaffold-DbContext "Server=DESKTOP-9H0UC46;
+		Database=Nortwind;Trusted_Connection=true"; 
+		Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models
+		
+		--OR TRY Below one
+		
+		Scaffold-DbContext "server=DESKTOP-9H0UC46;Database=NorthWind;Trusted_Connection=True; TrustServerCertificate=True;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -force
+		
+	7. Now add new scaffold items Identity > Right click on Project
+		> Add > new scaffolding item > click on identity
+		> Tick mark override all pages > Data context class Add new >> Finally Add 
+	
+	--TILL HERE TWO DBContext Created NorthWind & Identity context
+	
+	8. Joining Identity to Northwind existing Database > Go to appSetting.json
+		> Identity connection > change server to your local server connection
+		
+	Results : A new folder areas created with identity models
+	
+	***	
+	10. Now we have 2 DbContext NorthwindDBContext & IdentityDBContext
+	Ex. 
+		public class DataVids_IdentityContext : IdentityDbContext<IdentityUser>
+		public class NortwindDbContext : DbContext
+	
+	11. Below Change DBContext to DataVids_IdentityContext 
+		NortwindDbContext : DbContext >>> NortwindDbContext:DataVids_IdentityContext
+	****	
+	Finally
+		public class NortwindDbContext : DataVids_IdentityContext
+		{
+			public NortwindDbContext(DbContextOptions<NortwindDbContext> options)
+			: base(options)
+			{
+			}
+		} /////ERROR Go To DataVids_IdentityContext add below code:
+		
+		public class DataVids_IdentityContext : IdentityDbContext<IdentityUser>
+		{
+			public DataVids_IdentityContext(DbContextOptions<DataVids_IdentityContext> options)
+			: base(options)
+			{
+			}
+			---MAKE SURE BELOW CONSTRUCTOR PROTECTED
+			protected DataVids_IdentityContext(DbContextOptions options)
+			: base(options)
+			{
+			}
+		}///Error Solve
+		
+		//Error solve Remoing empty constructor
+		public NorthWindContext()
+        {
+        }
+
+	12. Open Package Manager Console > 
+	EntityFrameworkCore\Add-Migration NameOfTheMigration -Context  DataVids_IdentityContext
+	--or
+	Add-Migration NameOfTheMigration -Context  DataVids_IdentityContext
+	
+		// above code initial DataVids_IdentityContext is used not NortwindDbContext
+		
+	13.	Open Package Manager Console > Update-Database -context DataVids_IdentityContext
+	Note: IF ANY FAILURE ADD below properties to appSetting.json connectionString
+	Trusted_Connection=True;TrustServerCertificate=True
+	
+	****
+	Results
+	14. Now look into Northwind DB Identity Table created
+	
+	***
+	Finally
+		Ready to Run Application (Till here Identity is working)
+		
+	
+	15. Now work Repository services
+	16.	Now create IDataService and DataService
+	    bulder.services.AddSingleton<IDataService, DataService>(); // So here context we want NorthWindContext
+		//So change DataVids_IdentityContext to NortwindDbContext in program.cs file
+		
+	16.1 
+		namespace EF_DBFirst.Pages
+	{
+		[Authorize]
+		public class PrivacyModel : PageModel
+		{
+        private readonly IDataService _dataService;
+        private readonly ILogger<PrivacyModel> _logger;
+        public IEnumerable<Customer> MyCustomer;
+        public PrivacyModel(ILogger<PrivacyModel> logger,IDataService dataService)
+        {
+            _logger = logger;
+            _dataService = dataService;
+        }
+        [AllowAnonymous]
+        public void OnGet()
+        {
+            MyCustomer = _dataService.GetCustomers("Mexico");
+        }
+		}
+	}
+		
+		**.NET CORE PageModel
+		#foreach(var i in Model.MyCustomers)
+		{
+			i.Name;
+		}
+		
+		*****
+		public class PrivacyModel:PageModel
+		{
+			private readonly ILogger<PrivacyModel> _logger
+			private readonly IDataService _dataService;
+			public PrivacyModel(ILogger<PrivacyModel> logger,IDataService dataService)
+			{
+				_logger = logger;
+				_dataService = logger;
+			}
+			public void OnGet()
+			{
+				return _dataService.GetAll();
+			}
+		}
+		**.NET CORE View Page
+		@foreach(var item in Model.MyCustomer)
+		{
+		<div>
+			@Html.Raw(item.Country);
+		</div>
+		}
+		
+
+	
+	17.Changes DataVids_IdentityContext to NortwindDbContext>>
+	builder.Services.AddDbContext<NortwindDbContext>(options => options.UseSqlServer(connectionString));
+	
+	builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+    .AddEntityFrameworkStores<NortwindDbContext>()
+    .AddDefaultTokenProviders();
+	
+	--And add in NorthWindContext.cs below code in OnModelCreating method on top
+	protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+	
+	** Notes:
+	
+	add to NortwindDbContext under onModelCreating> base.OnModelCreating(base);
+	Remove connection strings from NorthwindDBContext we are calling from Program.cs
+	
+	19. If new table added to the Northwind database: Good Employee
+			Package Manager Console > 
+			Scaffold-DbContext "Server=;Database=Northwind;Trusted_Connection=true;"
+			Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -force
+			
+
+		

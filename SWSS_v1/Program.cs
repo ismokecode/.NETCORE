@@ -3,6 +3,7 @@ using NLog.Extensions.Logging;
 using SWSS_v1.Filters.MiddlewareActivations;
 using SWSS_v1.Filters.MiddlewareExtensibles;
 using SWSS_v1.Services;
+using SWSS_v1.UnitOfBox;
 
 //Returns WebApplicationBuilder class
 var builder = WebApplication.CreateBuilder(args);
@@ -92,12 +93,12 @@ var tokenValidationParameters = new TokenValidationParameters()
     ClockSkew = TimeSpan.Zero
 };
 builder.Services.AddSingleton(tokenValidationParameters);
-builder.Services.AddDbContext<AppDBContext>(options => options.UseSqlServer(connectionString));
+builder.Services.AddDbContext<CustomDbContext>(options => options.UseSqlServer(connectionString));
 
 //Add Identity which are going to use upcoming part, Second parameter base class responsible for user role
 //Define class work with identity related table
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
-    .AddEntityFrameworkStores<AppDBContext>()
+    .AddEntityFrameworkStores<CustomDbContext>()
     .AddDefaultTokenProviders();
 
 
@@ -146,7 +147,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 #endregion Jwt token configuration
 
-
+//builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 
 //Return WebApplication class
 var app = builder.Build();
