@@ -183,4 +183,23 @@ public class TransientService:ITransientService
     2. Method overriding vs hidding
         base b = new Derived()
         b.Dis(); // it overriding call the derived class method
-        base b = new Derived() // method hiding call the base class method
+        base b = new Derived() // method hiding call the base class method/
+
+Extensible method:
+builder.Services.MyDependencyInjection(); > this IServiceCollection services
+AppDbInitializer.SeedRolesToDb(app).Wait(); > IApplicationBuilder applicationBuilder (To seed role)
+builder.RegisterApis(modules) > this WebApplicationBuilder builder
+app.MapEndpoints(); > this WebApplication app
+
+
+Test data:
+{
+  "firstName": "Kaushal",
+  "lastName": "Jha",
+  "email": "Kaushal@gmail.com",
+  "userName": "sa",
+  "password": "Kaushal@gmail.com123",
+  "userRole": "User",
+  "phone": "8688888888",
+  "pincode": "800008"
+}

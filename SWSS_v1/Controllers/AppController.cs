@@ -25,13 +25,13 @@ public class AppController : ControllerBase
     private readonly UserManager<IdentityUser> _userManager;
 
     private readonly RoleManager<IdentityRole> _roleManager;
-    private readonly AppDBContext _context;
+    private readonly CustomDbContext _context;
     private readonly IConfiguration _configuration;
     private readonly TokenValidationParameters _tokenValidationParameters;
     private readonly IUnitOfWork _entities;
     public AppController(UserManager<IdentityUser> userManager,
         RoleManager<IdentityRole> roleManager,
-        AppDBContext context,
+        CustomDbContext context,
         IConfiguration configuration,
         TokenValidationParameters tokenValidationParameters,
         ILogger<AppController> logger,

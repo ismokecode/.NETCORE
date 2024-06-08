@@ -94,6 +94,7 @@ var tokenValidationParameters = new TokenValidationParameters()
 };
 builder.Services.AddSingleton(tokenValidationParameters);
 builder.Services.AddDbContext<CustomDbContext>(options => options.UseSqlServer(connectionString));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 //Add Identity which are going to use upcoming part, Second parameter base class responsible for user role
 //Define class work with identity related table
@@ -108,7 +109,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
 #endregion
 
 #region Authentication Filter
-builder.Services.AddSingleton<FactoryMiddleware>();
+//builder.Services.AddSingleton<FactoryMiddleware>();
 #endregion
 
 APIAssembly.GetAssemblies();
@@ -178,10 +179,10 @@ app.MapEndpoints();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-app.UseMiddleware<FactoryMiddleware>();
+//app.UseMiddleware<FactoryMiddleware>();
 
 #region exceptionHandling
-app.ErrorHandler(); // directly used by extension method of IApplicationBuilder
+//app.ErrorHandler(); // directly used by extension method of IApplicationBuilder
 app.UseMiddleware<ExceptionMiddleware>();
 #endregion
 
