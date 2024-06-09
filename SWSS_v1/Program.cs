@@ -124,6 +124,7 @@ APIAssembly.GetAssemblies();
 //var modules = APIAssembly.DiscoverModules(AppDomain.CurrentDomain.GetAssemblies());
 //builder.RegisterApis(modules);
 #endregion
+ 
 
 #region Jwt token configuration
 builder.Services.AddAuthentication(options =>
