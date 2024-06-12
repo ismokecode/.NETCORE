@@ -58,8 +58,9 @@ public class AppController : ControllerBase
             var userExist = await _userManager.FindByEmailAsync(registerVM.Email);
             if (userExist != null)
             {
+                //if user exist
                 return StatusCode(StatusCodes.Status403Forbidden,
-                    new APIResponse<string>(StatusCodes.Status409Conflict, null, null,null) { }); ;
+                    new APIResponse<string>(StatusCodes.Status409Conflict, null, null,"User already exist.") { }); ;
             }
 
             //Add the user to db
@@ -107,6 +108,12 @@ public class AppController : ControllerBase
         }
         return StatusCode(StatusCodes.Status500InternalServerError,
                     new APIResponse<string>(StatusCodes.Status500InternalServerError, null, null, null));
+    }
+    [HttpGet]
+    public List<IdentityUser> GetUsers()
+    {
+        var users = _userManager.Users.ToList();
+        return users;
     }
     [HttpPost]
     public async Task<APIResponse<string>>Login([FromBody] LoginVM loginVM)
@@ -217,7 +224,7 @@ public class AppController : ControllerBase
             (new SymmetricSecurityKey(key),
             SecurityAlgorithms.HmacSha512Signature)
         };
-        var tokenHandler = new JwtSecurityTokenHandler();
+        var tokenHandler = new JwtSecurityTokenHandler();;
         var token = tokenHandler.CreateToken(tokenDescriptor);
         var jwtToken = tokenHandler.WriteToken(token);
         var stringToken = tokenHandler.WriteToken(token);

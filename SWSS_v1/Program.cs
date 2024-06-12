@@ -153,6 +153,14 @@ builder.Services.AddAuthorization();
 
 //Return WebApplication class
 var app = builder.Build();
+#region CORS
+app.UseCors(builder => builder
+               .AllowAnyHeader()
+               .AllowAnyMethod()
+               .SetIsOriginAllowed((host) => true)
+               .AllowCredentials()
+           );
+#endregion
 #region dbInitializer
 AppDbInitializer.SeedRolesToDb(app).Wait();
 #endregion
