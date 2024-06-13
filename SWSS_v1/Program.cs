@@ -124,7 +124,15 @@ APIAssembly.GetAssemblies();
 //var modules = APIAssembly.DiscoverModules(AppDomain.CurrentDomain.GetAssemblies());
 //builder.RegisterApis(modules);
 #endregion
- 
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+                      builder =>
+                      {
+                          builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();                     
+                      });
+});
 
 #region Jwt token configuration
 builder.Services.AddAuthentication(options =>
@@ -154,12 +162,12 @@ builder.Services.AddAuthorization();
 //Return WebApplication class
 var app = builder.Build();
 #region CORS
-app.UseCors(builder => builder
-               .AllowAnyHeader()
-               .AllowAnyMethod()
-               .SetIsOriginAllowed((host) => true)
-               .AllowCredentials()
-           );
+//app.UseCors(builder => builder
+//               .AllowAnyHeader()
+//               .AllowAnyMethod()
+//               .SetIsOriginAllowed((host) => true)
+//               .AllowCredentials()
+//           );
 #endregion
 #region dbInitializer
 AppDbInitializer.SeedRolesToDb(app).Wait();
@@ -187,6 +195,7 @@ app.UseStaticFiles();
 app.MapEndpoints();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseCors(MyAllowSpecificOrigins);
 app.MapControllers();
 //app.UseMiddleware<FactoryMiddleware>();
 

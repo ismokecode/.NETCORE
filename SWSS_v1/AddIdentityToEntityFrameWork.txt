@@ -7,6 +7,8 @@ Steps:
 	4. Install-Package Microsoft.EntityFrameworkCore.SqlServer -version 5.0.10
 	5. Download Nortwind Database to SqlServer
 	
+		>>Below code generated Nortwind Database tables Entity and NorthwindContext inside Models folder
+
 	6. Scaffold-DbContext "Server=DESKTOP-9H0UC46;
 		Database=Nortwind;Trusted_Connection=true"; 
 		Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models
@@ -21,10 +23,10 @@ Steps:
 	
 	--TILL HERE TWO DBContext Created NorthWind & Identity context
 	
-	8. Joining Identity to Northwind existing Database > Go to appSetting.json
-		> Identity connection > change server to your local server connection
+	8. Joining Identity to [[Northwind]] existing Database > Go to appSetting.json
+		> Identity connection > change server to your local server connection (Northwind DB connection established)
 		
-	Results : A new folder areas created with identity models
+	Results : A new folder areas created with identity models and IdentityContext
 	
 	***	
 	10. Now we have 2 DbContext NorthwindDBContext & IdentityDBContext
@@ -57,10 +59,13 @@ Steps:
 			}
 		}///Error Solve
 		
-		//Error solve Remoing empty constructor
+		//Error solve Removing empty constructor
 		public NorthWindContext()
         {
         }
+
+	>> Now IdentityContext tables exists somewhere so update those tables into Northwind database follow below steps: 
+		using Migration and update IdentityContext
 
 	12. Open Package Manager Console > 
 	EntityFrameworkCore\Add-Migration NameOfTheMigration -Context  DataVids_IdentityContext
