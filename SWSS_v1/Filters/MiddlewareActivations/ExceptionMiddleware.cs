@@ -1,11 +1,13 @@
 ﻿using System.Net;
 using System.Text.Json;
 using SWSS_v1.Filters.Exceptions;
+using SWSS_v1.Filters.MiddlewareActivations;
 
 namespace SWSS_v1.Filters.MiddlewareActivations
 {
     public class ExceptionMiddleware    
     {
+    
         private readonly RequestDelegate _next;
         public ExceptionMiddleware(RequestDelegate next)
         {

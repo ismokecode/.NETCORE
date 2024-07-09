@@ -12,6 +12,9 @@ using SWSS_v1.API;
 using Newtonsoft.Json.Linq;
 using Azure;
 using SWSS_v1.UnitOfBox;
+using System.Web.Http.Results;
+using System.Net;
+using System.Collections.Generic;
 
 namespace SWSS_v1.Controllers;
 
@@ -110,11 +113,18 @@ public class AppController : ControllerBase
                     new APIResponse<string>(StatusCodes.Status500InternalServerError, null, null, null));
     }
     [HttpGet]
-    public List<IdentityUser> GetUsers()
+    public IEnumerable<IdentityUser> GetUsers()
     {
         var users = _userManager.Users.ToList();
         return users;
     }
+    [HttpGet]
+    public IQueryable<IdentityUser> GetUserByCode(string code)
+    {
+        var user = _userManager.Users.Where(x => x.Email == code);
+        return user;
+    }
+    
     [HttpPost]
     public async Task<APIResponse<string>>Login([FromBody] LoginVM loginVM)
     {
@@ -237,5 +247,34 @@ public class AppController : ControllerBase
         return "Authorization is working.";
     }
     #endregion End Jwt token
+
+
+    #region Test API
+    [HttpGet]
+    public IActionResult TestApi_IActionResult()
+    {
+        return Ok(new List<LoginVM> {
+            new LoginVM() {Password="test",UserName="Rajeev" },
+            new LoginVM(){Password = "123",UserName="Sonu" }
+        });
+    }
+    [HttpGet]
+    public ActionResult<List<LoginVM>> TestApi_ActionResult()
+    {
+        var s = 4;
+        if (4 == 4)
+        {
+            return new List<LoginVM> {
+            new LoginVM { FirstName ="Rajeev", LastName="Kumar" },
+            new LoginVM {FirstName ="Rajeev", LastName="Kumar"}
+        };
+        }
+        else
+            return Ok(new List<LoginVM> {
+            new LoginVM { FirstName ="Rajeev", LastName="Kumar" },
+            new LoginVM {FirstName ="Rajeev", LastName="Kumar"}
+        });
+    }
+    #endregion
 
 }
