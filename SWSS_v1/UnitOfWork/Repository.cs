@@ -4,10 +4,6 @@
     {
         private readonly CustomDbContext _dbContext;
         private readonly DbSet<T> _dbSet;
-        public T GetById(object id)
-        {
-            return _dbSet.Find(id);
-        }
         //public Repository(DbContext dbContext)
         //{
         //    _dbContext = dbContext;
@@ -19,13 +15,38 @@
             _dbContext = dbContext;
             _dbSet = _dbContext.Set<T>();
         }
-        public IList<T> GetAll()
+        public async Task<IEnumerable<T>> GetAllAsync()
         {
-            return _dbSet.ToList();
+            return await _dbSet.ToListAsync();
         }
-        public void Add(T entity)
+        public async Task<T?> GetByIdAsync(object Id)
         {
-            _dbSet.Add(entity);
+            return await _dbSet.FindAsync(Id);
+        }
+        public async Task InsertAsync(T Entity)
+        {
+            //It will mark the Entity state as Added
+            await _dbSet.AddAsync(Entity);
+        }
+        //This method is going to update an Existing Entity
+        public async Task UpdateAsync(T Entity)
+        {
+            _dbSet.Update(Entity);
+        }
+        //This method is going to remove an existing record from the table
+        public async Task DeleteAsync(object Id)
+        {
+            var entity = await _dbSet.FindAsync(Id);
+            if (entity != null)
+            {
+                //This will mark the Entity State as Deleted
+                _dbSet.Remove(entity);
+            }
+        }
+        //This method will make the changes permanent in the database
+        public async Task SaveAsync()
+        {
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

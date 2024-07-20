@@ -1,26 +1,32 @@
-﻿namespace SWSS_v1.UnitOfBox
+﻿using SWSS_v1.UnitOfWork;
+
+namespace SWSS_v1.UnitOfBox
 {
-    public class AuthorRepository : IRepository<Author>
+    public class AuthorRepository : Repository<Author>, IAuthorRepository
     {
-        IUnitOfWork entities;
-        public AuthorRepository(IUnitOfWork _entities)
+        CustomDbContext _context;
+        public AuthorRepository(CustomDbContext context):base(context)
         {
-            entities = _entities;
+            _context = context;
         }
-        //Write code here to implement the members of the IRepository interface
-        public void Add(Author entity)
+        public async Task<IEnumerable<Author>> GetAllEmployeesAsync()
         {
-            entities.Repository<Author>().Add(entity);
+            return await _context.Authors.Include(e => e.DepartmentId).ToListAsync();
         }
-
-        public IList<Author> GetAll()
+        //Retrieves a single employee by their ID along with Department data.
+        public async Task<Author?> GetEmployeeByIdAsync(int EmployeeID)
         {
-            return entities.Repository<Author>().GetAll();
+            var author = await _context.Authors
+               .Include(e => e.DepartmentId)
+               .FirstOrDefaultAsync(m => m.DepartmentId == EmployeeID);
+            return author;
         }
-
-        public Author GetById(object id)
+        //Retrieves Employees by Departmentid
+        public async Task<IEnumerable<Author>> GetEmployeesByDepartmentAsync(int DepartmentId)
         {
-            return entities.Repository<Author>().GetById(id);
+            return await _context.Authors
+                .Where(emp => emp.DepartmentId == DepartmentId)
+                .Include(e => e.DepartmentId).ToListAsync();
         }
     }
 }

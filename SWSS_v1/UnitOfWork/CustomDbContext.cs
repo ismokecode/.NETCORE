@@ -16,6 +16,7 @@ namespace SWSS_v1.UnitOfBox
             base.OnModelCreating(modelBuilder);
         }
         public DbSet<Author> Authors { get; set; }
+        public DbSet<Department> Departments { get; set; }
     }
 }
 
