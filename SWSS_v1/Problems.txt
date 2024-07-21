@@ -1,0 +1,6 @@
+﻿1. InnerException = {"The INSERT statement conflicted with the FOREIGN KEY constraint \"FK__Employees__Depar__0D7A0286\". The conflict occurred in database \"SWSS\", table \"dbo.Departments\", column 'departmentId'."}
+
+Soln: Now try to add a order for the customer that I thought customer is existing but customer is not existing
+and I had enforce referencial intigrity. It come SQL exception.
+
+2. public DbSet<Employee> Employees { get; set; } //here Employees is table name

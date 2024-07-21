@@ -152,8 +152,8 @@ public class AppController : ControllerBase
 
     #region CRUD operations Unit Of Work Patterns
     [HttpPost]
-    //
-    public async Task<IActionResult> Create([FromForm] [Bind("employeeId", "name", "email", "position,departmentId")] Employee objAuth)
+    //[Bind("employeeId", "name", "email", "position,departmentId")]
+    public async Task<IActionResult> Create([FromBody] Employee objAuth)
     {
         //if (ModelState.IsValid) 
         //{

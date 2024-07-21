@@ -1,0 +1,57 @@
+﻿Test Data:
+
+Login:
+
+{
+  "firstName": "Kaushal",
+  "lastName": "Jha",
+  "email": "Kaushal@gmail.com",
+  "userName": "sa",
+  "password": "Kaushal@gmail.com123",
+  "dateOfJoing": "2024-07-21T13:38:50.822Z"
+}
+
+Register:
+
+{
+  "firstName": "Kaushal",
+  "lastName": "Jha",
+  "email": "Kaushal@gmail.com",
+  "userName": "sa",
+  "password": "Kaushal@gmail.com123",
+  "userRole": "User",
+  "phone": "8688888888",
+  "pincode": "800008"
+}
+
+Create Employee:
+
+{
+  "employeeId": 0,
+  "name": "Swathi",
+  "email": "swathi@gmail.com",
+  "position": "Dr",
+  "departmentId": 1,
+  "department": {
+    "departmentId": 1,
+    "name": "string",
+    "employees": [
+      "string"
+    ]
+  }
+}
+
+{
+  "type": "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+  "title": "One or more validation errors occurred.",
+  "status": 400,
+  "traceId": "00-9511e4c940f9661966368cc90979dc0b-0b19e89e5a317c07-00",
+  "errors": {
+    "objAuth": [
+      "The objAuth field is required."
+    ],
+    "$.department.employees[0]": [
+      "The JSON value could not be converted to Employee. Path: $.department.employees[0] | LineNumber: 10 | BytePositionInLine: 14."
+    ]
+  }
+}

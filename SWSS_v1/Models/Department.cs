@@ -4,6 +4,10 @@
     {
         public int DepartmentId { get; set; }
         public string Name { get; set; }
+    }
+    public class DepartmentView:Department
+    {
         public List<Employee> Employees { get; set; }
+
     }
 }
