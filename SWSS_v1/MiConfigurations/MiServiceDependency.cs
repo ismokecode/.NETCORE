@@ -1,12 +1,13 @@
 ﻿
 
 using SWSS_v1.Services;
+using SWSS_v1.UnitOfBox;
 
 public static class MiServiceDependency
 {
     public static void MyDependencyInjection(this IServiceCollection services)
     {
-        services.AddSingleton<IEmployee, EmployeeService>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
     }
     public static void JWTConfigureServices(this IServiceCollection services)
     {

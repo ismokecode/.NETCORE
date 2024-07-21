@@ -31,14 +31,14 @@ public class AppController : ControllerBase
     private readonly CustomDbContext _context;
     private readonly IConfiguration _configuration;
     private readonly TokenValidationParameters _tokenValidationParameters;
-    private readonly IUnitOfWork _entities;
+    private readonly IUnitOfWork _unitOfWork;
     public AppController(UserManager<IdentityUser> userManager,
         RoleManager<IdentityRole> roleManager,
         CustomDbContext context,
         IConfiguration configuration,
         TokenValidationParameters tokenValidationParameters,
         ILogger<AppController> logger,
-        IUnitOfWork entities
+        IUnitOfWork UnitOfWork
         )
     {
         _userManager = userManager;
@@ -47,9 +47,10 @@ public class AppController : ControllerBase
         _configuration = configuration;
         _tokenValidationParameters = tokenValidationParameters;
         _logger = logger;
-        _entities = entities;
+        _unitOfWork = UnitOfWork;
     }
-    #region user registration
+
+    #region IdentityUser 
     [HttpPost]
     public async Task<IActionResult> Register([FromBody] RegisterVM registerVM)
     {
@@ -128,8 +129,6 @@ public class AppController : ControllerBase
     [HttpPost]
     public async Task<APIResponse<string>>Login([FromBody] LoginVM loginVM)
     {
-        _entities.Repository<Author>().Add(new Author { Name = "Rajeev" });
-        //check validation of data
         if (loginVM.Password == null)
         {
             List<String> _lsts = new List<string>();
@@ -149,13 +148,44 @@ public class AppController : ControllerBase
             return new APIResponse<string>(StatusCodes.Status500InternalServerError, null, null, null);
         }
     }
+    #endregion
+
+    #region CRUD operations Unit Of Work Patterns
+    [HttpPost]
+    //
+    public async Task<IActionResult> Create([FromForm] [Bind("employeeId", "name", "email", "position,departmentId")] Employee objAuth)
+    {
+        //if (ModelState.IsValid) 
+        //{
+            try
+            {
+                _unitOfWork.BeginTransaction();
+                await _unitOfWork.Employees.InsertAsync(objAuth);
+                await _unitOfWork.Employees.SaveAsync();
+                _unitOfWork.Commit();
+                return Ok();
+            }
+            catch (Exception ex) 
+            {
+                _unitOfWork.Rollback();
+                //error below can't convert 
+                //System.Net.HTTPStatusCode to Microsoft.AspNetCore.MVC.IActionResult type
+                //return HttpStatusCode.BadRequest
+                return BadRequest();
+            }
+        //}
+        //else 
+        //{ 
+        //return BadRequest();
+        //}
+    }
+    #endregion
 
     [HttpPost(Name = "GetEmployeeDetails")]
-    public APIResponse<string> GetEmployeeDetails([FromServices] IEmployee service, Employee emp)
+    public APIResponse<string> GetEmployeeDetails([FromServices] IEmployee service, Author emp)
     {
         return new APIResponse<string>(StatusCodes.Status200OK, null,null, "Hello World");
     }
-    #endregion
 
     #region ExceptionHandling
     [HttpGet]
@@ -247,7 +277,6 @@ public class AppController : ControllerBase
         return "Authorization is working.";
     }
     #endregion End Jwt token
-
 
     #region Test API
     [HttpGet]

@@ -1,4 +1,6 @@
 ﻿
+using SWSS_v1.UnitOfWork;
+
 namespace SWSS_v1.UnitOfBox
 {
     public interface IUnitOfWork : IDisposable
@@ -10,5 +12,7 @@ namespace SWSS_v1.UnitOfBox
         Task Save();
         IRepository<T> Repository<T>() where T : class;
         AuthorRepository Authors { get; }
+        EmployeeRepository Employees { get; }
+        DepartmentRepository Departments { get; }
     }
 }

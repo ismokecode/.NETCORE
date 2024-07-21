@@ -17,6 +17,7 @@ namespace SWSS_v1.UnitOfBox
         }
         public DbSet<Author> Authors { get; set; }
         public DbSet<Department> Departments { get; set; }
+        public DbSet<Employee> Employees { get; set; }
     }
 }
 

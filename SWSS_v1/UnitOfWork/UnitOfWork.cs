@@ -9,21 +9,19 @@ namespace SWSS_v1.UnitOfBox
         private readonly CustomDbContext _dbContext;
         private IDbContextTransaction? _objTran = null;
         public AuthorRepository Authors { get; private set; }
-        //Implement common methods for Generic repository
+        public DepartmentRepository Departments { get; private set; }
+        public EmployeeRepository Employees { get; private set; }
         public IRepository<T> Repository<T>() where T : class
         {
             return new Repository<T>(_dbContext);
-        }
-        // Implement specific methods for Product repository
-        public IAuthorRepository AuthorRepository()
-        {
-            return new AuthorRepository(_dbContext);
         }
         private bool disposed = false;
         public UnitOfWork(CustomDbContext dbContext)
         {
             _dbContext = dbContext;
             Authors = new AuthorRepository(_dbContext);
+            Departments = new DepartmentRepository(_dbContext);
+            Employees = new EmployeeRepository(_dbContext);
         }
         public void BeginTransaction()
         {
@@ -35,15 +33,6 @@ namespace SWSS_v1.UnitOfBox
         }
         public void Rollback()
         {
-            //foreach (var entry in _dbContext.ChangeTracker.Entries())
-            //{
-            //    switch (entry.State)
-            //    {
-            //        case EntityState.Added:
-            //            entry.State = EntityState.Detached;
-            //            break;
-            //    }
-            //}
             _objTran?.Rollback();
             _objTran?.Dispose();
         }

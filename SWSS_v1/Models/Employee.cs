@@ -1,6 +1,15 @@
-﻿  public class Employee
+﻿using SWSS_v1.UnitOfBox;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+public class Employee
     {
-        public string _name { get; set; }
-        public string _email { get; set; }
-        public string _phone { get; set; }
-}
+        public int EmployeeId { get; set; }
+        public string? Name { get; set; }
+        public string? Email { get; set; }
+        public string? Position { get; set; }
+        //[Display(Name = "Department Name")]
+        [ForeignKey("DepartmentId")]
+        public int DepartmentId { get; set; }
+        public Department? Department { get; set; }
+    }

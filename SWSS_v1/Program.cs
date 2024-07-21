@@ -62,7 +62,6 @@ builder.Services.AddSwaggerGen(option =>
     );
 });
 builder.Services.MyDependencyInjection();
-builder.Services.AddScoped<IEmployee, EmployeeService>();
 
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
