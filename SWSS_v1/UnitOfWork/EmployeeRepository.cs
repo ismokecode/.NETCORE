@@ -10,6 +10,12 @@ namespace SWSS_v1.UnitOfWork
         {
             _context = context;
         }
+        public async Task InsertAsync2(Employee obj)
+        {
+            _context.Entry(obj.Department).State = EntityState.Unchanged;
+            //It will mark the Entity state as Added
+            await _context.AddAsync(obj);
+        }
         public async Task<IEnumerable<Employee>> GetAllEmployeesAsync()
         {
             return await _context.Employees.Include(e => e.DepartmentId).ToListAsync();
