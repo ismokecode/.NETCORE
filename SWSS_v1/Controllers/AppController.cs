@@ -153,14 +153,14 @@ public class AppController : ControllerBase
     #region CRUD operations Unit Of Work Patterns
     [HttpPost]
     //[Bind("employeeId", "name", "email", "position,departmentId")]
-    public async Task<IActionResult> Create([FromBody] Employee objAuth)
+    public async Task<IActionResult> Create([FromBody][Bind("employeeId", "name", "email", "position,departmentId")] Employee objAuth)
     {
         //if (ModelState.IsValid) 
         //{
             try
             {
                 _unitOfWork.BeginTransaction();
-                await _unitOfWork.Employees.InsertAsync(objAuth);
+                await _unitOfWork.Employees.InsertAsync2(objAuth);
                 await _unitOfWork.Employees.SaveAsync();
                 _unitOfWork.Commit();
                 return Ok();
@@ -178,6 +178,12 @@ public class AppController : ControllerBase
         //{ 
         //return BadRequest();
         //}
+    }
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Employee>>> GetAllEmployees()
+    {
+        var result = await _unitOfWork.Employees.GetAllEmployeesAsync();
+        return Ok();
     }
     #endregion
 
