@@ -49,7 +49,6 @@ public class AppController : ControllerBase
         _logger = logger;
         _unitOfWork = UnitOfWork;
     }
-
     #region IdentityUser 
     [HttpPost]
     public async Task<IActionResult> Register([FromBody] RegisterVM registerVM)

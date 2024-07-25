@@ -12,10 +12,7 @@ namespace SWSS_v1.Models
         //[Display(Name = "Department Name")]        
         public int DepartmentId { get; set; }
         [ForeignKey("DepartmentId")]
-        public Department? Department { get; set; }
+        public Department? Departments { get; set; }
     }
-    public class EmployeeView : Employee
-    {
-        public Department? Department { get; set; }
-    }
+    
 }

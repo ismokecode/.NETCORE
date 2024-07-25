@@ -12,13 +12,13 @@ namespace SWSS_v1.UnitOfWork
         }
         public async Task InsertAsync2(Employee obj)
         {
-            _context.Entry(obj.Department).State = EntityState.Unchanged;
+            _context.Entry(obj.Departments).State = EntityState.Unchanged;
             //It will mark the Entity state as Added
             await _context.AddAsync(obj);
         }
         public async Task<IEnumerable<Employee>> GetAllEmployeesAsync()
         {
-            return await _context.Employees.Include(e => e.DepartmentId).ToListAsync();
+            return await _context.Employees.Include("Departments").ToListAsync();
         }
         //Retrieves a single employee by their ID along with Department data.
         public async Task<Employee?> GetEmployeeByIdAsync(int EmployeeID)
