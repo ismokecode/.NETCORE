@@ -5,7 +5,9 @@ namespace SWSS_v1.Models
 {
     public class Employee
     {
+        //[Table("tblEmployees")]
         public int EmployeeId { get; set; }
+        //[Column("Name")]
         public string? Name { get; set; }
         public string? Email { get; set; }
         public string? Position { get; set; }

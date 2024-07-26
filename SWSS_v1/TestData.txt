@@ -28,9 +28,9 @@ Create Employee:
 
 {
   "employeeId": 0,
-  "name": "Swathi",
-  "email": "swathi@gmail.com",
-  "position": "Dr",
+  "name": "SwethaRaj",
+  "email": "swetharaj@gmail.com",
+  "position": "Love",
   "departmentId": 1,
   "department": {
     "departmentId": 1,
