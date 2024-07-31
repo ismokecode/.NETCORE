@@ -10,8 +10,9 @@ namespace SWSS_v1.Models
         //[Column("Name")]
         public string? Name { get; set; }
         public string? Email { get; set; }
+        public string Phone { get; set; }
         public string? Position { get; set; }
-        //[Display(Name = "Department Name")]        
+        //[Display(Name = "Department Name")]
         public int DepartmentId { get; set; }
         [ForeignKey("DepartmentId")]
         public Department? Departments { get; set; }

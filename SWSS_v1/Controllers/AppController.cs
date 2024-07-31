@@ -182,7 +182,7 @@ public class AppController : ControllerBase
     public async Task<ActionResult<IEnumerable<Employee>>> GetAllEmployees()
     {
         var result = await _unitOfWork.Employees.GetAllEmployeesAsync();
-        return Ok();
+        return Ok(result);
     }
     #endregion
 
