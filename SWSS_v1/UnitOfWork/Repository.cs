@@ -23,7 +23,7 @@
         {
             return await _dbSet.FindAsync(Id);
         }
-        public async Task InsertAsync(T Entity)
+        public virtual async Task InsertAsync(T Entity)
         {
             //It will mark the Entity state as Added
             await _dbSet.AddAsync(Entity);

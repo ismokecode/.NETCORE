@@ -28,13 +28,13 @@ public class AppController : ControllerBase
     private readonly UserManager<IdentityUser> _userManager;
 
     private readonly RoleManager<IdentityRole> _roleManager;
-    private readonly CustomDbContext _context;
+    //private readonly CustomDbContext _context;
     private readonly IConfiguration _configuration;
     private readonly TokenValidationParameters _tokenValidationParameters;
     private readonly IUnitOfWork _unitOfWork;
     public AppController(UserManager<IdentityUser> userManager,
         RoleManager<IdentityRole> roleManager,
-        CustomDbContext context,
+        //CustomDbContext context,
         IConfiguration configuration,
         TokenValidationParameters tokenValidationParameters,
         ILogger<AppController> logger,
@@ -43,7 +43,7 @@ public class AppController : ControllerBase
     {
         _userManager = userManager;
         _roleManager = roleManager;
-        _context = context;
+        //_context = context;
         _configuration = configuration;
         _tokenValidationParameters = tokenValidationParameters;
         _logger = logger;
@@ -183,7 +183,33 @@ public class AppController : ControllerBase
     public async Task<ActionResult<IEnumerable<Employee>>> GetAllEmployees()
     {
         var result = await _unitOfWork.Employees.GetAllEmployeesAsync();
+        return Ok(result);
+    }
+    [HttpPost]
+    public async Task<ActionResult<IEnumerable<Customer>>> CreateCustomer([FromBody][Bind("CustomerName")] Customer customer)
+    {
+         await _unitOfWork.Repository<Customer>().InsertAsync(customer);
         return Ok();
+    }
+    [HttpPost]
+    public async Task<ActionResult<IEnumerable<Location>>> CreateLocation([FromBody][Bind("LocationId","LocationName")] Location loc)
+    {
+        try
+        {
+            _unitOfWork.BeginTransaction();
+            await _unitOfWork.Locations.InsertAsync(loc);
+            await _unitOfWork.Locations.SaveAsync();
+            _unitOfWork.Commit();
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            _unitOfWork.Rollback();
+            //error below can't convert 
+            //System.Net.HTTPStatusCode to Microsoft.AspNetCore.MVC.IActionResult type
+            //return HttpStatusCode.BadRequest
+            return BadRequest();
+        }
     }
     #endregion
 

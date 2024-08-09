@@ -1,4 +1,5 @@
 ﻿using Microsoft.Identity.Client;
+using SWSS_v1.Models;
 
 namespace SWSS_v1.UnitOfBox
 {
@@ -18,6 +19,8 @@ namespace SWSS_v1.UnitOfBox
         public DbSet<Author> Authors { get; set; }
         public DbSet<Department> Departments { get; set; }
         public DbSet<Employee> Employees { get; set; }
+        public DbSet<Location> Locations { get; set; }
+        public DbSet<Customer> Customers { get; set; }
     }
 }
 

@@ -11,6 +11,8 @@ namespace SWSS_v1.UnitOfBox
         public AuthorRepository Authors { get; private set; }
         public DepartmentRepository Departments { get; private set; }
         public EmployeeRepository Employees { get; private set; }
+        public CustomerRepository Customers { get; private set; }
+        public LocationRepository Locations { get; private set; }
         public IRepository<T> Repository<T>() where T : class
         {
             return new Repository<T>(_dbContext);
@@ -22,6 +24,8 @@ namespace SWSS_v1.UnitOfBox
             Authors = new AuthorRepository(_dbContext);
             Departments = new DepartmentRepository(_dbContext);
             Employees = new EmployeeRepository(_dbContext);
+            Customers = new CustomerRepository(_dbContext);
+            Locations = new LocationRepository(_dbContext);
         }
         public void BeginTransaction()
         {

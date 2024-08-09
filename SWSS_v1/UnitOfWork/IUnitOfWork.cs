@@ -14,5 +14,7 @@ namespace SWSS_v1.UnitOfBox
         AuthorRepository Authors { get; }
         EmployeeRepository Employees { get; }
         DepartmentRepository Departments { get; }
+        CustomerRepository Customers { get; }
+        LocationRepository Locations { get; }
     }
 }

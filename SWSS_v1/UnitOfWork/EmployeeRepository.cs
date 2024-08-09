@@ -18,7 +18,7 @@ namespace SWSS_v1.UnitOfWork
         }
         public async Task<IEnumerable<Employee>> GetAllEmployeesAsync()
         {
-            return await _context.Employees.Include(e => e.DepartmentId).ToListAsync();
+            return await _context.Employees.Include(e => e.Department).ToListAsync();
         }
         //Retrieves a single employee by their ID along with Department data.
         public async Task<Employee?> GetEmployeeByIdAsync(int EmployeeID)
