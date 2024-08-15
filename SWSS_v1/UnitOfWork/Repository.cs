@@ -29,7 +29,7 @@
             await _dbSet.AddAsync(Entity);
         }
         //This method is going to update an Existing Entity
-        public async Task UpdateAsync(T Entity)
+        public virtual async Task UpdateAsync(T Entity)
         {
             _dbSet.Update(Entity);
         }

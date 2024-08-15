@@ -4,6 +4,6 @@ namespace SWSS_v1.UnitOfWork
 {
     public interface ILocationRepository : IRepository<Location>
     {
-
+        bool IsExist(Location loc);
     }
 }

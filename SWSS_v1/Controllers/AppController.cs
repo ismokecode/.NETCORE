@@ -15,6 +15,7 @@ using SWSS_v1.UnitOfBox;
 using System.Web.Http.Results;
 using System.Net;
 using System.Collections.Generic;
+using Microsoft.Identity.Client;
 
 namespace SWSS_v1.Controllers;
 
@@ -192,23 +193,37 @@ public class AppController : ControllerBase
         return Ok();
     }
     [HttpPost]
-    public async Task<ActionResult<IEnumerable<Location>>> CreateLocation([FromBody][Bind("LocationId","LocationName")] Location loc)
+    public async Task<IActionResult> CreateLocation([FromBody][Bind("LocationId","LocationName")] Location loc)
     {
         try
         {
-            _unitOfWork.BeginTransaction();
-            await _unitOfWork.Locations.InsertAsync(loc);
-            await _unitOfWork.Locations.SaveAsync();
-            _unitOfWork.Commit();
-            return Ok();
+            if (ModelState.IsValid)
+            {
+                loc.LocationName.Trim();
+                 if (!_unitOfWork.Locations.IsExist(loc) && loc.LocationId==0)
+                {
+                    _unitOfWork.BeginTransaction();
+                    await _unitOfWork.Locations.InsertAsync(loc);
+                    await _unitOfWork.Locations.SaveAsync();
+                    _unitOfWork.Commit();
+                    return Ok("Data saved successfully.");                   
+                }
+                else if(!_unitOfWork.Locations.IsExistUpdate(loc)) {
+                    await _unitOfWork.Locations.UpdateAsync(loc);
+                    return Ok("Data saved successfully.");
+                }
+                else { return BadRequest(); }
+                
+            }
+            else
+            {
+                return BadRequest();
+            }
         }
         catch (Exception ex)
         {
             _unitOfWork.Rollback();
-            //error below can't convert 
-            //System.Net.HTTPStatusCode to Microsoft.AspNetCore.MVC.IActionResult type
-            //return HttpStatusCode.BadRequest
-            return BadRequest();
+            throw new BadRequestException(ex.ToString());          
         }
     }
     #endregion
