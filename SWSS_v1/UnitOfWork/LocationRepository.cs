@@ -42,7 +42,7 @@ namespace SWSS_v1.UnitOfWork
             //_context.Entry(obj.Customer).State = EntityState.Unchanged;
             var _emp = _context.Locations.FirstOrDefault(x => x.LocationId == obj.LocationId);
             _emp.LocationName = obj.LocationName;
-            await _context.SaveChangesAsync();
+            //wait _context.SaveChangesAsync();
         }
     }
 }

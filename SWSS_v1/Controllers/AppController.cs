@@ -209,7 +209,10 @@ public class AppController : ControllerBase
                     return Ok("Data saved successfully.");                   
                 }
                 else if(!_unitOfWork.Locations.IsExistUpdate(loc)) {
+                    _unitOfWork.BeginTransaction();
                     await _unitOfWork.Locations.UpdateAsync(loc);
+                    await _unitOfWork.Locations.SaveAsync();
+                    _unitOfWork.Commit();
                     return Ok("Data saved successfully.");
                 }
                 else { return BadRequest(); }
