@@ -12,10 +12,14 @@ public partial class Customer
     public string Name { get; set; } = null!;
     [RegularExpression("^[0-9]{10}$")]
     public string? Phone { get; set; }
+    [RegularExpression("^[0-9]{10}$")]
+    public string? SecondaryNumber { get; set; }
 
     public int? Type { get; set; }
 
     public int? LocationId { get; set; }
 
     public virtual Location? Location { get; set; }
+    public virtual Department? Department { get; set; }
+
 }

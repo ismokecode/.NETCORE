@@ -17,7 +17,7 @@
         }
         public async Task<IEnumerable<T>> GetAllAsync()
         {
-            return await _dbSet.ToListAsync();
+            return await _dbSet.Include("Department").Include("Location").ToListAsync();
         }
         public async Task<T?> GetByIdAsync(object Id)
         {

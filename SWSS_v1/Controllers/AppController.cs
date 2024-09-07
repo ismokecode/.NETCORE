@@ -149,66 +149,58 @@ public class AppController : ControllerBase
             return new APIResponse<string>(StatusCodes.Status500InternalServerError, null, null, null);
         }
     }
-    #endregion
+    #endregion End IdentityUser 
 
-    #region CRUD operations Unit Of Work Patterns
+    #region Service Methods
     [HttpPost]
-    //[Bind("employeeId", "name", "email", "position,departmentId")]
-    public async Task<IActionResult> Create([FromBody][Bind("employeeId", "name", "email", "position,departmentId")] Employee objAuth)
+    //[FromBody][Bind("employeeId", "name", "email", "position,departmentId")] Employee objAuth
+    public async Task<ActionResult<IEnumerable<Customer>>> CreateCustomer([FromBody] Customer customer)
     {
-        //if (ModelState.IsValid) 
-        //{
-            try
+        try
+        {
+            if (ModelState.IsValid)
             {
-                _unitOfWork.BeginTransaction();
-                await _unitOfWork.Employees.InsertAsync2(objAuth);
-                await _unitOfWork.Employees.SaveAsync();
+                await _unitOfWork.Repository<Customer>().InsertAsync(customer);
+                await _unitOfWork.Locations.SaveAsync();
                 _unitOfWork.Commit();
                 return Ok();
             }
-            catch (Exception ex) 
+            else 
             {
-                _unitOfWork.Rollback();
-                //error below can't convert 
-                //System.Net.HTTPStatusCode to Microsoft.AspNetCore.MVC.IActionResult type
-                //return HttpStatusCode.BadRequest
                 return BadRequest();
             }
-        //}
-        //else 
-        //{ 
-        //return BadRequest();
-        //}
+            
+        }
+        catch (Exception ex)
+        {
+            _unitOfWork.Rollback();
+            throw new BadRequestException(ex.ToString());
+        }
     }
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Employee>>> GetAllEmployees()
+    public async Task<ActionResult<IEnumerable<Customer>>> GetAllCustomer()
     {
-        var result = await _unitOfWork.Employees.GetAllEmployeesAsync();
+        var result = await _unitOfWork.Customers.GetAllAsync();
         return Ok(result);
     }
     [HttpPost]
-    public async Task<ActionResult<IEnumerable<Customer>>> CreateCustomer([FromBody][Bind("CustomerName")] Customer customer)
-    {
-         await _unitOfWork.Repository<Customer>().InsertAsync(customer);
-        return Ok();
-    }
-    [HttpPost]
-    public async Task<IActionResult> CreateLocation([FromBody][Bind("LocationId","LocationName")] Location loc)
+    public async Task<IActionResult> CreateLocation([FromBody][Bind("LocationId", "LocationName")] Location loc)
     {
         try
         {
             if (ModelState.IsValid)
             {
                 loc.LocationName.Trim();
-                 if (!_unitOfWork.Locations.IsExist(loc) && loc.LocationId==0)
+                if (!_unitOfWork.Locations.IsExist(loc) && loc.LocationId == 0)
                 {
                     _unitOfWork.BeginTransaction();
                     await _unitOfWork.Locations.InsertAsync(loc);
                     await _unitOfWork.Locations.SaveAsync();
                     _unitOfWork.Commit();
-                    return Ok("Data saved successfully.");                   
+                    return Ok("Data saved successfully.");
                 }
-                else if(!_unitOfWork.Locations.IsExistUpdate(loc)) {
+                else if (!_unitOfWork.Locations.IsExistUpdate(loc))
+                {
                     _unitOfWork.BeginTransaction();
                     await _unitOfWork.Locations.UpdateAsync(loc);
                     await _unitOfWork.Locations.SaveAsync();
@@ -216,7 +208,7 @@ public class AppController : ControllerBase
                     return Ok("Data saved successfully.");
                 }
                 else { return BadRequest(); }
-                
+
             }
             else
             {
@@ -226,16 +218,16 @@ public class AppController : ControllerBase
         catch (Exception ex)
         {
             _unitOfWork.Rollback();
-            throw new BadRequestException(ex.ToString());          
+            throw new BadRequestException(ex.ToString());
         }
     }
-    #endregion
-
-    [HttpPost(Name = "GetEmployeeDetails")]
-    public APIResponse<string> GetEmployeeDetails([FromServices] IEmployee service, Author emp)
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Location>>> GetAllLocations()
     {
-        return new APIResponse<string>(StatusCodes.Status200OK, null,null, "Hello World");
+        var result = await _unitOfWork.Locations.GetAllAsync();
+        return Ok(result);
     }
+    #endregion End Service Method
 
     #region ExceptionHandling
     [HttpGet]
