@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SWSS_v1.Models;
 
@@ -15,11 +16,11 @@ public partial class Customer
     [RegularExpression("^[0-9]{10}$")]
     public string? SecondaryNumber { get; set; }
 
-    public int? Type { get; set; }
-
     public int? LocationId { get; set; }
-
+    public int? DepartmentId { get; set; }
+    //[ForeignKey("LocationId")]
     public virtual Location? Location { get; set; }
+    //[ForeignKey("DepartmentId")]
     public virtual Department? Department { get; set; }
 
 }
