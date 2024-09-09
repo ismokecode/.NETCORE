@@ -16,6 +16,7 @@ using System.Web.Http.Results;
 using System.Net;
 using System.Collections.Generic;
 using Microsoft.Identity.Client;
+using SWSS_v1.UnitOfWork;
 
 namespace SWSS_v1.Controllers;
 
@@ -154,7 +155,7 @@ public class AppController : ControllerBase
     #region Service Methods
     [HttpPost]
     //[FromBody][Bind("employeeId", "name", "email", "position,departmentId")] Employee objAuth
-    public async Task<ActionResult<IEnumerable<Customer>>> CreateCustomer([FromBody] Customer customer)
+    public async Task<IActionResult> CreateCustomer([FromBody][Bind("employeeId", "name", "email", "position,departmentId")] Customer customer)
     {
         try
         {

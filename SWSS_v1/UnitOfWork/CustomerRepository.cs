@@ -1,4 +1,5 @@
-﻿using SWSS_v1.UnitOfBox;
+﻿using Microsoft.EntityFrameworkCore;
+using SWSS_v1.UnitOfBox;
 
 namespace SWSS_v1.UnitOfWork
 {
@@ -29,6 +30,10 @@ namespace SWSS_v1.UnitOfWork
                 isExist = true;
             }
             return isExist;
+        }
+        public override async Task<IEnumerable<Customer>> GetAllAsync()
+        {
+            return await _context.Customers.Include("Location").ToListAsync();
         }
 
     }
