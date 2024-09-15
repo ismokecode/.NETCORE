@@ -4,9 +4,23 @@ using SWSS_v1.Filters.MiddlewareActivations;
 using SWSS_v1.Filters.MiddlewareExtensibles;
 using SWSS_v1.Services;
 using SWSS_v1.UnitOfBox;
+using SWSS_v1.Utility;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 //Returns WebApplicationBuilder class
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<JsonSerializerOptions>(options =>
+{
+    options.ReferenceHandler = ReferenceHandler.Preserve;
+    //options.Converters.Add(new ObjectCycleConverter<DSVWCSWAVE0430_Inbound>());
+    options.Converters.Add(new ObjectCycleConverter<Location>());
+    options.Converters.Add(new ObjectCycleConverter<Department>());
+});
+builder.Services.AddControllers()
+              .AddJsonOptions(options =>
+                  options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
 //var connectionString = "Data Source = DESKTOP-9H0UC46; Initial Catalog=SWSS; User Id=ss; password=12345678; TrustServerCertificate=True";
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -29,6 +43,12 @@ When we removed below AddEndPointsApiExplorer and run our application,
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 //builder.Services.AddSwaggerGen();
+var options = new JsonSerializerOptions
+{
+    WriteIndented = true,
+    MaxDepth = 6 // Fixed
+};
+//jsonString = JsonSerializer.Serialize(pkg, options);
 builder.Services.AddSwaggerGen(option =>
 {
     option.SwaggerDoc("v1", new OpenApiInfo { Title = "Demo API", Version = "v1" });

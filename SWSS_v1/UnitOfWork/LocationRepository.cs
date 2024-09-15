@@ -44,5 +44,9 @@ namespace SWSS_v1.UnitOfWork
             _emp.LocationName = obj.LocationName;
             //wait _context.SaveChangesAsync();
         }
+        public async Task<IEnumerable<Location>> SearchLocationByName(string locationName)
+        {
+            return await _context.Locations.Where(x => x.LocationName == locationName).ToListAsync();
+        }
     }
 }

@@ -10,7 +10,10 @@ public partial class Location
     [Required(ErrorMessage ="Please enter location")]
     [RegularExpression("[a-zA-Z0-9][a-zA-Z0-9.,'\\-_ ]*[a-zA-Z0-9]")]
     public string? LocationName { get; set; }
-    public string GoogleLocation { get; set; }
+    public string? GoogleLocation { get; set; }
+    public IEnumerable<Customer>? Customers { get; }
+}
+public class LocationView:Response
+{
 
-    public Customer? Customer { get; set; }
 }

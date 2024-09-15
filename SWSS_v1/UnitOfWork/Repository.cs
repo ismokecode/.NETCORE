@@ -19,7 +19,7 @@
         {
             return await _dbSet.ToListAsync();
         }
-        public async Task<T?> GetByIdAsync(object Id)
+        public virtual async Task<T?> GetByIdAsync(object Id)
         {
             return await _dbSet.FindAsync(Id);
         }
@@ -34,7 +34,7 @@
             _dbSet.Update(Entity);
         }
         //This method is going to remove an existing record from the table
-        public async Task DeleteAsync(object Id)
+        public async Task DeleteAsync(int Id)
         {
             var entity = await _dbSet.FindAsync(Id);
             if (entity != null)

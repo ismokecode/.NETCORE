@@ -17,6 +17,8 @@ using System.Net;
 using System.Collections.Generic;
 using Microsoft.Identity.Client;
 using SWSS_v1.UnitOfWork;
+using SWSS_v1.Models;
+using NLog.Fluent;
 
 namespace SWSS_v1.Controllers;
 
@@ -51,14 +53,13 @@ public class AppController : ControllerBase
         _logger = logger;
         _unitOfWork = UnitOfWork;
     }
-
     #region IdentityUser 
     [HttpPost]
     public async Task<IActionResult> Register([FromBody] RegisterVM registerVM)
     {
         List<Error> lstError = new List<Error>();
-        try 
-        {  
+        try
+        {
             _logger.LogInformation("Fetching all the Students from the storage");
             //check user exists
             var userExist = await _userManager.FindByEmailAsync(registerVM.Email);
@@ -66,7 +67,7 @@ public class AppController : ControllerBase
             {
                 //if user exist
                 return StatusCode(StatusCodes.Status403Forbidden,
-                    new APIResponse<string>(StatusCodes.Status409Conflict, null, null,"User already exist.") { }); ;
+                    new APIResponse<string>(StatusCodes.Status409Conflict, null, null, "User already exist.", null) { }); ;
             }
 
             //Add the user to db
@@ -76,14 +77,14 @@ public class AppController : ControllerBase
                 SecurityStamp = Guid.NewGuid().ToString(),
                 Phone = registerVM.Phone,
                 Pincode = registerVM.Pincode
-                
+
             };
             if (await _roleManager.RoleExistsAsync(registerVM.UserRole))
             {
                 var result = await _userManager.CreateAsync(user, registerVM.Password);
                 if (result.Errors.Count() > 0)
                 {
-                    
+
                     foreach (var error in result.Errors)
                     {
                         lstError.Add(new Error { _error = error.Code, _description = error.Description });
@@ -95,19 +96,19 @@ public class AppController : ControllerBase
                 {
                     await _userManager.AddToRoleAsync(user, registerVM.UserRole);
                     StatusCode(StatusCodes.Status201Created,
-                        new APIResponse<string>(StatusCodes.Status201Created,null,null, null) { });  
+                        new APIResponse<string>(StatusCodes.Status201Created, null, null, null) { });
                 }
             }
-            else 
+            else
             {
                 lstError.Add(new Error { _error = "", _description = "Role doesn't exist" });
                 return StatusCode(StatusCodes.Status500InternalServerError,
-                    new APIResponse<string>(StatusCodes.Status500InternalServerError,null,null,null));
+                    new APIResponse<string>(StatusCodes.Status500InternalServerError, null, null, null));
             }
             //assign role to user
 
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             return StatusCode(StatusCodes.Status500InternalServerError,
                     new APIResponse<string>(StatusCodes.Status500InternalServerError, null, null, null));
@@ -127,9 +128,9 @@ public class AppController : ControllerBase
         var user = _userManager.Users.Where(x => x.Email == code);
         return user;
     }
-    
+
     [HttpPost]
-    public async Task<APIResponse<string>>Login([FromBody] LoginVM loginVM)
+    public async Task<APIResponse<string>> Login([FromBody] LoginVM loginVM)
     {
         if (loginVM.Password == null)
         {
@@ -145,7 +146,7 @@ public class AppController : ControllerBase
             var response = Ok();
             return new APIResponse<string>(StatusCodes.Status200OK, null, null, tokenString);
         }
-        else 
+        else
         {
             return new APIResponse<string>(StatusCodes.Status500InternalServerError, null, null, null);
         }
@@ -155,38 +156,140 @@ public class AppController : ControllerBase
     #region Service Methods
     [HttpPost]
     //[FromBody][Bind("employeeId", "name", "email", "position,departmentId")] Employee objAuth
-    public async Task<IActionResult> CreateCustomer([FromBody][Bind("employeeId", "name", "email", "position,departmentId")] Customer customer)
+    public async Task<ActionResult<APIResponse_V<Customer>>> CreateCustomer([FromBody][Bind("employeeId", "name", "email", "position,departmentId")] Customer customer)
     {
+        APIResponse_V<Customer> response = new APIResponse_V<Customer>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        response._result = null;
+        response.exception = null;
         try
         {
             if (ModelState.IsValid)
             {
-                await _unitOfWork.Repository<Customer>().InsertAsync(customer);
-                await _unitOfWork.Locations.SaveAsync();
-                _unitOfWork.Commit();
-                return Ok();
+                if (!_unitOfWork.Customers.IsExist(customer) && customer.CustomerId == 0)
+                {
+                    await _unitOfWork.Repository<Customer>().InsertAsync(customer);
+                    await _unitOfWork.Locations.SaveAsync();
+                    _unitOfWork.Commit();
+                    response._success.Add("Data saved successfully");
+                    response._statusCode = StatusCodes.Status200OK;
+                    return Ok("Data saved successfully.");
+                }
+                else if (!_unitOfWork.Customers.IsExistUpdate(customer))
+                {
+                    _unitOfWork.BeginTransaction();
+                    await _unitOfWork.Customers.UpdateAsync(customer);
+                    await _unitOfWork.Customers.SaveAsync();
+                    _unitOfWork.Commit();
+                    response._statusCode = StatusCodes.Status200OK;
+                    response._success.Add("Data updated successfully");
+                    return Ok("Data saved successfully.");
+                }
+                else
+                {
+                    response._statusCode = StatusCodes.Status409Conflict;
+                    response._errors.Add(customer.Phone + " already exist");
+                    return BadRequest(response);
+                }
             }
-            else 
+            else
             {
-                return BadRequest();
+                foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry modelState in ModelState.Values)
+                {
+                    foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelError error in modelState.Errors)
+                    {
+                        response._errors.Add(error.ErrorMessage);
+                    }
+                }
+                response._statusCode = StatusCodes.Status400BadRequest;
+                return BadRequest(response);
             }
-            
+
         }
         catch (Exception ex)
         {
             _unitOfWork.Rollback();
-            throw new BadRequestException(ex.ToString());
+            response.exception = ex.ToString();
+            response._statusCode = StatusCodes.Status400BadRequest;
+            //return new BadRequestException(ex.ToString());
+            return BadRequest(response);
+        }
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<APIResponse_V<Customer>>>GetAllCustomer()
+    {
+        APIResponse_V<Customer> response = new APIResponse_V<Customer>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        //response._result = null;
+        response.exception = null;
+        try
+        {
+            response._results = await _unitOfWork.Customers.GetAllAsync();
+            response._success.Add("Successfully data fetched.");
+            response._statusCode = StatusCodes.Status200OK;
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            response.exception = ex.ToString();
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return BadRequest(response);
         }
     }
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Customer>>> GetAllCustomer()
+    public async Task<ActionResult<APIResponse_V<Customer>>> SearchCustomerByPhone(string phone)
     {
-        var result = await _unitOfWork.Customers.GetAllAsync();
-        return Ok(result);
+        APIResponse_V<Customer> response = new APIResponse_V<Customer>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        //response._result = null;
+        response.exception = null;
+        try
+        {
+            response._results = await _unitOfWork.Customers.SearchCustomerByPhoneAsync(phone);
+            response._success.Add("Successfully data fetched.");
+            response._statusCode = StatusCodes.Status200OK;
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            response.exception = ex.ToString();
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return BadRequest(response);
+        }
     }
     [HttpPost]
-    public async Task<IActionResult> CreateLocation([FromBody][Bind("LocationId", "LocationName")] Location loc)
+    public async Task<ActionResult<APIResponse_V<Customer>>> DeleteCustomer(int id)
     {
+        APIResponse_V<Location> response = new APIResponse_V<Location>();
+        try
+        {
+            await _unitOfWork.Customers.DeleteAsync(id);
+            response._success.Add("Data deleted successfully");
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            response.exception = ex.ToString();
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return BadRequest(response);
+        }
+    }
+    [HttpPost]
+    public async Task<ActionResult<APIResponse_V<Location>>> CreateLocation([FromBody][Bind("LocationId", "LocationName")] Location loc)
+    {
+        APIResponse_V<Customer> response = new APIResponse_V<Customer>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        response._result = null;
+        response.exception = null;
         try
         {
             if (ModelState.IsValid)
@@ -206,27 +309,94 @@ public class AppController : ControllerBase
                     await _unitOfWork.Locations.UpdateAsync(loc);
                     await _unitOfWork.Locations.SaveAsync();
                     _unitOfWork.Commit();
+                    response._statusCode = StatusCodes.Status200OK;
+                    response._success.Add("Data updated successfully");
                     return Ok("Data saved successfully.");
                 }
-                else { return BadRequest(); }
-
+                else 
+                {
+                    response._statusCode = StatusCodes.Status409Conflict;
+                    response._errors.Add(loc.LocationName + " already exist");
+                    return BadRequest(response); 
+                }
             }
             else
             {
-                return BadRequest();
+                foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry modelState in ModelState.Values)
+                {
+                    foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelError error in modelState.Errors)
+                    {
+                        response._errors.Add(error.ErrorMessage);
+                    }
+                }
+                response._statusCode = StatusCodes.Status400BadRequest;
+                return BadRequest(response);
             }
         }
         catch (Exception ex)
         {
             _unitOfWork.Rollback();
-            throw new BadRequestException(ex.ToString());
+            response.exception = ex.ToString();
+            response._statusCode = StatusCodes.Status400BadRequest;
+            //return new BadRequestException(ex.ToString());
+            return BadRequest(response);
         }
     }
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Location>>> GetAllLocations()
+    public async Task<ActionResult<APIResponse_V<Location>>> GetAllLocations()
     {
-        var result = await _unitOfWork.Locations.GetAllAsync();
-        return Ok(result);
+        APIResponse_V<Location> response = new APIResponse_V<Location>();
+        try
+        {
+            response._results = await _unitOfWork.Locations.GetAllAsync();
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            response.exception = ex.ToString();
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return BadRequest(response);
+        }
+    }
+    [HttpGet]
+    public async Task<ActionResult<APIResponse_V<Location>>> SearchLocationByName(string locationName)
+    {
+        APIResponse_V<Location> response = new APIResponse_V<Location>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        //response._result = null;
+        response.exception = null;
+        try
+        {
+            response._results = await _unitOfWork.Locations.SearchLocationByName(locationName);
+            response._success.Add("Successfully data fetched.");
+            response._statusCode = StatusCodes.Status200OK;
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            response.exception = ex.ToString();
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return BadRequest(response);
+        }
+    }
+    [HttpPost]
+    public async Task<ActionResult<APIResponse_V<object>>> DeleteLocation(int id)
+    {
+        APIResponse_V<object> response = new APIResponse_V<object>();
+        try
+        {
+            await _unitOfWork.Locations.DeleteAsync(id);
+            response._success.Add("Data deleted successfully");
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            response.exception = ex.ToString();
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return BadRequest(response);
+        }
     }
     #endregion End Service Method
 

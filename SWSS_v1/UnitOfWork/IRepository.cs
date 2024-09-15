@@ -13,7 +13,7 @@
         Task<T?> GetByIdAsync(object Id);
         Task InsertAsync(T Entity);
         Task UpdateAsync(T Entity);
-        Task DeleteAsync(object Id);
+        Task DeleteAsync(int Id);
         Task SaveAsync();
     }
 }

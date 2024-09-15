@@ -11,7 +11,7 @@ namespace SWSS_v1.UnitOfWork
             _context = context;
         }
         public bool IsExist(Customer obj)
-         {
+        {
             bool isExist;
             var result = _context.Customers.Where<Customer>(x => x.Phone == obj.Phone).FirstOrDefault();
             return isExist = result == null ? false : true;
@@ -34,6 +34,10 @@ namespace SWSS_v1.UnitOfWork
         public override async Task<IEnumerable<Customer>> GetAllAsync()
         {
             return await _context.Customers.Include("Location").ToListAsync();
+        }
+        public async Task<IEnumerable<Customer>> SearchCustomerByPhoneAsync(string phone)
+        {
+            return await _context.Customers.Where(x=>x.Phone==phone).Include("Location").ToListAsync();
         }
 
     }
