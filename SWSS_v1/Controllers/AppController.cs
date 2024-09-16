@@ -404,6 +404,7 @@ public class AppController : ControllerBase
         catch (Exception ex)
         {
             _unitOfWork.Rollback();
+            response._errors.Add("This is already being used.");
             response.exception = ex.ToString();
             response._statusCode = StatusCodes.Status500InternalServerError;
             return BadRequest(response);
