@@ -175,7 +175,7 @@ public class AppController : ControllerBase
                     _unitOfWork.Commit();
                     response._success.Add("Data saved successfully");
                     response._statusCode = StatusCodes.Status200OK;
-                    return Ok("Data saved successfully.");
+                    return Ok(response);
                 }
                 else if (!_unitOfWork.Customers.IsExistUpdate(customer))
                 {
@@ -185,13 +185,13 @@ public class AppController : ControllerBase
                     _unitOfWork.Commit();
                     response._statusCode = StatusCodes.Status200OK;
                     response._success.Add("Data updated successfully");
-                    return Ok("Data saved successfully.");
+                    return Ok(response);
                 }
                 else
                 {
                     response._statusCode = StatusCodes.Status409Conflict;
                     response._errors.Add(customer.Phone + " already exist");
-                    return BadRequest(response);
+                    return Ok(response);
                 }
             }
             else
@@ -204,7 +204,7 @@ public class AppController : ControllerBase
                     }
                 }
                 response._statusCode = StatusCodes.Status400BadRequest;
-                return BadRequest(response);
+                return Ok(response);
             }
 
         }
@@ -238,7 +238,7 @@ public class AppController : ControllerBase
         {
             response.exception = ex.ToString();
             response._statusCode = StatusCodes.Status500InternalServerError;
-            return BadRequest(response);
+            return Ok(response);
         }
     }
     [HttpGet]
@@ -278,7 +278,7 @@ public class AppController : ControllerBase
         {
             response.exception = ex.ToString();
             response._statusCode = StatusCodes.Status500InternalServerError;
-            return BadRequest(response);
+            return Ok(response);
         }
     }
     [HttpPost]
@@ -301,7 +301,8 @@ public class AppController : ControllerBase
                     await _unitOfWork.Locations.InsertAsync(loc);
                     await _unitOfWork.Locations.SaveAsync();
                     _unitOfWork.Commit();
-                    return Ok("Data saved successfully.");
+                    response._success.Add("Data saved successfully");
+                    return Ok(response);
                 }
                 else if (!_unitOfWork.Locations.IsExistUpdate(loc))
                 {
@@ -311,13 +312,13 @@ public class AppController : ControllerBase
                     _unitOfWork.Commit();
                     response._statusCode = StatusCodes.Status200OK;
                     response._success.Add("Data updated successfully");
-                    return Ok("Data saved successfully.");
+                    return Ok(response);
                 }
                 else 
                 {
                     response._statusCode = StatusCodes.Status409Conflict;
                     response._errors.Add(loc.LocationName + " already exist");
-                    return BadRequest(response); 
+                    return Ok(response); 
                 }
             }
             else
@@ -330,7 +331,7 @@ public class AppController : ControllerBase
                     }
                 }
                 response._statusCode = StatusCodes.Status400BadRequest;
-                return BadRequest(response);
+                return Ok(response);
             }
         }
         catch (Exception ex)
@@ -339,7 +340,7 @@ public class AppController : ControllerBase
             response.exception = ex.ToString();
             response._statusCode = StatusCodes.Status400BadRequest;
             //return new BadRequestException(ex.ToString());
-            return BadRequest(response);
+            return Ok(response);
         }
     }
     [HttpGet]
