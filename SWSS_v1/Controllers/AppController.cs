@@ -214,7 +214,7 @@ public class AppController : ControllerBase
             response.exception = ex.ToString();
             response._statusCode = StatusCodes.Status400BadRequest;
             //return new BadRequestException(ex.ToString());
-            return BadRequest(response);
+            return Ok(response);
         }
     }
 
@@ -264,18 +264,23 @@ public class AppController : ControllerBase
             return BadRequest(response);
         }
     }
-    [HttpPost]
+    [HttpDelete]
     public async Task<ActionResult<APIResponse_V<Customer>>> DeleteCustomer(int id)
     {
         APIResponse_V<Location> response = new APIResponse_V<Location>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
         try
         {
             await _unitOfWork.Customers.DeleteAsync(id);
+            await _unitOfWork.Locations.SaveAsync();
+            _unitOfWork.Commit();
             response._success.Add("Data deleted successfully");
             return Ok(response);
         }
         catch (Exception ex)
         {
+            _unitOfWork.Rollback();
             response.exception = ex.ToString();
             response._statusCode = StatusCodes.Status500InternalServerError;
             return Ok(response);
@@ -356,7 +361,7 @@ public class AppController : ControllerBase
         {
             response.exception = ex.ToString();
             response._statusCode = StatusCodes.Status500InternalServerError;
-            return BadRequest(response);
+            return Ok(response);
         }
     }
     [HttpGet]
@@ -382,18 +387,23 @@ public class AppController : ControllerBase
             return BadRequest(response);
         }
     }
-    [HttpPost]
+    [HttpDelete]
     public async Task<ActionResult<APIResponse_V<object>>> DeleteLocation(int id)
     {
         APIResponse_V<object> response = new APIResponse_V<object>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
         try
         {
             await _unitOfWork.Locations.DeleteAsync(id);
+            await _unitOfWork.Locations.SaveAsync();
+            _unitOfWork.Commit();
             response._success.Add("Data deleted successfully");
             return Ok(response);
         }
         catch (Exception ex)
         {
+            _unitOfWork.Rollback();
             response.exception = ex.ToString();
             response._statusCode = StatusCodes.Status500InternalServerError;
             return BadRequest(response);
