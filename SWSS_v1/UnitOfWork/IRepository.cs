@@ -10,7 +10,7 @@
         //IList<T> GetAll();
         //void Add(T entity);
         Task<IEnumerable<T>> GetAllAsync();
-        Task<T?> GetByIdAsync(object Id);
+        Task<T?> GetByIdAsync(int Id);
         Task InsertAsync(T Entity);
         Task UpdateAsync(T Entity);
         Task DeleteAsync(int Id);

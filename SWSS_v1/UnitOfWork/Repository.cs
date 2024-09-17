@@ -19,7 +19,7 @@
         {
             return await _dbSet.ToListAsync();
         }
-        public virtual async Task<T?> GetByIdAsync(object Id)
+        public virtual async Task<T?> GetByIdAsync(int Id)
         {
             return await _dbSet.FindAsync(Id);
         }

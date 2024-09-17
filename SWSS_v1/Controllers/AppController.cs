@@ -387,6 +387,34 @@ public class AppController : ControllerBase
             return BadRequest(response);
         }
     }
+    [HttpGet]
+    public async Task<ActionResult<APIResponse_V<Location>>> GetLocationById(int id)
+    {
+        APIResponse_V<Location> response = new APIResponse_V<Location>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        //response._result = null;
+        response.exception = null;
+        try
+        {
+            response._result = await _unitOfWork.Locations.GetByIdAsync(id);
+            if (response._result == null) {
+                response._errors.Add("No data found.");
+            }
+            else {
+                response._success.Add("Successfully data fetched.");
+            }          
+            response._statusCode = StatusCodes.Status200OK;
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            response.exception = ex.ToString();
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return BadRequest(response);
+        }
+    }
     [HttpDelete]
     public async Task<ActionResult<APIResponse_V<object>>> DeleteLocation(int id)
     {
