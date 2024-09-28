@@ -26,5 +26,6 @@
         public List<string> _success { get; set; }
         public List<string> _errors { get; set; }
         public string exception { get; set; }
+        public bool isSucceed { get; set; }
     }
 }
