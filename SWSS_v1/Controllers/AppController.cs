@@ -19,6 +19,7 @@ using Microsoft.Identity.Client;
 using SWSS_v1.UnitOfWork;
 using SWSS_v1.Models;
 using NLog.Fluent;
+using System.Web.Http.ModelBinding;
 
 namespace SWSS_v1.Controllers;
 
@@ -55,66 +56,89 @@ public class AppController : ControllerBase
     }
     #region IdentityUser 
     [HttpPost]
-    public async Task<IActionResult> Register([FromBody] RegisterVM registerVM)
+    public async Task<ActionResult<APIResponse_V<string>>> Register([FromBody] RegisterVM registerVM)
     {
-        List<Error> lstError = new List<Error>();
+        APIResponse_V<Customer> response = new APIResponse_V<Customer>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        response._result = null;
+        response.exception = null;
         try
         {
-            _logger.LogInformation("Fetching all the Students from the storage");
-            //check user exists
-            var userExist = await _userManager.FindByEmailAsync(registerVM.Email);
-            if (userExist != null)
+            if (ModelState.IsValid)
             {
-                //if user exist
-                return StatusCode(StatusCodes.Status403Forbidden,
-                    new APIResponse<string>(StatusCodes.Status409Conflict, null, null, "User already exist.", null) { }); ;
-            }
-
-            //Add the user to db
-            ApplicationUser user = new() {
-                UserName = registerVM.UserName,
-                Email = registerVM.Email,
-                SecurityStamp = Guid.NewGuid().ToString(),
-                Phone = registerVM.Phone,
-                Pincode = registerVM.Pincode
-
-            };
-            if (await _roleManager.RoleExistsAsync(registerVM.UserRole))
-            {
-                var result = await _userManager.CreateAsync(user, registerVM.Password);
-                if (result.Errors.Count() > 0)
+                _logger.LogInformation("Fetching all the Students");
+                //check user exists
+                var userExist = await _userManager.FindByEmailAsync(registerVM.Email);
+                if (userExist != null)
                 {
+                    //if user exist
+                    response._statusCode = StatusCodes.Status409Conflict;
+                    response._errors.Add("Email already exist.");
+                    return Ok(response); ;
+                }
 
-                    foreach (var error in result.Errors)
+                //Add the user to db
+                ApplicationUser user = new()
+                {
+                    UserName = registerVM.UserName,
+                    Email = registerVM.Email,
+                    SecurityStamp = Guid.NewGuid().ToString(),
+                    Phone = registerVM.Phone,
+                    Pincode = registerVM.Pincode,
+                    FirstName = registerVM.FirstName,
+                    LastName = registerVM.LastName
+
+                };
+                if (await _roleManager.RoleExistsAsync(registerVM.UserRole))
+                {
+                    var result = await _userManager.CreateAsync(user, registerVM.Password);
+                    if (result.Errors.Count() > 0)
                     {
-                        lstError.Add(new Error { _error = error.Code, _description = error.Description });
-                        return StatusCode(StatusCodes.Status403Forbidden,
-                                new APIResponse<string>(StatusCodes.Status409Conflict, null, null, null) { }); ;
+
+                        foreach (var error in result.Errors)
+                        {
+                            response._errors.Add(error.Description);
+                            return Ok(response);
+                        }
+                    }
+                    else if (result.Succeeded)
+                    {
+                        await _userManager.AddToRoleAsync(user, registerVM.UserRole);
+                        response.isSucceed = true;
+                        response._success.Add("Your registration has been successful.");
+                        return Ok(response);
                     }
                 }
-                else if (result.Succeeded)
+                else
                 {
-                    await _userManager.AddToRoleAsync(user, registerVM.UserRole);
-                    StatusCode(StatusCodes.Status201Created,
-                        new APIResponse<string>(StatusCodes.Status201Created, null, null, null) { });
+                    response._statusCode = StatusCodes.Status404NotFound;
+                    response._errors.Add("User role doesn't exist");
+                    return Ok(response);
                 }
             }
             else
             {
-                lstError.Add(new Error { _error = "", _description = "Role doesn't exist" });
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    new APIResponse<string>(StatusCodes.Status500InternalServerError, null, null, null));
+                foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry modelState in ModelState.Values)
+                {
+                    foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelError error in modelState.Errors)
+                    {
+                        response._errors.Add(error.ErrorMessage);
+                    }
+                }
+                response._statusCode = StatusCodes.Status400BadRequest;
+                return Ok(response);
             }
-            //assign role to user
-
         }
+        //assign role to user
         catch (Exception ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError,
-                    new APIResponse<string>(StatusCodes.Status500InternalServerError, null, null, null));
+            response._statusCode = StatusCodes.Status400BadRequest;
+            response._errors.Add("Something went wrong. Please try later.");
+            return Ok(response);
         }
-        return StatusCode(StatusCodes.Status500InternalServerError,
-                    new APIResponse<string>(StatusCodes.Status500InternalServerError, null, null, null));
+        return Ok(response);
     }
     [HttpGet]
     public IEnumerable<IdentityUser> GetUsers()
@@ -130,25 +154,44 @@ public class AppController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<APIResponse<string>> Login([FromBody] LoginVM loginVM)
+    public async Task<ActionResult<APIResponse_V<string>>> Login([FromBody] LoginVM loginVM)
     {
-        if (loginVM.Password == null)
+        APIResponse_V<string> response = new APIResponse_V<string>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        response._result = null;
+        response.exception = null;
+        try
         {
-            List<String> _lsts = new List<string>();
-            _lsts = null;
-            return new APIResponse<string>(StatusCodes.Status500InternalServerError, null, null, null);
-
+            if (loginVM.Password == null)
+            {
+                response._errors.Add("Please enter password.");
+            }
+            if (loginVM.Email == null)
+            {
+                response._errors.Add("Please enter email.");
+            }
+            var _userExists = await _userManager.FindByEmailAsync(loginVM.Email);
+            if (_userExists != null && await _userManager.CheckPasswordAsync(_userExists, loginVM.Password))
+            {
+                response._statusCode = StatusCodes.Status200OK;
+                var tokenString = CreateToken(loginVM);
+                response._result = tokenString;
+                response._success.Add("Token generated successfully.");
+            }
+            else
+            {
+                response._errors.Add("Token not generated.");
+            }
+            return Ok(response);
         }
-        var _userExists = await _userManager.FindByEmailAsync(loginVM.Email);
-        if (_userExists != null && await _userManager.CheckPasswordAsync(_userExists, loginVM.Password))
+        catch (Exception ex) 
         {
-            var tokenString = CreateToken(loginVM);
-            var response = Ok();
-            return new APIResponse<string>(StatusCodes.Status200OK, null, null, tokenString);
-        }
-        else
-        {
-            return new APIResponse<string>(StatusCodes.Status500InternalServerError, null, null, null);
+            response._statusCode = StatusCodes.Status400BadRequest;
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            return Ok(response);
         }
     }
     #endregion End IdentityUser 
@@ -211,7 +254,8 @@ public class AppController : ControllerBase
         catch (Exception ex)
         {
             _unitOfWork.Rollback();
-            response.exception = ex.ToString();
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
             response._statusCode = StatusCodes.Status400BadRequest;
             //return new BadRequestException(ex.ToString());
             return Ok(response);
@@ -236,7 +280,8 @@ public class AppController : ControllerBase
         }
         catch (Exception ex)
         {
-            response.exception = ex.ToString();
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
             response._statusCode = StatusCodes.Status500InternalServerError;
             return Ok(response);
         }
@@ -259,7 +304,8 @@ public class AppController : ControllerBase
         }
         catch (Exception ex)
         {
-            response.exception = ex.ToString();
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
             response._statusCode = StatusCodes.Status500InternalServerError;
             return BadRequest(response);
         }
@@ -281,7 +327,8 @@ public class AppController : ControllerBase
         catch (Exception ex)
         {
             _unitOfWork.Rollback();
-            response.exception = ex.ToString();
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
             response._statusCode = StatusCodes.Status500InternalServerError;
             return Ok(response);
         }
@@ -342,7 +389,8 @@ public class AppController : ControllerBase
         catch (Exception ex)
         {
             _unitOfWork.Rollback();
-            response.exception = ex.ToString();
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
             response._statusCode = StatusCodes.Status400BadRequest;
             //return new BadRequestException(ex.ToString());
             return Ok(response);
@@ -359,7 +407,8 @@ public class AppController : ControllerBase
         }
         catch (Exception ex)
         {
-            response.exception = ex.ToString();
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
             response._statusCode = StatusCodes.Status500InternalServerError;
             return Ok(response);
         }
@@ -382,7 +431,8 @@ public class AppController : ControllerBase
         }
         catch (Exception ex)
         {
-            response.exception = ex.ToString();
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
             response._statusCode = StatusCodes.Status500InternalServerError;
             return BadRequest(response);
         }
@@ -410,7 +460,8 @@ public class AppController : ControllerBase
         }
         catch (Exception ex)
         {
-            response.exception = ex.ToString();
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
             response._statusCode = StatusCodes.Status500InternalServerError;
             return BadRequest(response);
         }
@@ -432,8 +483,8 @@ public class AppController : ControllerBase
         catch (Exception ex)
         {
             _unitOfWork.Rollback();
-            response._errors.Add("This is already being used.");
-            response.exception = ex.ToString();
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
             response._statusCode = StatusCodes.Status500InternalServerError;
             return BadRequest(response);
         }
@@ -505,7 +556,7 @@ public class AppController : ControllerBase
             Subject = new ClaimsIdentity(new[]
             {
                 new Claim("Id", Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+                //new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti,
                 Guid.NewGuid().ToString())
