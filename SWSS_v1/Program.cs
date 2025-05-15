@@ -18,7 +18,7 @@ builder.Services.Configure<JsonSerializerOptions>(options =>
     //options.Converters.Add(new ObjectCycleConverter<DSVWCSWAVE0430_Inbound>());
     options.Converters.Add(new ObjectCycleConverter<Location>());
     options.Converters.Add(new ObjectCycleConverter<Department>());
-});
+}) ;
 builder.Services.AddControllers()
               .AddJsonOptions(options =>
                   options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
@@ -194,7 +194,7 @@ var app = builder.Build();
 //           );
 #endregion
 #region dbInitializer
-AppDbInitializer.SeedRolesToDb(app).Wait();
+//AppDbInitializer.SeedRolesToDb(app).Wait();
 #endregion
 
 // Configure the HTTP request pipeline.
@@ -228,7 +228,7 @@ app.MapControllers();
 app.UseMiddleware<ExceptionMiddleware>();
 #endregion
 
-app.Run();
+app.Run();// terminate middleware
 #endregion Middleware
 
 //Before Tools > NPM > Package Manager Console > Update-Database 

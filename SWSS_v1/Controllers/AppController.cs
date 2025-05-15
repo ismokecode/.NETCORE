@@ -56,6 +56,7 @@ public class AppController : ControllerBase
     }
     #region IdentityUser 
     [HttpPost]
+    [Authorize]
     public async Task<ActionResult<APIResponse_V<string>>> Register([FromBody] RegisterVM registerVM)
     {
         APIResponse_V<Customer> response = new APIResponse_V<Customer>();
@@ -141,12 +142,14 @@ public class AppController : ControllerBase
         return Ok(response);
     }
     [HttpGet]
+    [Authorize]
     public IEnumerable<IdentityUser> GetUsers()
     {
         var users = _userManager.Users.ToList();
         return users;
     }
     [HttpGet]
+    [Authorize]
     public IQueryable<IdentityUser> GetUserByCode(string code)
     {
         var user = _userManager.Users.Where(x => x.Email == code);
@@ -198,6 +201,7 @@ public class AppController : ControllerBase
 
     #region Service Methods
     [HttpPost]
+    [Authorize]
     //[FromBody][Bind("employeeId", "name", "email", "position,departmentId")] Employee objAuth
     public async Task<ActionResult<APIResponse_V<Customer>>> CreateCustomer([FromBody][Bind("employeeId", "name", "email", "position,departmentId")] Customer customer)
     {
@@ -261,8 +265,8 @@ public class AppController : ControllerBase
             return Ok(response);
         }
     }
-
     [HttpGet]
+    [Authorize]
     public async Task<ActionResult<APIResponse_V<Customer>>>GetAllCustomer()
     {
         APIResponse_V<Customer> response = new APIResponse_V<Customer>();
@@ -287,6 +291,7 @@ public class AppController : ControllerBase
         }
     }
     [HttpGet]
+    [Authorize]
     public async Task<ActionResult<APIResponse_V<Customer>>> SearchCustomerByPhone(string phone)
     {
         APIResponse_V<Customer> response = new APIResponse_V<Customer>();
@@ -311,6 +316,7 @@ public class AppController : ControllerBase
         }
     }
     [HttpDelete]
+    [Authorize]
     public async Task<ActionResult<APIResponse_V<Customer>>> DeleteCustomer(int id)
     {
         APIResponse_V<Location> response = new APIResponse_V<Location>();
@@ -334,6 +340,7 @@ public class AppController : ControllerBase
         }
     }
     [HttpPost]
+    [Authorize]
     public async Task<ActionResult<APIResponse_V<Location>>> CreateLocation([FromBody][Bind("LocationId", "LocationName")] Location loc)
     {
         APIResponse_V<Customer> response = new APIResponse_V<Customer>();
@@ -397,6 +404,7 @@ public class AppController : ControllerBase
         }
     }
     [HttpGet]
+    [Authorize]
     public async Task<ActionResult<APIResponse_V<Location>>> GetAllLocations()
     {
         APIResponse_V<Location> response = new APIResponse_V<Location>();
@@ -414,6 +422,7 @@ public class AppController : ControllerBase
         }
     }
     [HttpGet]
+    [Authorize]
     public async Task<ActionResult<APIResponse_V<Location>>> SearchLocationByName(string locationName)
     {
         APIResponse_V<Location> response = new APIResponse_V<Location>();
@@ -438,6 +447,7 @@ public class AppController : ControllerBase
         }
     }
     [HttpGet]
+    [Authorize]
     public async Task<ActionResult<APIResponse_V<Location>>> GetLocationById(int id)
     {
         APIResponse_V<Location> response = new APIResponse_V<Location>();
@@ -467,6 +477,7 @@ public class AppController : ControllerBase
         }
     }
     [HttpDelete]
+    [Authorize]
     public async Task<ActionResult<APIResponse_V<object>>> DeleteLocation(int id)
     {
         APIResponse_V<object> response = new APIResponse_V<object>();
@@ -573,12 +584,6 @@ public class AppController : ControllerBase
         var jwtToken = tokenHandler.WriteToken(token);
         var stringToken = tokenHandler.WriteToken(token);
         return stringToken;
-    }
-    [HttpGet]
-    [Authorize]
-    public ActionResult<string> GetValue()
-    {
-        return "Authorization is working.";
     }
     #endregion End Jwt token
 

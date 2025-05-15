@@ -204,6 +204,16 @@ Test data:
   "pincode": "800008"
 }
 
+Login test data:
+{
+  "firstName": "Kaushal",
+  "lastName": "Jha",
+  "email": "Kaushal@gmail.com",
+  "password": "Kaushal@gmail.com123",
+  "dateOfJoing": "2025-05-13T11:01:47.542Z"
+}
+
+
 //Controller
 
 // GET: Employees
