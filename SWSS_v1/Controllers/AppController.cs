@@ -224,7 +224,8 @@ public class AppController : ControllerBase
                     response._statusCode = StatusCodes.Status200OK;
                     return Ok(response);
                 }
-                else if (!_unitOfWork.Customers.IsExistUpdate(customer))
+                else if(customer.CustomerId > 0)
+                //else if (!_unitOfWork.Customers.IsExistUpdate(customer))
                 {
                     _unitOfWork.BeginTransaction();
                     await _unitOfWork.Customers.UpdateAsync(customer);
