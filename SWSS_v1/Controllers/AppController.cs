@@ -477,6 +477,38 @@ public class AppController : ControllerBase
             return BadRequest(response);
         }
     }
+    [HttpGet]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<Customer>>> GetCustomerById(int id)
+    {
+        APIResponse_V<Customer> response = new APIResponse_V<Customer>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        //response._result = null;
+        response.exception = null;
+        try
+        {
+            response._result = await _unitOfWork.Customers.GetByIdAsync(id);
+            if (response._result == null)
+            {
+                response._errors.Add("No data found.");
+            }
+            else
+            {
+                response._success.Add("Successfully data fetched.");
+            }
+            response._statusCode = StatusCodes.Status200OK;
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return BadRequest(response);
+        }
+    }
     [HttpDelete]
     [Authorize]
     public async Task<ActionResult<APIResponse_V<object>>> DeleteLocation(int id)
