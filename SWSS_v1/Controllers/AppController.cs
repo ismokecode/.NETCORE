@@ -363,7 +363,8 @@ public class AppController : ControllerBase
                     response._success.Add("Data saved successfully");
                     return Ok(response);
                 }
-                else if (!_unitOfWork.Locations.IsExistUpdate(loc))
+                else if(loc.LocationId>0)
+                //else if (!_unitOfWork.Locations.IsExistUpdate(loc))
                 {
                     _unitOfWork.BeginTransaction();
                     await _unitOfWork.Locations.UpdateAsync(loc);

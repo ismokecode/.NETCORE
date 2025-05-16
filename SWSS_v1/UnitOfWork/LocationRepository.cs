@@ -22,7 +22,7 @@ namespace SWSS_v1.UnitOfWork
             var result = _context.Locations.Where<Location>(x => x.LocationId == loc.LocationId).FirstOrDefault();
             if(result != null)
             {  
-                result = _context.Locations.Where<Location>(x => x.LocationName == loc.LocationName).FirstOrDefault();
+                result = _context.Locations.Where<Location>(x => x.LocationName == loc.LocationName && x.GoogleLocation==loc.GoogleLocation).FirstOrDefault();
                 return isExist = result == null ? false : true;
             }
             else
