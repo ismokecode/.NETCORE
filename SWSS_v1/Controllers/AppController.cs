@@ -203,7 +203,7 @@ public class AppController : ControllerBase
     [HttpPost]
     [Authorize]
     //[FromBody][Bind("employeeId", "name", "email", "position,departmentId")] Employee objAuth
-    public async Task<ActionResult<APIResponse_V<Customer>>> CreateCustomer([FromBody][Bind("employeeId", "name", "email", "position,departmentId")] Customer customer)
+    public async Task<ActionResult<APIResponse_V<Customer>>> CreateCustomer([FromBody] Customer customer)
     {
         APIResponse_V<Customer> response = new APIResponse_V<Customer>();
         response._success = new List<string>();
@@ -218,7 +218,7 @@ public class AppController : ControllerBase
                 if (!_unitOfWork.Customers.IsExist(customer) && customer.CustomerId == 0)
                 {
                     await _unitOfWork.Repository<Customer>().InsertAsync(customer);
-                    await _unitOfWork.Locations.SaveAsync();
+                    await _unitOfWork.Customers.SaveAsync();
                     _unitOfWork.Commit();
                     response._success.Add("Data saved successfully");
                     response._statusCode = StatusCodes.Status200OK;
@@ -238,7 +238,7 @@ public class AppController : ControllerBase
                 else
                 {
                     response._statusCode = StatusCodes.Status409Conflict;
-                    response._errors.Add(customer.Phone + " already exist");
+                    response._errors.Add("Phone number "+ customer.Phone + " already exist");
                     return Ok(response);
                 }
             }
@@ -344,7 +344,7 @@ public class AppController : ControllerBase
     [Authorize]
     public async Task<ActionResult<APIResponse_V<Location>>> CreateLocation([FromBody][Bind("LocationId", "LocationName")] Location loc)
     {
-        APIResponse_V<Customer> response = new APIResponse_V<Customer>();
+        APIResponse_V<Location> response = new APIResponse_V<Location>();
         response._success = new List<string>();
         response._errors = new List<string>();
         response._results = null;

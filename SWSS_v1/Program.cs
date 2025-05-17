@@ -121,10 +121,10 @@ builder.Services.AddSingleton(tokenValidationParameters);
 //to resolve forign key issue between customer & location
 builder.Services.AddDbContext<CustomDbContext>(options => {
     options.UseSqlServer(connectionString);
-        options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+    //options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 });
 
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+//builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 //Add Identity which are going to use upcoming part, Second parameter base class responsible for user role
 //Define class work with identity related table
