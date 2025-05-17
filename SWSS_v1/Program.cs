@@ -117,7 +117,13 @@ var tokenValidationParameters = new TokenValidationParameters()
     ClockSkew = TimeSpan.Zero
 };
 builder.Services.AddSingleton(tokenValidationParameters);
-builder.Services.AddDbContext<CustomDbContext>(options => options.UseSqlServer(connectionString));
+//builder.Services.AddDbContext<CustomDbContext>(options => options.UseSqlServer(connectionString));
+//to resolve forign key issue between customer & location
+builder.Services.AddDbContext<CustomDbContext>(options => {
+    options.UseSqlServer(connectionString);
+        options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+});
+
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 //Add Identity which are going to use upcoming part, Second parameter base class responsible for user role
