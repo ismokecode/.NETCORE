@@ -41,6 +41,7 @@ namespace SWSS_v1.UnitOfWork
         }
         public override async Task UpdateAsync(Customer obj)
         {
+
             //_context.Entry(obj.Customer).State = EntityState.Unchanged;
             var _emp = _context.Customers.FirstOrDefault(x => x.CustomerId == obj.CustomerId);
             _emp.Name = obj.Name;

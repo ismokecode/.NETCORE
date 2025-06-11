@@ -223,6 +223,7 @@ public class AppController : ControllerBase
                     _unitOfWork.Commit();
                     response._success.Add("Data saved successfully");
                     response._statusCode = StatusCodes.Status200OK;
+
                     return Ok(response);
                 }
                 else if(customer.CustomerId > 0)
