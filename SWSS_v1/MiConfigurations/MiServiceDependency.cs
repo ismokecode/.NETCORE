@@ -11,7 +11,7 @@ public static class MiServiceDependency
     }
     public static void JWTConfigureServices(this IServiceCollection services)
     {
-        var config = new ConfigurationBuilder();
+        //var config = new ConfigurationBuilder();
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
         {

@@ -39,6 +39,18 @@ namespace SWSS_v1.UnitOfWork
         {
             return await _context.Customers.Where(x=>x.Phone==phone).Include("Location").ToListAsync();
         }
+        public override async Task UpdateAsync(Customer obj)
+        {
+            //_context.Entry(obj.Customer).State = EntityState.Unchanged;
+            var _emp = _context.Customers.FirstOrDefault(x => x.CustomerId == obj.CustomerId);
+            _emp.Name = obj.Name;
+            _emp.Phone = obj.Phone;
+            _emp.SecondaryNumber = obj.SecondaryNumber;
+            _emp.DepartmentId = obj.DepartmentId;
+            _emp.LocationId = obj.LocationId;
+            //wait _context.SaveChangesAsync();
+        }
+
 
     }
 }

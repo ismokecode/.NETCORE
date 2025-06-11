@@ -217,6 +217,7 @@ public class AppController : ControllerBase
             {
                 if (!_unitOfWork.Customers.IsExist(customer) && customer.CustomerId == 0)
                 {
+                    _unitOfWork.BeginTransaction();
                     await _unitOfWork.Repository<Customer>().InsertAsync(customer);
                     await _unitOfWork.Customers.SaveAsync();
                     _unitOfWork.Commit();
@@ -229,6 +230,7 @@ public class AppController : ControllerBase
                 {
                     _unitOfWork.BeginTransaction();
                     await _unitOfWork.Customers.UpdateAsync(customer);
+                    //await _unitOfWork.Repository<Customer>().UpdateAsync(customer);
                     await _unitOfWork.Customers.SaveAsync();
                     _unitOfWork.Commit();
                     response._statusCode = StatusCodes.Status200OK;
