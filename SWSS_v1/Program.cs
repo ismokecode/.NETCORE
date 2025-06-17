@@ -233,7 +233,7 @@ app.MapControllers();
 //app.ErrorHandler(); // directly used by extension method of IApplicationBuilder
 app.UseMiddleware<ExceptionMiddleware>();
 #endregion
-
+//terminator middleware
 app.Run();// terminate middleware
 #endregion Middleware
 
