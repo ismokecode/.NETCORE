@@ -21,6 +21,12 @@ namespace SWSS_v1.UnitOfBox
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Location> Locations { get; set; }
         public DbSet<Customer> Customers { get; set; }
+        //Online Test 
+        public DbSet<Classes> Classes { get; set; }
+        public DbSet<Subject> Subjects { get; set; }
+        public DbSet<Option> Options { get; set; }
+        public DbSet<Answer> Answers { get; set; }
+        public DbSet<Student> Students { get; set; }
     }
 }
 

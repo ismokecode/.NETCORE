@@ -20,10 +20,10 @@ public partial class Customer
     public int? LocationId { get; set; }
     [ForeignKey("Department")]
     public int? DepartmentId { get; set; }
-    [JsonIgnore]
+    //[JsonIgnore]
     public Location? Location { get; set; }
 
-    [JsonIgnore]
+    //[JsonIgnore]
     public Department? Department { get; set; }
 
 }
