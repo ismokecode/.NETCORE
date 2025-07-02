@@ -12,13 +12,30 @@ using System.Text.Json.Serialization;
 //Returns WebApplicationBuilder class
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.Configure<JsonSerializerOptions>(options =>
-{
-    options.ReferenceHandler = ReferenceHandler.Preserve;
-    //options.Converters.Add(new ObjectCycleConverter<DSVWCSWAVE0430_Inbound>());
-    options.Converters.Add(new ObjectCycleConverter<Location>());
-    options.Converters.Add(new ObjectCycleConverter<Department>());
-}) ;
+//.Configure<TOption> so send JsonSerializerOptions
+//Tips .Add(JsonConverter Item<T>) object so send new ObjectCycleConverter<Location>();
+//Enable if needed any issue while DataSave and get of Customer & Location 
+
+//builder.Services.Configure<JsonSerializerOptions>(options =>
+//{
+//    options.ReferenceHandler = ReferenceHandler.Preserve;
+//    //options.Converters.Add(new ObjectCycleConverter<DSVWCSWAVE0430_Inbound>());
+//    options.Converters.Add(new ObjectCycleConverter<Location>());
+//    options.Converters.Add(new ObjectCycleConverter<Department>());
+//});
+
+//TO solve error
+
+//Error: response status is 500 Issue to fetch Customer records having forign Key of LocatioID
+/*
+ * {
+  "message": "A possible object cycle was detected. This can either be due to a cycle or if the object depth is 
+larger than the maximum allowed depth of 32. Consider using ReferenceHandler.Preserve on JsonSerializerOptions to 
+support cycles. 
+Path: $._results.Location.Customers.Location.Customers.Location.Customers.Location.Customers.Location.Customers.Location.Customers.Location.Customers.Location.Customers.Location.Customers.Location.Customers."
+}
+ */
+
 builder.Services.AddControllers()
               .AddJsonOptions(options =>
                   options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
@@ -124,6 +141,7 @@ builder.Services.AddDbContext<CustomDbContext>(options => {
     //options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 });
 
+
 //builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 //Add Identity which are going to use upcoming part, Second parameter base class responsible for user role
@@ -154,6 +172,8 @@ APIAssembly.GetAssemblies();
 //var modules = APIAssembly.DiscoverModules(AppDomain.CurrentDomain.GetAssemblies());
 //builder.RegisterApis(modules);
 #endregion
+
+//Tips builder.Services.AddCors(Action means obj=>{use the obj} then obj.Policy(Action means obj2=>{ use the obj2}
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 builder.Services.AddCors(options =>
 {
