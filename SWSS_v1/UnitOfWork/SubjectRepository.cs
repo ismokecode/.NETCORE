@@ -1,0 +1,53 @@
+﻿using SWSS_v1.Models;
+using SWSS_v1.UnitOfBox;
+
+namespace SWSS_v1.UnitOfWork
+{
+    public class SubjectRepository : Repository<Subject>, ISubjectRepository
+    {
+        CustomDbContext _context;
+        public SubjectRepository(CustomDbContext context) : base(context)
+        {
+            _context = context;
+        }
+
+        public bool IsExist(Subject obj)
+        {
+            bool isExist;
+            var result = _context.Subjects.Where<Subject>(x => x.SubjectName == obj.SubjectName).FirstOrDefault();
+            return isExist = result == null ? false : true;
+        }
+        public bool IsExistUpdate(Subject obj)
+        {
+            bool isExist = false;
+            var result = _context.Subjects.Where<Subject>(x => x.SubjectID == obj.SubjectID).FirstOrDefault();
+            if(result != null)
+            {  
+                result = _context.Subjects.Where<Subject>(x => x.SubjectName == obj.SubjectName).FirstOrDefault();
+                return isExist = result == null ? false : true;
+            }
+            else
+            {
+                isExist = true;
+            }
+            return isExist;
+        }
+
+        public override async Task InsertAsync(Subject obj)
+        {
+            //_context.Entry(obj.Customer).State = EntityState.Unchanged;
+            await _context.AddAsync(obj);
+        }
+        public override async Task UpdateAsync(Subject obj)
+        {
+            //_context.Entry(obj.Customer).State = EntityState.Unchanged;
+            var _emp = _context.Subjects.FirstOrDefault(x => x.SubjectID == obj.SubjectID);
+            _emp.SubjectName = obj.SubjectName;
+            //wait _context.SaveChangesAsync();
+        }
+        public async Task<IEnumerable<Subject>> SearchLocationByName(string input)
+        {
+            return await _context.Subjects.Where(x => x.SubjectName == input).ToListAsync();
+        }
+    }
+}

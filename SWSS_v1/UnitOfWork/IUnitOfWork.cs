@@ -16,5 +16,7 @@ namespace SWSS_v1.UnitOfBox
         DepartmentRepository Departments { get; }
         CustomerRepository Customers { get; }
         LocationRepository Locations { get; }
+        ClassRepository Classes { get; }
+
     }
 }

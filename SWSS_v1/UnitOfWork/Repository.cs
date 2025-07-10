@@ -1,4 +1,7 @@
-﻿namespace SWSS_v1.UnitOfBox
+﻿using Microsoft.EntityFrameworkCore;
+using NLog.Fluent;
+
+namespace SWSS_v1.UnitOfBox
 {
     public class Repository<T> : IRepository<T> where T : class
     {

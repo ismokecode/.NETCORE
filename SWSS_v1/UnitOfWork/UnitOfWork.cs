@@ -13,6 +13,10 @@ namespace SWSS_v1.UnitOfBox
         public EmployeeRepository Employees { get; private set; }
         public CustomerRepository Customers { get; private set; }
         public LocationRepository Locations { get; private set; }
+        public ClassRepository Classes { get; private set; }
+        public SubjectRepository Subjects { get; private set; }
+        public QuestionRepository Questions { get; private set; }
+
         public IRepository<T> Repository<T>() where T : class
         {
             return new Repository<T>(_dbContext);
@@ -26,6 +30,9 @@ namespace SWSS_v1.UnitOfBox
             Employees = new EmployeeRepository(_dbContext);
             Customers = new CustomerRepository(_dbContext);
             Locations = new LocationRepository(_dbContext);
+            Classes = new ClassRepository(_dbContext);
+            Subjects = new SubjectRepository(_dbContext);
+            Questions = new QuestionRepository(_dbContext);
         }
         public void BeginTransaction()
         {

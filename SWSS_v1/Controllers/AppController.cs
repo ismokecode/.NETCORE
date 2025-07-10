@@ -539,6 +539,74 @@ public class AppController : ControllerBase
     }
     #endregion End Service Method
 
+    #region olt
+    [HttpPost]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<Location>>> CreateClass([FromBody][Bind("ClassesId", "ClassName")] Classes cls)
+    {
+        APIResponse_V<Location> response = new APIResponse_V<Location>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        response._result = null;
+        response.exception = null;
+        try
+        {
+            if (ModelState.IsValid)
+            {
+                cls.ClassName.Trim();
+                if (!_unitOfWork.Classes.IsExist(cls) && cls.ClassesId == 0)
+                {
+                    _unitOfWork.BeginTransaction();
+                    await _unitOfWork.Locations.InsertAsync(loc);
+                    await _unitOfWork.Locations.SaveAsync();
+                    _unitOfWork.Commit();
+                    response._success.Add("Data saved successfully");
+                    return Ok(response);
+                }
+                else if (loc.LocationId > 0)
+                //else if (!_unitOfWork.Locations.IsExistUpdate(loc))
+                {
+                    _unitOfWork.BeginTransaction();
+                    await _unitOfWork.Locations.UpdateAsync(loc);
+                    await _unitOfWork.Locations.SaveAsync();
+                    _unitOfWork.Commit();
+                    response._statusCode = StatusCodes.Status200OK;
+                    response._success.Add("Data updated successfully");
+                    return Ok(response);
+                }
+                else
+                {
+                    response._statusCode = StatusCodes.Status409Conflict;
+                    response._errors.Add(loc.LocationName + " already exist");
+                    return Ok(response);
+                }
+            }
+            else
+            {
+                foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry modelState in ModelState.Values)
+                {
+                    foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelError error in modelState.Errors)
+                    {
+                        response._errors.Add(error.ErrorMessage);
+                    }
+                }
+                response._statusCode = StatusCodes.Status400BadRequest;
+                return Ok(response);
+            }
+        }
+        catch (Exception ex)
+        {
+            _unitOfWork.Rollback();
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status400BadRequest;
+            //return new BadRequestException(ex.ToString());
+            return Ok(response);
+        }
+    }
+    #endregion
+
     #region ExceptionHandling
     [HttpGet]
     public IActionResult Get()
