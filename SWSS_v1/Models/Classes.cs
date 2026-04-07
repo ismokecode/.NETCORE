@@ -4,6 +4,6 @@
     {
         public int ClassesId { get; set; }
         public string ClassName { get; set; }
-        public IEnumerable<Student> lstStudents { get; set; } 
+        public IEnumerable<Student> lstStudents = new List<Student>();
     }
-}
+} 

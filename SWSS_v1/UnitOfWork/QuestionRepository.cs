@@ -13,7 +13,7 @@ namespace SWSS_v1.UnitOfWork
         public bool IsExist(Question obj)
         {
             bool isExist;
-            var result = _context.Questions.Where<Question>(x => x.Quest == obj.Quest).FirstOrDefault();
+            var result = _context.Questions.Where<Question>(x => x.QuestionText == obj.QuestionText).FirstOrDefault();
             return isExist = result == null ? false : true;
         }
         public bool IsExistUpdate(Question obj)
@@ -41,12 +41,12 @@ namespace SWSS_v1.UnitOfWork
         {
             //_context.Entry(obj.Customer).State = EntityState.Unchanged;
             var _emp = _context.Questions.FirstOrDefault(x => x.QuestionId == obj.QuestionId);
-            _emp.Quest = obj.Quest;
+            _emp.QuestionText = obj.QuestionText;
             //wait _context.SaveChangesAsync();
         }
         public async Task<IEnumerable<Question>> SearchStudentByName(string input)
         {
-            return await _context.Questions.Where(x => x.Quest == input).ToListAsync();
+            return await _context.Questions.Where(x => x.QuestionText == input).ToListAsync();
         }
     }
 }

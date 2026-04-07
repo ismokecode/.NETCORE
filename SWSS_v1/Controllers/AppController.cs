@@ -199,7 +199,9 @@ public class AppController : ControllerBase
     }
     #endregion End IdentityUser 
 
-    #region Service Methods
+    #region WaterSupply
+
+    #region Customers
     [HttpPost]
     [Authorize]
     //[FromBody][Bind("employeeId", "name", "email", "position,departmentId")] Employee objAuth
@@ -343,6 +345,41 @@ public class AppController : ControllerBase
             return Ok(response);
         }
     }
+    [HttpGet]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<Customer>>> GetCustomerById(int id)
+    {
+        APIResponse_V<Customer> response = new APIResponse_V<Customer>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        //response._result = null;
+        response.exception = null;
+        try
+        {
+            response._result = await _unitOfWork.Customers.GetByIdAsync(id);
+            if (response._result == null)
+            {
+                response._errors.Add("No data found.");
+            }
+            else
+            {
+                response._success.Add("Successfully data fetched.");
+            }
+            response._statusCode = StatusCodes.Status200OK;
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return BadRequest(response);
+        }
+    }
+    #endregion
+
+    #region Locations
     [HttpPost]
     [Authorize]
     public async Task<ActionResult<APIResponse_V<Location>>> CreateLocation([FromBody][Bind("LocationId", "LocationName")] Location loc)
@@ -480,39 +517,7 @@ public class AppController : ControllerBase
             response._statusCode = StatusCodes.Status500InternalServerError;
             return BadRequest(response);
         }
-    }
-    [HttpGet]
-    [Authorize]
-    public async Task<ActionResult<APIResponse_V<Customer>>> GetCustomerById(int id)
-    {
-        APIResponse_V<Customer> response = new APIResponse_V<Customer>();
-        response._success = new List<string>();
-        response._errors = new List<string>();
-        response._results = null;
-        //response._result = null;
-        response.exception = null;
-        try
-        {
-            response._result = await _unitOfWork.Customers.GetByIdAsync(id);
-            if (response._result == null)
-            {
-                response._errors.Add("No data found.");
-            }
-            else
-            {
-                response._success.Add("Successfully data fetched.");
-            }
-            response._statusCode = StatusCodes.Status200OK;
-            return Ok(response);
-        }
-        catch (Exception ex)
-        {
-            response._errors.Add("Something went wrong, Please try later.");
-            response.exception = "Something went wrong, Please try later.";
-            response._statusCode = StatusCodes.Status500InternalServerError;
-            return BadRequest(response);
-        }
-    }
+    }    
     [HttpDelete]
     [Authorize]
     public async Task<ActionResult<APIResponse_V<object>>> DeleteLocation(int id)
@@ -537,12 +542,16 @@ public class AppController : ControllerBase
             return BadRequest(response);
         }
     }
-    #endregion End Service Method
+    #endregion
+
+    #endregion
 
     #region olt
+
+    #region Classes
     [HttpPost]
     [Authorize]
-    public async Task<ActionResult<APIResponse_V<Location>>> CreateClass([FromBody][Bind("ClassesId", "ClassName")] Classes cls)
+    public async Task<ActionResult<APIResponse_V<Classes>>> CreateClass([FromBody] Classes cls)
     {
         APIResponse_V<Location> response = new APIResponse_V<Location>();
         response._success = new List<string>();
@@ -558,18 +567,18 @@ public class AppController : ControllerBase
                 if (!_unitOfWork.Classes.IsExist(cls) && cls.ClassesId == 0)
                 {
                     _unitOfWork.BeginTransaction();
-                    await _unitOfWork.Locations.InsertAsync(loc);
-                    await _unitOfWork.Locations.SaveAsync();
+                    await _unitOfWork.Classes.InsertAsync(cls);
+                    await _unitOfWork.Classes.SaveAsync();
                     _unitOfWork.Commit();
                     response._success.Add("Data saved successfully");
                     return Ok(response);
                 }
-                else if (loc.LocationId > 0)
+                else if (cls.ClassesId > 0)
                 //else if (!_unitOfWork.Locations.IsExistUpdate(loc))
                 {
                     _unitOfWork.BeginTransaction();
-                    await _unitOfWork.Locations.UpdateAsync(loc);
-                    await _unitOfWork.Locations.SaveAsync();
+                    await _unitOfWork.Classes.UpdateAsync(cls);
+                    await _unitOfWork.Classes.SaveAsync();
                     _unitOfWork.Commit();
                     response._statusCode = StatusCodes.Status200OK;
                     response._success.Add("Data updated successfully");
@@ -578,7 +587,7 @@ public class AppController : ControllerBase
                 else
                 {
                     response._statusCode = StatusCodes.Status409Conflict;
-                    response._errors.Add(loc.LocationName + " already exist");
+                    response._errors.Add(cls.ClassName + " already exist");
                     return Ok(response);
                 }
             }
@@ -605,6 +614,508 @@ public class AppController : ControllerBase
             return Ok(response);
         }
     }
+    [HttpDelete]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<Classes>>> DeleteClass(int id)
+    {
+        APIResponse_V<Location> response = new APIResponse_V<Location>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        try
+        {
+            await _unitOfWork.Classes.DeleteAsync(id);
+            await _unitOfWork.Classes.SaveAsync();
+            _unitOfWork.Commit();
+            response._success.Add("Data deleted successfully");
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _unitOfWork.Rollback();
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return Ok(response);
+        }
+    }
+    [HttpGet]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<Location>>> GetAllClasses()
+    {
+        APIResponse_V<Classes> response = new APIResponse_V<Classes>();
+        try
+        {
+            response._results = await _unitOfWork.Classes.GetAllAsync();
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return Ok(response);
+        }
+    }
+    [HttpGet]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<Classes>>> GetClassById(int id)
+    {
+        APIResponse_V<Classes> response = new APIResponse_V<Classes>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        //response._result = null;
+        response.exception = null;
+        try
+        {
+            response._result = await _unitOfWork.Classes.GetByIdAsync(id);
+            if (response._result == null)
+            {
+                response._errors.Add("No data found.");
+            }
+            else
+            {
+                response._success.Add("Successfully data fetched.");
+            }
+            response._statusCode = StatusCodes.Status200OK;
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return BadRequest(response);
+        }
+    }
+    #endregion
+    
+    #region Subjects
+    [HttpPost]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<Subject>>> CreateSubject([FromBody] Subject sub)
+    {
+        APIResponse_V<Subject> response = new APIResponse_V<Subject>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        response._result = null;
+        response.exception = null;
+        try
+        {
+            if (ModelState.IsValid)
+            {
+                sub.SubjectName.Trim();
+                if (!_unitOfWork.Subjects.IsExist(sub) && sub.SubjectID == 0)
+                {
+                    _unitOfWork.BeginTransaction();
+                    await _unitOfWork.Subjects.InsertAsync(sub);
+                    await _unitOfWork.Subjects.SaveAsync();
+                    _unitOfWork.Commit();
+                    response._success.Add("Data saved successfully");
+                    return Ok(response);
+                }
+                else if (sub.SubjectID > 0)
+                //else if (!_unitOfWork.Locations.IsExistUpdate(loc))
+                {
+                    _unitOfWork.BeginTransaction();
+                    await _unitOfWork.Subjects.UpdateAsync(sub);
+                    await _unitOfWork.Subjects.SaveAsync();
+                    _unitOfWork.Commit();
+                    response._statusCode = StatusCodes.Status200OK;
+                    response._success.Add("Data updated successfully");
+                    return Ok(response);
+                }
+                else
+                {
+                    response._statusCode = StatusCodes.Status409Conflict;
+                    response._errors.Add(sub.SubjectName + " already exist");
+                    return Ok(response);
+                }
+            }
+            else
+            {
+                foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry modelState in ModelState.Values)
+                {
+                    foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelError error in modelState.Errors)
+                    {
+                        response._errors.Add(error.ErrorMessage);
+                    }
+                }
+                response._statusCode = StatusCodes.Status400BadRequest;
+                return Ok(response);
+            }
+        }
+        catch (Exception ex)
+        {
+            _unitOfWork.Rollback();
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status400BadRequest;
+            //return new BadRequestException(ex.ToString());
+            return Ok(response);
+        }
+    }
+    [HttpGet]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<Subject>>> GetSubjectById(int id)
+    {
+        APIResponse_V<Subject> response = new APIResponse_V<Subject>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        //response._result = null;
+        response.exception = null;
+        try
+        {
+            response._result = await _unitOfWork.Subjects.GetByIdAsync(id);
+            if (response._result == null)
+            {
+                response._errors.Add("No data found.");
+            }
+            else
+            {
+                response._success.Add("Successfully data fetched.");
+            }
+            response._statusCode = StatusCodes.Status200OK;
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return BadRequest(response);
+        }
+    }
+    [HttpGet]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<Subject>>> GetAllSubjects()
+    {
+        APIResponse_V<Subject> response = new APIResponse_V<Subject>();
+        try
+        {
+            response._results = await _unitOfWork.Subjects.GetAllAsync();
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return Ok(response);
+        }
+    }
+    [HttpDelete]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<Subject>>> DeleteSubject(int id)
+    {
+        APIResponse_V<Subject> response = new APIResponse_V<Subject>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        try
+        {
+            await _unitOfWork.Subjects.DeleteAsync(id);
+            await _unitOfWork.Subjects.SaveAsync();
+            _unitOfWork.Commit();
+            response._success.Add("Data deleted successfully");
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _unitOfWork.Rollback();
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return Ok(response);
+        }
+    }
+    #endregion Subjects
+
+    #region Students
+    [HttpPost]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<Student>>> CreateStudent(Student stu)
+    {
+        APIResponse_V<Student> response = new APIResponse_V<Student>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        response._result = null;
+        response.exception = null;
+        try
+        {
+            if (ModelState.IsValid)
+            {
+                stu.StudentName.Trim();
+                if (!_unitOfWork.Students.IsExist(stu) && stu.StudentId == 0)
+                {
+                    _unitOfWork.BeginTransaction();
+                    await _unitOfWork.Students.InsertAsync(stu);
+                    await _unitOfWork.Students.SaveAsync();
+                    _unitOfWork.Commit();
+                    response._success.Add("Data saved successfully");
+                    return Ok(response);
+                }
+                else if (stu.StudentId > 0)
+                //else if (!_unitOfWork.Locations.IsExistUpdate(loc))
+                {
+                    _unitOfWork.BeginTransaction();
+                    await _unitOfWork.Students.UpdateAsync(stu);
+                    await _unitOfWork.Students.SaveAsync();
+                    _unitOfWork.Commit();
+                    response._statusCode = StatusCodes.Status200OK;
+                    response._success.Add("Data updated successfully");
+                    return Ok(response);
+                }
+                else
+                {
+                    response._statusCode = StatusCodes.Status409Conflict;
+                    response._errors.Add(stu.StudentName + " already exist");
+                    return Ok(response);
+                }
+            }
+            else
+            {
+                foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry modelState in ModelState.Values)
+                {
+                    foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelError error in modelState.Errors)
+                    {
+                        response._errors.Add(error.ErrorMessage);
+                    }
+                }
+                response._statusCode = StatusCodes.Status400BadRequest;
+                return Ok(response);
+            }
+        }
+        catch (Exception ex)
+        {
+            _unitOfWork.Rollback();
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status400BadRequest;
+            //return new BadRequestException(ex.ToString());
+            return Ok(response);
+        }
+    }
+    [HttpGet]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<Student>>> GetStudentById(int id)
+    {
+        APIResponse_V<Student> response = new APIResponse_V<Student>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        //response._result = null;
+        response.exception = null;
+        try
+        {
+            response._result = await _unitOfWork.Students.GetByIdAsync(id);
+            if (response._result == null)
+            {
+                response._errors.Add("No data found.");
+            }
+            else
+            {
+                response._success.Add("Successfully data fetched.");
+            }
+            response._statusCode = StatusCodes.Status200OK;
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return BadRequest(response);
+        }
+    }
+    [HttpGet]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<Student>>> GetAllStudents()
+    {
+        APIResponse_V<Student> response = new APIResponse_V<Student>();
+        try
+        {
+            response._results = await _unitOfWork.Students.GetAllAsync();
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return Ok(response);
+        }
+    }
+    [HttpDelete]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<Student>>> DeleteStudent(int id)
+    {
+        APIResponse_V<Student> response = new APIResponse_V<Student>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        try
+        {
+            await _unitOfWork.Students.DeleteAsync(id);
+            await _unitOfWork.Students.SaveAsync();
+            _unitOfWork.Commit();
+            response._success.Add("Data deleted successfully");
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _unitOfWork.Rollback();
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return Ok(response);
+        }
+    }
+    #endregion Subjects
+
+    #region Questions
+    [HttpPost]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<Question>>> CreateQuestion(Question question)
+    {
+        APIResponse_V<Question> response = new APIResponse_V<Question>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        response._result = null;
+        response.exception = null;
+        try
+        {
+            if (ModelState.IsValid)
+            {
+                question.QuestionText.Trim();
+                if (!_unitOfWork.Questions.IsExist(question) && question.QuestionId == 0)
+                {
+                    _unitOfWork.BeginTransaction();
+                    await _unitOfWork.Questions.InsertAsync(question);
+                    await _unitOfWork.Questions.SaveAsync();
+                    _unitOfWork.Commit();
+                    response._success.Add("Data saved successfully");
+                    return Ok(response);
+                }
+                else if (question.QuestionId > 0)
+                //else if (!_unitOfWork.Locations.IsExistUpdate(loc))
+                {
+                    _unitOfWork.BeginTransaction();
+                    await _unitOfWork.Questions.UpdateAsync(question);
+                    await _unitOfWork.Questions.SaveAsync();
+                    _unitOfWork.Commit();
+                    response._statusCode = StatusCodes.Status200OK;
+                    response._success.Add("Data updated successfully");
+                    return Ok(response);
+                }
+                else
+                {
+                    response._statusCode = StatusCodes.Status409Conflict;
+                    response._errors.Add(question.QuestionText + " already exist");
+                    return Ok(response);
+                }
+            }
+            else
+            {
+                foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry modelState in ModelState.Values)
+                {
+                    foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelError error in modelState.Errors)
+                    {
+                        response._errors.Add(error.ErrorMessage);
+                    }
+                }
+                response._statusCode = StatusCodes.Status400BadRequest;
+                return Ok(response);
+            }
+        }
+        catch (Exception ex)
+        {
+            _unitOfWork.Rollback();
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status400BadRequest;
+            //return new BadRequestException(ex.ToString());
+            return Ok(response);
+        }
+    }
+    [HttpGet]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<Question>>> GetQuestionById(int id)
+    {
+        APIResponse_V<Question> response = new APIResponse_V<Question>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        //response._result = null;
+        response.exception = null;
+        try
+        {
+            response._result = await _unitOfWork.Questions.GetByIdAsync(id);
+            if (response._result == null)
+            {
+                response._errors.Add("No data found.");
+            }
+            else
+            {
+                response._success.Add("Successfully data fetched.");
+            }
+            response._statusCode = StatusCodes.Status200OK;
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return BadRequest(response);
+        }
+    }
+    [HttpGet]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<Question>>> GetAllQuestions()
+    {
+        APIResponse_V<Question> response = new APIResponse_V<Question>();
+        try
+        {
+            response._results = await _unitOfWork.Questions.GetAllAsync();
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return Ok(response);
+        }
+    }
+    [HttpDelete]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<Question>>> DeleteQuestion(int id)
+    {
+        APIResponse_V<Question> response = new APIResponse_V<Question>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        try
+        {
+            await _unitOfWork.Questions.DeleteAsync(id);
+            await _unitOfWork.Questions.SaveAsync();
+            _unitOfWork.Commit();
+            response._success.Add("Data deleted successfully");
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _unitOfWork.Rollback();
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return Ok(response);
+        }
+    }
+    #endregion
+
     #endregion
 
     #region ExceptionHandling
@@ -687,13 +1198,12 @@ public class AppController : ControllerBase
         var tokenHandler = new JwtSecurityTokenHandler();;
         var token = tokenHandler.CreateToken(tokenDescriptor);
         var jwtToken = tokenHandler.WriteToken(token);
-        var stringToken = tokenHandler.WriteToken(token);
-        return stringToken;
+        return jwtToken;
     }
     #endregion End Jwt token
 
     #region Test API
-    [HttpGet]
+    [HttpGet] 
     public IActionResult TestApi_IActionResult()
     {
         return Ok(new List<LoginVM> {
@@ -718,9 +1228,5 @@ public class AppController : ControllerBase
             new LoginVM {FirstName ="Rajeev", LastName="Kumar"}
         });
     }
-    #endregion
-
-    #region Online Test
-
     #endregion
 }

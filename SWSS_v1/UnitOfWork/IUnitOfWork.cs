@@ -17,6 +17,8 @@ namespace SWSS_v1.UnitOfBox
         CustomerRepository Customers { get; }
         LocationRepository Locations { get; }
         ClassRepository Classes { get; }
-
+        SubjectRepository Subjects { get; }
+        StudentRepository Students { get; }
+        QuestionRepository Questions { get; }
     }
 }
