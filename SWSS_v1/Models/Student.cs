@@ -6,14 +6,16 @@ namespace SWSS_v1.Models
     {
         public int StudentId { get; set; }
         public string StudentName { get; set; }
-        //[ForeignKey("StudentClass")]
-        public int ClassId { get; set; }
+        // Foreign Key
+        [ForeignKey("FK_StudentsClass")]
+        public int ClassesId { get; set; }
         public string Email { get; set; }
         public string Phone { get; set; }
         public string AlternatePhoneNumber { get; set; }
         public string Address { get; set; }
         public string PinCode { get; set; }
-
-        public Classes StudentClass { get; set; }
+        // Navigation Property to Reference Table
+        //public Classes Classes = new Classes();
+        public virtual Classes Classes { get; set; }
     }
 }

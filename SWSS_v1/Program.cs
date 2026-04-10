@@ -100,7 +100,6 @@ builder.Services.AddSwaggerGen(option =>
     );
 });
 builder.Services.MyDependencyInjection();
-
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddNLog();
@@ -149,6 +148,15 @@ builder.Services.AddDbContext<CustomDbContext>(options => {
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
     .AddEntityFrameworkStores<CustomDbContext>()
     .AddDefaultTokenProviders();
+
+//When a method like GetAllClasses returns objects with bidirectional relationships 
+//(e.g., a Class containing a list of Students, where each Student also references that same Class),
+//standard JSON serializers like System.Text.Json or Newtonsoft.Json will fail with a JsonException or
+//StackOverflowException because they enter an infinite loop trying to resolve these references. 
+builder.Services.AddControllers()
+    .AddJsonOptions(options => {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
 
 
 //Run command#1 Add-Migration IdentityTablesAdded generate identity table using code first approch 

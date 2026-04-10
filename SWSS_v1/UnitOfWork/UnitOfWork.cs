@@ -8,7 +8,6 @@ namespace SWSS_v1.UnitOfBox
     {
         private readonly CustomDbContext _dbContext;
         private IDbContextTransaction? _objTran = null;
-        public AuthorRepository Authors { get; private set; }
         public DepartmentRepository Departments { get; private set; }
         public EmployeeRepository Employees { get; private set; }
         public CustomerRepository Customers { get; private set; }
@@ -25,7 +24,6 @@ namespace SWSS_v1.UnitOfBox
         public UnitOfWork(CustomDbContext dbContext)
         {
             _dbContext = dbContext;
-            Authors = new AuthorRepository(_dbContext);
             Departments = new DepartmentRepository(_dbContext);
             Employees = new EmployeeRepository(_dbContext);
             Customers = new CustomerRepository(_dbContext);

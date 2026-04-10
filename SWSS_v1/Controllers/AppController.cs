@@ -37,13 +37,15 @@ public class AppController : ControllerBase
     private readonly IConfiguration _configuration;
     private readonly TokenValidationParameters _tokenValidationParameters;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStudentRepository _istudentRepos;
     public AppController(UserManager<IdentityUser> userManager,
         RoleManager<IdentityRole> roleManager,
         //CustomDbContext context,
         IConfiguration configuration,
         TokenValidationParameters tokenValidationParameters,
         ILogger<AppController> logger,
-        IUnitOfWork UnitOfWork
+        IUnitOfWork UnitOfWork,
+        IStudentRepository istudentRepos
         )
     {
         _userManager = userManager;
@@ -53,6 +55,7 @@ public class AppController : ControllerBase
         _tokenValidationParameters = tokenValidationParameters;
         _logger = logger;
         _unitOfWork = UnitOfWork;
+        _istudentRepos = istudentRepos;
     }
     #region IdentityUser 
     [HttpPost]
@@ -618,7 +621,7 @@ public class AppController : ControllerBase
     [Authorize]
     public async Task<ActionResult<APIResponse_V<Classes>>> DeleteClass(int id)
     {
-        APIResponse_V<Location> response = new APIResponse_V<Location>();
+        APIResponse_V<Classes> response = new APIResponse_V<Classes>();
         response._success = new List<string>();
         response._errors = new List<string>();
         try
@@ -640,19 +643,19 @@ public class AppController : ControllerBase
     }
     [HttpGet]
     [Authorize]
-    public async Task<ActionResult<APIResponse_V<Location>>> GetAllClasses()
+    public async Task<ActionResult<APIResponse_V<Classes>>> GetAllClasses()
     {
         APIResponse_V<Classes> response = new APIResponse_V<Classes>();
         try
         {
             response._results = await _unitOfWork.Classes.GetAllAsync();
-            return Ok(response);
+            return Ok(response);    
         }
         catch (Exception ex)
         {
             response._errors.Add("Something went wrong, Please try later.");
             response.exception = "Something went wrong, Please try later.";
-            response._statusCode = StatusCodes.Status500InternalServerError;
+            response._statusCode = StatusCodes.Status500InternalServerError;    
             return Ok(response);
         }
     }
@@ -843,6 +846,7 @@ public class AppController : ControllerBase
         response._results = null;
         response._result = null;
         response.exception = null;
+        stu.Classes = null;
         try
         {
             if (ModelState.IsValid)
@@ -937,7 +941,10 @@ public class AppController : ControllerBase
         APIResponse_V<Student> response = new APIResponse_V<Student>();
         try
         {
-            response._results = await _unitOfWork.Students.GetAllAsync();
+            //var s = await _istudentReposs.GetAllAsync();
+            response._results = await _istudentRepos.GetStudentClassDetailsAsync();
+            //var ss = _unitOfWork.Students.GetAllAsync();
+            //var result = await _unitOfWork.Students.GetStudentClassDetailsAsync();
             return Ok(response);
         }
         catch (Exception ex)
@@ -1116,7 +1123,7 @@ public class AppController : ControllerBase
     }
     #endregion
 
-    #endregion
+    #endregion olt
 
     #region ExceptionHandling
     [HttpGet]

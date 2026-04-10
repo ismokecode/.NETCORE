@@ -14,9 +14,14 @@ namespace SWSS_v1.UnitOfBox
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Student>(b =>
+            {
+                b.HasOne<Classes>(b=>b.Classes)
+                .WithMany(b=>b.lstStudents)
+                .HasForeignKey(ur => ur.ClassesId).IsRequired();
+            });
             base.OnModelCreating(modelBuilder);
         }
-        public DbSet<Author> Authors { get; set; }
         public DbSet<Department> Departments { get; set; }
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Location> Locations { get; set; }

@@ -11,7 +11,6 @@ namespace SWSS_v1.UnitOfBox
         void Rollback();
         Task Save();
         IRepository<T> Repository<T>() where T : class;
-        AuthorRepository Authors { get; }
         EmployeeRepository Employees { get; }
         DepartmentRepository Departments { get; }
         CustomerRepository Customers { get; }

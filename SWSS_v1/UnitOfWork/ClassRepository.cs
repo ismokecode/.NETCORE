@@ -16,13 +16,13 @@ namespace SWSS_v1.UnitOfWork
             var result = _context.Classes.Where<Classes>(x => x.ClassName == obj.ClassName).FirstOrDefault();
             return isExist = result == null ? false : true;
         }
-        public bool IsExistUpdate(Location loc)
+        public bool IsExistUpdate(Classes obj)
         {
             bool isExist = false;
-            var result = _context.Locations.Where<Location>(x => x.LocationId == loc.LocationId).FirstOrDefault();
+            var result = _context.Classes.Where<Classes>(x => x.ClassesId == obj.ClassesId).FirstOrDefault();
             if(result != null)
             {  
-                result = _context.Locations.Where<Location>(x => x.LocationName == loc.LocationName && x.GoogleLocation==loc.GoogleLocation).FirstOrDefault();
+                result = _context.Classes.Where<Classes>(x => x.ClassName == obj.ClassName).FirstOrDefault();
                 return isExist = result == null ? false : true;
             }
             else
@@ -44,9 +44,9 @@ namespace SWSS_v1.UnitOfWork
             _emp.ClassName = obj.ClassName;
             //wait _context.SaveChangesAsync();
         }
-        public async Task<IEnumerable<Location>> SearchLocationByName(string locationName)
+        public async Task<IEnumerable<Classes>> SearchLocationByName(string className)
         {
-            return await _context.Locations.Where(x => x.LocationName == locationName).ToListAsync();
+            return await _context.Classes.Where(x => x.ClassName == className).ToListAsync();
         }
     }
 }

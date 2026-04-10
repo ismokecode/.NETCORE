@@ -42,7 +42,7 @@ namespace SWSS_v1.UnitOfWork
             //_context.Entry(obj.Customer).State = EntityState.Unchanged;
             var _emp = _context.Students.FirstOrDefault(x => x.StudentId == obj.StudentId);
             _emp.StudentName = obj.StudentName;
-            _emp.StudentClass = obj.StudentClass;
+            //_emp.Classes = obj.Classes;
             _emp.Phone = obj.Phone;
             _emp.AlternatePhoneNumber = obj.AlternatePhoneNumber;
             _emp.Address = obj.Address;
@@ -53,6 +53,13 @@ namespace SWSS_v1.UnitOfWork
         public async Task<IEnumerable<Student>> SearchStudentByName(string input)
         {
             return await _context.Students.Where(x => x.StudentName == input).ToListAsync();
+        }
+        public async Task<ICollection<Student>> GetStudentClassDetailsAsync()
+        {
+            var studentsWithClasses = _context.Students
+             .Include(p => p.Classes)
+             .ToList();
+            return studentsWithClasses;
         }
     }
 }
