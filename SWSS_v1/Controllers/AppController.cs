@@ -846,7 +846,7 @@ public class AppController : ControllerBase
         response._results = null;
         response._result = null;
         response.exception = null;
-        stu.Classes = null;
+        //stu.Classes = null;
         try
         {
             if (ModelState.IsValid)
@@ -914,7 +914,7 @@ public class AppController : ControllerBase
         response.exception = null;
         try
         {
-            response._result = await _unitOfWork.Students.GetByIdAsync(id);
+            response._result = await _istudentRepos.GetStudentClassDetailsById(id);
             if (response._result == null)
             {
                 response._errors.Add("No data found.");

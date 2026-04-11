@@ -6,5 +6,6 @@ namespace SWSS_v1.UnitOfWork
     {
         public bool IsExist(Student obj);
         public Task<ICollection<Student>> GetStudentClassDetailsAsync();
+        public Task<Student> GetStudentClassDetailsById(int id);
     }
 }

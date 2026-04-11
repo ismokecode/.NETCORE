@@ -61,5 +61,12 @@ namespace SWSS_v1.UnitOfWork
              .ToList();
             return studentsWithClasses;
         }
+        public async Task<Student> GetStudentClassDetailsById(int id)
+        {
+            var studentsWithClass = _context.Students
+                         .Include(p => p.Classes)
+                         .Where(p => p.StudentId == id).FirstOrDefault();
+            return studentsWithClass;
+        }
     }
 }

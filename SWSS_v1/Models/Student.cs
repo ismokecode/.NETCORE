@@ -16,6 +16,10 @@ namespace SWSS_v1.Models
         public string PinCode { get; set; }
         // Navigation Property to Reference Table
         //public Classes Classes = new Classes();
-        public virtual Classes Classes { get; set; }
+        public virtual Classes? Classes { get; }
+        public string? CreatedBy { get; set; }
+        public string? LastModifiedBy { get; set; }
+        public bool isActive { get; set; }
+        //public DateTime CreatedDate = DateTime.Now;
     }
 }
