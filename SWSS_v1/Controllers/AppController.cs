@@ -964,7 +964,8 @@ public class AppController : ControllerBase
         response._errors = new List<string>();
         try
         {
-            await _unitOfWork.Students.DeleteAsync(id);
+            //await _unitOfWork.Students.DeleteAsync(id);
+            await _istudentRepos.InActiveStudentAsync(id);
             await _unitOfWork.Students.SaveAsync();
             _unitOfWork.Commit();
             response._success.Add("Data deleted successfully");

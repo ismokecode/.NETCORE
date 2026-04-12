@@ -56,7 +56,7 @@ namespace SWSS_v1.UnitOfWork
         }
         public async Task<ICollection<Student>> GetStudentClassDetailsAsync()
         {
-            var studentsWithClasses = _context.Students
+            var studentsWithClasses = _context.Students.Where(u=>u.isActive==true)
              .Include(p => p.Classes)
              .ToList();
             return studentsWithClasses;
@@ -67,6 +67,14 @@ namespace SWSS_v1.UnitOfWork
                          .Include(p => p.Classes)
                          .Where(p => p.StudentId == id).FirstOrDefault();
             return studentsWithClass;
+        }
+        public async Task InActiveStudentAsync(int id)
+        {
+            await _context.Students
+                .Where(u => u.StudentId == id)
+                .ExecuteUpdateAsync(s => s.SetProperty(u => u.isActive, false)); 
+            await _context.SaveChangesAsync();
+
         }
     }
 }
