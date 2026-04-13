@@ -20,6 +20,32 @@ namespace SWSS_v1.UnitOfBox
                 .WithMany(b=>b.lstStudents)
                 .HasForeignKey(ur => ur.ClassesId).IsRequired();
             });
+
+            //modelBuilder.Entity<Question> question has subject one but many question for one subject
+            modelBuilder.Entity<Question>(b =>
+            {
+                b.HasOne<Subject>(b => b.Subjects)
+                .WithMany(b => b.Questions)
+                .HasForeignKey(ur => ur.SubjectId).IsRequired();
+            });
+
+            //one question entity has many options called question.options list and 
+            modelBuilder.Entity<Option>(b =>
+            {
+                b.HasOne<Question>(b => b.Question)
+                .WithMany(b => b.Options)
+                .HasForeignKey(ur => ur.QuestionId);
+            });
+
+            modelBuilder.Entity<Classes>()
+            .HasMany(o => o.lstQuestion)
+            .WithOne(q => q.Classes)
+            .HasForeignKey(o => o.ClassID);
+
+            modelBuilder.Entity<Subject>()
+            .HasMany(o => o.Questions)
+            .WithOne(q => q.Subjects)
+            .HasForeignKey(o => o.SubjectId);
             base.OnModelCreating(modelBuilder);
         }
         public DbSet<Department> Departments { get; set; }

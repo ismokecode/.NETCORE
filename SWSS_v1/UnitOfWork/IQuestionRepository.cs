@@ -5,5 +5,6 @@ namespace SWSS_v1.UnitOfWork
     public interface IQuestionRepository : IRepository<Question>
     {
         public bool IsExist(Question obj);
+        public Task<IEnumerable<Question>> GetQuestionOptionsAsync();
     }
 }

@@ -48,5 +48,14 @@ namespace SWSS_v1.UnitOfWork
         {
             return await _context.Questions.Where(x => x.QuestionText == input).ToListAsync();
         }
+        public async Task<IEnumerable<Question>> GetQuestionOptionsAsync()
+        {
+            var questionWithOptions = _context.Questions
+                             .Include(p => p.Options)
+                             .Include(p => p.Classes)   
+                             .Include(p => p.Subjects)
+                             .ToList();
+            return questionWithOptions;
+        }
     }
 }

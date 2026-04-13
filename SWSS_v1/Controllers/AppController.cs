@@ -38,6 +38,7 @@ public class AppController : ControllerBase
     private readonly TokenValidationParameters _tokenValidationParameters;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IStudentRepository _istudentRepos;
+    private readonly IQuestionRepository _iquestionRepos;
     public AppController(UserManager<IdentityUser> userManager,
         RoleManager<IdentityRole> roleManager,
         //CustomDbContext context,
@@ -45,7 +46,8 @@ public class AppController : ControllerBase
         TokenValidationParameters tokenValidationParameters,
         ILogger<AppController> logger,
         IUnitOfWork UnitOfWork,
-        IStudentRepository istudentRepos
+        IStudentRepository istudentRepos,
+        IQuestionRepository iQuestionRepos
         )
     {
         _userManager = userManager;
@@ -56,6 +58,7 @@ public class AppController : ControllerBase
         _logger = logger;
         _unitOfWork = UnitOfWork;
         _istudentRepos = istudentRepos;
+        _iquestionRepos = iQuestionRepos;
     }
     #region IdentityUser 
     [HttpPost]
@@ -846,6 +849,7 @@ public class AppController : ControllerBase
         response._results = null;
         response._result = null;
         response.exception = null;
+        stu.isActive = true;
         //stu.Classes = null;
         try
         {
@@ -1087,7 +1091,8 @@ public class AppController : ControllerBase
         APIResponse_V<Question> response = new APIResponse_V<Question>();
         try
         {
-            response._results = await _unitOfWork.Questions.GetAllAsync();
+            response._results = await _iquestionRepos.GetQuestionOptionsAsync();
+            //response._results = await _unitOfWork.Questions.GetAllAsync();
             return Ok(response);
         }
         catch (Exception ex)

@@ -48,6 +48,8 @@ namespace SWSS_v1.UnitOfWork
             _emp.Address = obj.Address;
             _emp.Email = obj.Email;
             _emp.PinCode = obj.PinCode;
+            _emp.ClassesId = obj.ClassesId;
+            _emp.isActive = true;
             //wait _context.SaveChangesAsync();
         }
         public async Task<IEnumerable<Student>> SearchStudentByName(string input)

@@ -5,5 +5,6 @@
         public int ClassesId { get; set; }
         public string ClassName { get; set; }
         public IEnumerable<Student> lstStudents = new List<Student>();
+        public IEnumerable<Question> lstQuestion = new List<Question>();
     }
 } 

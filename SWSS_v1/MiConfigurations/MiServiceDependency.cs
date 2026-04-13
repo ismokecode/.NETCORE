@@ -10,6 +10,7 @@ public static class MiServiceDependency
     {
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IStudentRepository, StudentRepository>();
+        services.AddScoped<IQuestionRepository, QuestionRepository>();
     }
     public static void JWTConfigureServices(this IServiceCollection services)
     {
