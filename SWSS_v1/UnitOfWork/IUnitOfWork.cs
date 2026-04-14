@@ -19,5 +19,7 @@ namespace SWSS_v1.UnitOfBox
         SubjectRepository Subjects { get; }
         StudentRepository Students { get; }
         QuestionRepository Questions { get; }
+        OptionRepository Options { get; }
+        
     }
 }

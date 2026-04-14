@@ -1002,11 +1002,33 @@ public class AppController : ControllerBase
             if (ModelState.IsValid)
             {
                 question.QuestionText.Trim();
+                
                 if (!_unitOfWork.Questions.IsExist(question) && question.QuestionId == 0)
                 {
                     _unitOfWork.BeginTransaction();
                     await _unitOfWork.Questions.InsertAsync(question);
-                    await _unitOfWork.Questions.SaveAsync();
+                    await _unitOfWork.Options.SaveAsync();
+                    int id = question.QuestionId;
+                    _unitOfWork.Commit();
+                    _unitOfWork.BeginTransaction();
+                    question.Options.Add(new Option { QuestionId = id, OptionText = question.Option1, isAnswer = false });
+                    question.Options.Add(new Option { QuestionId = id, OptionText = question.Option2, isAnswer = false });
+                    question.Options.Add(new Option { QuestionId = id, OptionText = question.Option3, isAnswer = false });
+                    question.Options.Add(new Option { QuestionId = id, OptionText = question.Option4, isAnswer = false });
+                    for(int i=0; i<4;i++)
+                    {
+                        if (i==question.AnswerOptionId)
+                        {
+                            question.Options[i].isAnswer = true;
+                        }
+                        else
+                        {
+                            question.Options[i].isAnswer = false;
+                        }
+                        _unitOfWork.Options.InsertAsync(question.Options[i]);
+                        
+                    }
+                    await _unitOfWork.Options.SaveAsync();
                     _unitOfWork.Commit();
                     response._success.Add("Data saved successfully");
                     return Ok(response);
@@ -1034,7 +1056,7 @@ public class AppController : ControllerBase
                 foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry modelState in ModelState.Values)
                 {
                     foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelError error in modelState.Errors)
-                    {
+                    {   
                         response._errors.Add(error.ErrorMessage);
                     }
                 }

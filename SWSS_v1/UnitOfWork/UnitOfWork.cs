@@ -16,6 +16,7 @@ namespace SWSS_v1.UnitOfBox
         public SubjectRepository Subjects { get; private set; }
         public QuestionRepository Questions { get; private set; }
         public StudentRepository Students { get; private set; }
+        public OptionRepository Options { get; private set; }
         public IRepository<T> Repository<T>() where T : class
         {
             return new Repository<T>(_dbContext);
@@ -32,6 +33,7 @@ namespace SWSS_v1.UnitOfBox
             Subjects = new SubjectRepository(_dbContext);
             Questions = new QuestionRepository(_dbContext);
             Students = new StudentRepository(_dbContext);
+            Options = new OptionRepository(_dbContext);
         }
         public void BeginTransaction()
         {
