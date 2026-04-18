@@ -20,6 +20,7 @@ using SWSS_v1.UnitOfWork;
 using SWSS_v1.Models;
 using NLog.Fluent;
 using System.Web.Http.ModelBinding;
+using SWSS_v1.Services;
 
 namespace SWSS_v1.Controllers;
 
@@ -39,6 +40,8 @@ public class AppController : ControllerBase
     private readonly IUnitOfWork _unitOfWork;
     private readonly IStudentRepository _istudentRepos;
     private readonly IQuestionRepository _iquestionRepos;
+    private readonly IOptionRepository _iOptionRepos;
+    private readonly IMailCommunication _imailCommunication;
     public AppController(UserManager<IdentityUser> userManager,
         RoleManager<IdentityRole> roleManager,
         //CustomDbContext context,
@@ -47,7 +50,9 @@ public class AppController : ControllerBase
         ILogger<AppController> logger,
         IUnitOfWork UnitOfWork,
         IStudentRepository istudentRepos,
-        IQuestionRepository iQuestionRepos
+        IQuestionRepository iQuestionRepos,
+        IOptionRepository iOptionRepos,
+        IMailCommunication imailCommunication
         )
     {
         _userManager = userManager;
@@ -59,6 +64,8 @@ public class AppController : ControllerBase
         _unitOfWork = UnitOfWork;
         _istudentRepos = istudentRepos;
         _iquestionRepos = iQuestionRepos;
+        _iOptionRepos = iOptionRepos;
+        _imailCommunication = imailCommunication;
     }
     #region IdentityUser 
     [HttpPost]
@@ -336,6 +343,7 @@ public class AppController : ControllerBase
         response._errors = new List<string>();
         try
         {
+            _unitOfWork.BeginTransaction();
             await _unitOfWork.Customers.DeleteAsync(id);
             await _unitOfWork.Locations.SaveAsync();
             _unitOfWork.Commit();
@@ -533,6 +541,7 @@ public class AppController : ControllerBase
         response._errors = new List<string>();
         try
         {
+            _unitOfWork.BeginTransaction();
             await _unitOfWork.Locations.DeleteAsync(id);
             await _unitOfWork.Locations.SaveAsync();
             _unitOfWork.Commit();
@@ -629,6 +638,7 @@ public class AppController : ControllerBase
         response._errors = new List<string>();
         try
         {
+            _unitOfWork.BeginTransaction();
             await _unitOfWork.Classes.DeleteAsync(id);
             await _unitOfWork.Classes.SaveAsync();
             _unitOfWork.Commit();
@@ -821,6 +831,7 @@ public class AppController : ControllerBase
         response._errors = new List<string>();
         try
         {
+            _unitOfWork.BeginTransaction();
             await _unitOfWork.Subjects.DeleteAsync(id);
             await _unitOfWork.Subjects.SaveAsync();
             _unitOfWork.Commit();
@@ -968,6 +979,7 @@ public class AppController : ControllerBase
         response._errors = new List<string>();
         try
         {
+            _unitOfWork.BeginTransaction();
             //await _unitOfWork.Students.DeleteAsync(id);
             await _istudentRepos.InActiveStudentAsync(id);
             await _unitOfWork.Students.SaveAsync();
@@ -1009,8 +1021,8 @@ public class AppController : ControllerBase
                     await _unitOfWork.Questions.InsertAsync(question);
                     await _unitOfWork.Options.SaveAsync();
                     int id = question.QuestionId;
-                    _unitOfWork.Commit();
-                    _unitOfWork.BeginTransaction();
+                    //_unitOfWork.Commit();
+                    //_unitOfWork.BeginTransaction();
                     question.Options.Add(new Option { QuestionId = id, OptionText = question.Option1, isAnswer = false });
                     question.Options.Add(new Option { QuestionId = id, OptionText = question.Option2, isAnswer = false });
                     question.Options.Add(new Option { QuestionId = id, OptionText = question.Option3, isAnswer = false });
@@ -1039,9 +1051,37 @@ public class AppController : ControllerBase
                     _unitOfWork.BeginTransaction();
                     await _unitOfWork.Questions.UpdateAsync(question);
                     await _unitOfWork.Questions.SaveAsync();
+                    //_unitOfWork.Commit();
+                    question.Options.Add(new Option { OptionId = question.OptionId1, QuestionId = question.QuestionId, OptionText = question.Option1, isAnswer = false });
+                    question.Options.Add(new Option { OptionId = question.OptionId2, QuestionId = question.QuestionId, OptionText = question.Option2, isAnswer = false });
+                    question.Options.Add(new Option { OptionId = question.OptionId3, QuestionId = question.QuestionId, OptionText = question.Option3, isAnswer = false });
+                    question.Options.Add(new Option { OptionId=  question.OptionId4, QuestionId = question.QuestionId, OptionText = question.Option4, isAnswer = false });
+                    for (int i = 0; i < 4; i++)
+                    {
+                        if (i == question.AnswerOptionId)
+                        {
+                            question.Options[i].isAnswer = true;
+                        }
+                        else
+                        {
+                            question.Options[i].isAnswer = false;
+                        }
+                    }
+                    //for(int i=0; i<4;i++)
+                    //{
+                    //    _unitOfWork.Options.UpdateAsync(question.Options[i]);
+                    //}
+                    await _unitOfWork.Options.UpdateAsyncList(question.Options);
+                    await _unitOfWork.Options.SaveAsync();
                     _unitOfWork.Commit();
                     response._statusCode = StatusCodes.Status200OK;
+                    var smtpSection = _configuration.GetSection("SmtpSettings");
+                    var from = smtpSection["SenderEmail"]; // Accessing child key
+                    var to = "r.jcool1.co.in@gmail.com"; // Accessing child key
+                    var password = smtpSection["Password"];
+                    _imailCommunication.Send(from, to, "Test mail", "Test link is workig.", password);
                     response._success.Add("Data updated successfully");
+
                     return Ok(response);
                 }
                 else
@@ -1086,7 +1126,8 @@ public class AppController : ControllerBase
         response.exception = null;
         try
         {
-            response._result = await _unitOfWork.Questions.GetByIdAsync(id);
+            response._result = await _iquestionRepos.GetQuestionOptionsByIdAsync(id);
+
             if (response._result == null)
             {
                 response._errors.Add("No data found.");
@@ -1134,6 +1175,8 @@ public class AppController : ControllerBase
         response._errors = new List<string>();
         try
         {
+            _unitOfWork.BeginTransaction();
+            await _iOptionRepos.DeleteOptionByQuestionIdAsync(id);
             await _unitOfWork.Questions.DeleteAsync(id);
             await _unitOfWork.Questions.SaveAsync();
             _unitOfWork.Commit();
