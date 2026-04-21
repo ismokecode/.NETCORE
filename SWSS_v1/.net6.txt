@@ -64,15 +64,25 @@ Steps:
 
 	12. Open Package Manager Console > 
 	EntityFrameworkCore\Add-Migration NameOfTheMigration -Context  DataVids_IdentityContext
+	EntityFrameworkCore\Add-Migration DbChanged -Context  CustomDbContext
 	--or
 	Add-Migration NameOfTheMigration -Context  DataVids_IdentityContext
-	
+	Add-Migration DbChanges -Context  CustomDbContext
+
 		// above code initial DataVids_IdentityContext is used not NortwindDbContext
 		
 	13.	Open Package Manager Console > Update-Database -context DataVids_IdentityContext
 	Note: IF ANY FAILURE ADD below properties to appSetting.json connectionString
 	Trusted_Connection=True;TrustServerCertificate=True
 	
+
+	Update-Database -context CustomDbContext
+
+	Use:
+	EntityFrameworkCore\Add-Migration AddedPhone -Context CustomDbContext
+	EntityFrameworkCore\Update-Database -context CustomDbContext
+	EntityFrameworkCore\Add-Migration IdentityTablesAdded -IgnoreChanges
+
 	****
 	Results
 	14. Now look into Northwind DB Identity Table created
