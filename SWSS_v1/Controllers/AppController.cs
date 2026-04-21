@@ -21,6 +21,7 @@ using SWSS_v1.Models;
 using NLog.Fluent;
 using System.Web.Http.ModelBinding;
 using SWSS_v1.Services;
+using System.Security.Cryptography;
 
 namespace SWSS_v1.Controllers;
 
@@ -31,7 +32,8 @@ public class AppController : ControllerBase
 {
     private ILogger<AppController> _logger;
     //they're using MyController:ControllerBase
-    private readonly UserManager<IdentityUser> _userManager;
+    //private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<ApplicationUser> _userManager;
 
     private readonly RoleManager<IdentityRole> _roleManager;
     //private readonly CustomDbContext _context;
@@ -42,7 +44,7 @@ public class AppController : ControllerBase
     private readonly IQuestionRepository _iquestionRepos;
     private readonly IOptionRepository _iOptionRepos;
     private readonly IMailCommunication _imailCommunication;
-    public AppController(UserManager<IdentityUser> userManager,
+    public AppController(UserManager<ApplicationUser> userManager,
         RoleManager<IdentityRole> roleManager,
         //CustomDbContext context,
         IConfiguration configuration,
@@ -69,6 +71,83 @@ public class AppController : ControllerBase
     }
     #region IdentityUser 
     [HttpPost]
+    public async Task<ActionResult<APIResponse_V<string>>> Login([FromBody] LoginVM loginVM)
+    //public async Task<IActionResult> Login([FromBody] LoginVM loginVM)
+    {
+        APIResponse_V<string> response = new APIResponse_V<string>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        response._result = null;
+        response.exception = null;
+        try
+        {
+            if (loginVM.Password == null)
+            {
+                response._errors.Add("Please enter password.");
+            }
+            if (loginVM.UserName == null)
+            {
+                response._errors.Add("Please enter UserName.");
+            }
+            var user = await _userManager.FindByNameAsync(loginVM.UserName);
+            if (user != null && await _userManager.CheckPasswordAsync(user, loginVM.Password))
+            {
+                //added
+                var userRoles = await _userManager.GetRolesAsync(user);
+                //getting null here and no required
+                var authClaims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, loginVM.UserName),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                };
+                //a user can have multiple roles
+                foreach (var userRole in userRoles)
+                {
+                    authClaims.Add(new Claim(ClaimTypes.Role, userRole));
+                }
+                var token = CreateToken(authClaims);
+                var refreshToken = GenerateRefreshToken();
+                int.TryParse(_configuration["JWT:RefreshTokenValidityInDays"], out int refreshTokenValidityInDays);
+                user.RefreshToken = refreshToken;
+                user.RefreshTokenExpiryTime = DateTime.Now.AddDays(refreshTokenValidityInDays);
+                await _userManager.UpdateAsync(user);
+                response._statusCode = StatusCodes.Status200OK;
+                //response._result = token;
+                //return Ok(new
+                //{
+                //    Token = new JwtSecurityTokenHandler().WriteToken(token),
+                //    RefreshToken = refreshToken,
+                //    Expiration = token.ValidTo
+                //});
+                response._statusCode = StatusCodes.Status200OK;
+                //var tokenString = CreateToken(loginVM);
+                //type = JwtSecurityToken class
+
+                //var tokenHandler = new JwtSecurityTokenHandler(); ;
+                ///var token = tokenHandler.CreateToken(token);
+
+
+                response._result = new JwtSecurityTokenHandler().WriteToken(token);
+                response._success.Add(refreshToken);
+                response._success.Add(token.ValidTo.ToString());
+                response._success.Add("Token generated successfully.");
+            }   
+            else
+            {
+                response._errors.Add("Token not generated.");
+            }
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            response._statusCode = StatusCodes.Status400BadRequest;
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            return Ok(response);
+        }
+    }
+    [HttpPost]
     [Authorize]
     public async Task<ActionResult<APIResponse_V<string>>> Register([FromBody] RegisterVM registerVM)
     {
@@ -84,25 +163,28 @@ public class AppController : ControllerBase
             {
                 _logger.LogInformation("Fetching all the Students");
                 //check user exists
-                var userExist = await _userManager.FindByEmailAsync(registerVM.Email);
+                var userExist = await _userManager.FindByNameAsync(registerVM.UserName);
                 if (userExist != null)
                 {
                     //if user exist
                     response._statusCode = StatusCodes.Status409Conflict;
-                    response._errors.Add("Email already exist.");
+                    response._errors.Add("User name already taken.");
                     return Ok(response); ;
                 }
 
                 //Add the user to db
                 ApplicationUser user = new()
                 {
-                    UserName = registerVM.UserName,
+                    FirstName = registerVM.FirstName,
+                    LastName = registerVM.LastName,
                     Email = registerVM.Email,
+                    CreatedBy = "",
+                    CreatedDateTime = DateTime.Now,
                     SecurityStamp = Guid.NewGuid().ToString(),
+                    UserName = registerVM.UserName,
                     Phone = registerVM.Phone,
                     Pincode = registerVM.Pincode,
-                    FirstName = registerVM.FirstName,
-                    LastName = registerVM.LastName
+                    RefreshTokenExpiryTime = DateTime.Now.AddDays(_configuration.GetValue<double>("RefreshTokenValidityInDays"))
 
                 };
                 if (await _roleManager.RoleExistsAsync(registerVM.UserRole))
@@ -154,6 +236,128 @@ public class AppController : ControllerBase
         }
         return Ok(response);
     }
+
+    [HttpPost]  
+    [Route("register-admin")]
+    public async Task<ActionResult<APIResponse_V<string>>> RegisterAdmin([FromBody] RegisterVM model)
+      {
+        APIResponse_V<string> response = new APIResponse_V<string>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        response._result = null;
+        response.exception = null;
+        var userExists = await _userManager.FindByNameAsync(model.UserName);
+        if (userExists != null)
+        {
+            response._errors.Add("User already exists!");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return response;
+        }
+        ApplicationUser user = new()
+        {
+            FirstName = model.FirstName,
+            LastName = model.LastName,
+            Email = model.Email,
+            CreatedBy = "",
+            CreatedDateTime = DateTime.Now,
+            SecurityStamp = Guid.NewGuid().ToString(),
+            UserName = model.UserName,
+            Phone = model.Phone,
+            Pincode = model.Pincode,
+            RefreshTokenExpiryTime = DateTime.Now.AddDays(_configuration.GetValue<double>("RefreshTokenValidityInDays"))
+        };
+        var result = await _userManager.CreateAsync(user, model.Password);
+        if (!result.Succeeded)
+        {
+            response._errors.Add("User creation failed! Please check user details and try again.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return response;
+        }
+        if (!await _roleManager.RoleExistsAsync(UserRoles.Admin))
+            await _roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
+        if (!await _roleManager.RoleExistsAsync(UserRoles.SuperAdmin))
+            await _roleManager.CreateAsync(new IdentityRole(UserRoles.SuperAdmin));
+        if (!await _roleManager.RoleExistsAsync(UserRoles.User))
+            await _roleManager.CreateAsync(new IdentityRole(UserRoles.User));
+
+        if (await _roleManager.RoleExistsAsync(UserRoles.Admin))
+        {
+            await _userManager.AddToRoleAsync(user, UserRoles.Admin);
+        }
+        if (await _roleManager.RoleExistsAsync(UserRoles.SuperAdmin))
+        {
+            await _userManager.AddToRoleAsync(user, UserRoles.SuperAdmin);
+        }
+        if (await _roleManager.RoleExistsAsync(UserRoles.User))
+        {
+            await _userManager.AddToRoleAsync(user, UserRoles.User);
+        }
+        response._success.Add("User created successful.");
+        response._statusCode = StatusCodes.Status200OK;
+        return response;
+    }
+
+    [HttpPost]
+    [Route("refresh-token")]
+    public async Task<IActionResult> RefreshToken(TokenModel tokenModel)
+    {
+        if (tokenModel is null)
+        {
+            return BadRequest("Invalid client request");
+        }
+
+        string? accessToken = tokenModel.AccessToken;
+        string? refreshToken = tokenModel.RefreshToken;
+
+        var principal = GetPrincipalFromExpiredToken(accessToken);
+        if (principal == null)
+        {
+            return BadRequest("Invalid access token or refresh token");
+        }
+
+        #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+        #pragma warning disable CS8602 // Dereference of a possibly null reference.
+        string username = principal.Identity.Name;
+        #pragma warning restore CS8602 // Dereference of a possibly null reference.
+        #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+
+        var user = await _userManager.FindByNameAsync(username);
+
+        if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
+        {
+            return BadRequest("Invalid access token or refresh token");
+        }
+
+        var newAccessToken = CreateToken(principal.Claims.ToList());
+        var newRefreshToken = GenerateRefreshToken();
+
+        user.RefreshToken = newRefreshToken;
+        await _userManager.UpdateAsync(user);
+
+        return new ObjectResult(new
+        {
+            accessToken = new JwtSecurityTokenHandler().WriteToken(newAccessToken),
+            refreshToken = newRefreshToken
+        });
+    }
+
+    [Authorize]
+    [HttpPost]
+    [Route("revoke/{username}")]
+    public async Task<IActionResult> Revoke(string username)
+    {
+        var user = await _userManager.FindByNameAsync(username);
+        if (user == null) return BadRequest("Invalid user name");
+
+        user.RefreshToken = null;
+        await _userManager.UpdateAsync(user);
+
+        return NoContent();
+    }
+
     [HttpGet]
     [Authorize]
     public IEnumerable<IdentityUser> GetUsers()
@@ -167,48 +371,6 @@ public class AppController : ControllerBase
     {
         var user = _userManager.Users.Where(x => x.Email == code);
         return user;
-    }
-
-    [HttpPost]
-    public async Task<ActionResult<APIResponse_V<string>>> Login([FromBody] LoginVM loginVM)
-    {
-        APIResponse_V<string> response = new APIResponse_V<string>();
-        response._success = new List<string>();
-        response._errors = new List<string>();
-        response._results = null;
-        response._result = null;
-        response.exception = null;
-        try
-        {
-            if (loginVM.Password == null)
-            {
-                response._errors.Add("Please enter password.");
-            }
-            if (loginVM.Email == null)
-            {
-                response._errors.Add("Please enter email.");
-            }
-            var _userExists = await _userManager.FindByEmailAsync(loginVM.Email);
-            if (_userExists != null && await _userManager.CheckPasswordAsync(_userExists, loginVM.Password))
-            {
-                response._statusCode = StatusCodes.Status200OK;
-                var tokenString = CreateToken(loginVM);
-                response._result = tokenString;
-                response._success.Add("Token generated successfully.");
-            }
-            else
-            {
-                response._errors.Add("Token not generated.");
-            }
-            return Ok(response);
-        }
-        catch (Exception ex) 
-        {
-            response._statusCode = StatusCodes.Status400BadRequest;
-            response._errors.Add("Something went wrong, Please try later.");
-            response.exception = "Something went wrong, Please try later.";
-            return Ok(response);
-        }
     }
     #endregion End IdentityUser 
 
@@ -581,6 +743,7 @@ public class AppController : ControllerBase
                 cls.ClassName.Trim();
                 if (!_unitOfWork.Classes.IsExist(cls) && cls.ClassesId == 0)
                 {
+                    //cls.CreatedBy = _userManager.GetUserId();
                     _unitOfWork.BeginTransaction();
                     await _unitOfWork.Classes.InsertAsync(cls);
                     await _unitOfWork.Classes.SaveAsync();
@@ -1077,7 +1240,7 @@ public class AppController : ControllerBase
                     response._statusCode = StatusCodes.Status200OK;
                     var smtpSection = _configuration.GetSection("SmtpSettings");
                     var from = smtpSection["SenderEmail"]; // Accessing child key
-                    var to = "r.jcool1.co.in@gmail.com"; // Accessing child key
+                    var to = "sudarshanbgs01@gmail.com"; // Accessing child key
                     var password = smtpSection["Password"];
                     _imailCommunication.Send(from, to, "Test mail", "Test link is workig.", password);
                     response._success.Add("Data updated successfully");
@@ -1196,58 +1359,6 @@ public class AppController : ControllerBase
 
     #endregion olt
 
-    #region ExceptionHandling
-    [HttpGet]
-    public IActionResult Get()
-    {
-        try
-        {
-            
-            _logger.LogTrace("This is trace log");
-            _logger.LogInformation("Fetching all the Students from the storage");
-            _logger.LogInformation($"Returning {6} students.");
-            throw new Exception("sdfdsf_ppvefeffe");
-            return Ok();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError($"Something went wrong: {ex}");
-            return StatusCode(500, "Internal server error");
-        }
-    }
-
-    [HttpGet]
-    public IActionResult TestExceptions(int number)
-    {
-        CheckTheNumber(number);
-        return Ok();
-    }
-
-    private void CheckTheNumber(int number)
-    {
-        if (number == 1)
-        {
-            throw new BadRequestException("Number = 1 is the bad request exception");
-        }
-        else if (number == 2)
-        {
-            throw new NotFoundException("Number = 2 is the Not found exception");
-        }
-        else if (number == 3)
-        {
-            throw new NotImplementedExceptions("Number = 3 is the Not implemented exception");
-        }
-        else if (number == 4)
-        {
-            throw new UnauthorizedException("Number = 4 is the unauthorized exception");
-        }
-        throw new Exception();
-
-    }
-
-
-    #endregion
-
     #region JWT token starts
     [HttpGet]
     public string CreateToken(LoginVM user)
@@ -1275,12 +1386,139 @@ public class AppController : ControllerBase
         };
         var tokenHandler = new JwtSecurityTokenHandler();;
         var token = tokenHandler.CreateToken(tokenDescriptor);
+
+        #region added claims & refresh tokens
+        //https://www.c-sharpcorner.com/article/jwt-authentication-with-refresh-tokens-in-net-6-0/
+        var refreshToken = GenerateRefreshToken();
+        int.TryParse(_configuration.GetSection("Jwt")["RefreshTokenValidityInDays"], out int refreshTokenValidityInDays);
+        user.RefreshToken = refreshToken;
+        user.RefreshTokenExpiryTime = DateTime.Now.AddDays(refreshTokenValidityInDays);
+        //check below code later
+        //new
+        //{
+        //    Token = new JwtSecurityTokenHandler().WriteToken(token),
+        //    RefreshToken = refreshToken,
+        //    Expiration = token.ValidTo
+        //});
+        #endregion
+
         var jwtToken = tokenHandler.WriteToken(token);
         return jwtToken;
     }
+    #region GenerateRefreshToken
+    private JwtSecurityToken CreateToken(List<Claim> authClaims)
+    {
+        var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+        int.TryParse(_configuration["JWT:TokenValidityInMinutes"], out int tokenValidityInMinutes);
+
+        var token = new JwtSecurityToken(
+            issuer: _configuration["JWT:ValidIssuer"],
+            audience: _configuration["JWT:ValidAudience"],
+            expires: DateTime.Now.AddMinutes(tokenValidityInMinutes),
+            claims: authClaims,
+            signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
+            );
+
+        return token;
+    }
+    private static string GenerateRefreshToken()
+    {
+        var randomNumber = new byte[64];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomNumber);
+        return Convert.ToBase64String(randomNumber);
+    }
+    private ClaimsPrincipal? GetPrincipalFromExpiredToken(string? token)
+    {
+        var tokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateAudience = false,
+            ValidateIssuer = false,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"])),
+            ValidateLifetime = false
+        };
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+        if (securityToken is not JwtSecurityToken jwtSecurityToken || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+            throw new SecurityTokenException("Invalid token");
+
+        return principal;
+
+    }
+
+    [Authorize]
+    [HttpPost]
+    [Route("revoke-all")]
+    public async Task<IActionResult> RevokeAll()
+    {
+        var users = _userManager.Users.ToList();
+        foreach (var user in users)
+        {
+            //check it later
+            //user.RefreshToken = null;
+            await _userManager.UpdateAsync(user);
+        }
+
+        return NoContent();
+    }
+
+    #endregion
+
     #endregion End Jwt token
 
+    #region ExceptionHandling
+    [HttpGet]
+    public IActionResult Get()
+    {
+        try
+        {
+
+            _logger.LogTrace("This is trace log");
+            _logger.LogInformation("Fetching all the Students from the storage");
+            _logger.LogInformation($"Returning {6} students.");
+            throw new Exception("sdfdsf_ppvefeffe");
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Something went wrong: {ex}");
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+
+    #endregion
+
     #region Test API
+    private void CheckTheNumber(int number)
+    {
+        if (number == 1)
+        {
+            throw new BadRequestException("Number = 1 is the bad request exception");
+        }
+        else if (number == 2)
+        {
+            throw new NotFoundException("Number = 2 is the Not found exception");
+        }
+        else if (number == 3)
+        {
+            throw new NotImplementedExceptions("Number = 3 is the Not implemented exception");
+        }
+        else if (number == 4)
+        {
+            throw new UnauthorizedException("Number = 4 is the unauthorized exception");
+        }
+        throw new Exception();
+
+    }
+    [HttpGet]
+    public IActionResult TestExceptions(int number)
+    {
+        CheckTheNumber(number);
+        return Ok();
+    }
     [HttpGet] 
     public IActionResult TestApi_IActionResult()
     {

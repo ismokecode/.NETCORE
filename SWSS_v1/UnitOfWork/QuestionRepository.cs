@@ -57,5 +57,13 @@ namespace SWSS_v1.UnitOfWork
                              .ToList();
             return questionWithOptions;
         }
+        public async Task<Question> GetQuestionOptionsByIdAsync(int id)
+        {
+            var questionWithOptions = _context.Questions.Where(p => p.QuestionId == id)
+                             .Include(p => p.Options)
+                             .Include(p => p.Classes)
+                             .Include(p => p.Subjects).FirstOrDefault();
+            return questionWithOptions;
+        }
     }
 }

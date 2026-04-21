@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SWSS_v1.Models
 {
@@ -24,5 +25,8 @@ namespace SWSS_v1.Models
         public string Phone { get; set; }
         [RegularExpression("^[0-9]{6}$")]
         public string? Pincode { get; set; }
+        public string? RefreshToken { get; set; }
+        [NotMapped]
+        public DateTime? RefreshTokenExpiryTime { get; set; }
     }
 }

@@ -24,6 +24,6 @@ namespace SWSS_v1.Services
 
             await smtp.SendAsync(email);
             await smtp.DisconnectAsync(true);
-        }
+         }
     }
 }

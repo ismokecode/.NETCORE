@@ -4,6 +4,10 @@ namespace SWSS_v1.Models
 {
     public class Question
     {
+        public Question()
+        {
+            Options = new List<Option>();
+        }
         public int QuestionId { get; set; }
         [ForeignKey("FK_QuestionClass")]
         public int ClassID { get; set; }
@@ -12,7 +16,8 @@ namespace SWSS_v1.Models
         [NotMapped]
         public int? AnswerOptionId { get; set; }   
         public string QuestionText { get; set; }
-        public List<Option>? Options = new List<Option>();
+        //While create The Options field is required. So make it optional
+        public List<Option>? Options { get; }
         public virtual Classes? Classes { get; }
         public virtual Subject? Subjects { get; }
         [NotMapped]
@@ -23,6 +28,14 @@ namespace SWSS_v1.Models
         public string? Option3 { get; set; }
         [NotMapped]
         public string? Option4 { get; set; }
+        [NotMapped]
+        public int OptionId1 { get; set; }
+        [NotMapped]
+        public int OptionId2 { get; set; }
+        [NotMapped]
+        public int OptionId3 { get; set; }
+        [NotMapped]
+        public int OptionId4 { get; set; }
         //public Question(string questionText, List<Option> options, int correctAnswerId)
         //{
         //    QuestionText = questionText;

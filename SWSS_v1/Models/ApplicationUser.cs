@@ -11,5 +11,9 @@ namespace SWSS_v1.Models
         public string Phone { get; set; }
         public string Address { get; set; }
         public string Pincode { get; set; }
+        public string? RefreshToken { get; set; }
+        public DateTime RefreshTokenExpiryTime { get; set; }
+        public string CreatedBy { get; set; }
+        public DateTime CreatedDateTime { get; set; }
     }
 }

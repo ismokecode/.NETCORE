@@ -55,3 +55,21 @@ Create Employee:
     ]
   }
 }
+
+
+
+admin-create
+
+{
+  "firstName": "rachit",
+  "lastName": "jha",
+  "email": "rachit@gmail,com",
+  "userName": "rachit",
+  "password": "Rachit@123",
+  "userRole": "Admin",
+  "phone": "8676968080",
+  "pincode": "800008",
+  "refreshToken": null,
+  "refreshTokenExpiryTime": "0001-01-01T00:00:00"
+}
+

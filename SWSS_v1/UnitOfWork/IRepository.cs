@@ -15,5 +15,6 @@
         Task UpdateAsync(T Entity);
         Task DeleteAsync(int Id);
         Task SaveAsync();
+        Task UpdateAsyncList(IEnumerable<T> lst);
     }
 }

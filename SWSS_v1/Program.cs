@@ -145,7 +145,19 @@ builder.Services.AddDbContext<CustomDbContext>(options => {
 
 //Add Identity which are going to use upcoming part, Second parameter base class responsible for user role
 //Define class work with identity related table
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+
+//For  controller IdentiryUser 
+
+/*Error 1: {
+"message": "Unable to resolve service for type 'Microsoft.AspNetCore.Identity.UserManager`1" +
+    "[SWSS_v1.Models.ApplicationUser]' while attempting to activate 'SWSS_v1.Controllers.AppController'."
+}
+//builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+.AddEntityFrameworkStores<CustomDbContext>()
+.AddDefaultTokenProviders(); */
+
+//Solution bcoz we are using ApplicationUser so registered service for ApplicationUser with IdentityRole
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<CustomDbContext>()
     .AddDefaultTokenProviders();
 
@@ -251,9 +263,9 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 app.MapEndpoints();
+app.UseCors(MyAllowSpecificOrigins);
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseCors(MyAllowSpecificOrigins);
 app.MapControllers();
 //app.UseMiddleware<FactoryMiddleware>();
 

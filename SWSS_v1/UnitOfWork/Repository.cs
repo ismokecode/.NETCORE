@@ -51,5 +51,12 @@ namespace SWSS_v1.UnitOfBox
         {
             await _dbContext.SaveChangesAsync();
         }
+
+        public async Task UpdateAsyncList(IEnumerable<T> lst)
+        {
+            _dbContext.UpdateRange(lst);
+            await _dbContext.SaveChangesAsync();
+
+        }
     }
 }
