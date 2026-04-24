@@ -71,82 +71,45 @@ public class AppController : ControllerBase
     }
     #region IdentityUser 
     [HttpPost]
-    public async Task<ActionResult<APIResponse_V<string>>> Login([FromBody] LoginVM loginVM)
-    //public async Task<IActionResult> Login([FromBody] LoginVM loginVM)
+    //[Route("login")]
+    public async Task<IActionResult> Login([FromBody] LoginVM model)
     {
-        APIResponse_V<string> response = new APIResponse_V<string>();
-        response._success = new List<string>();
-        response._errors = new List<string>();
-        response._results = null;
-        response._result = null;
-        response.exception = null;
-        try
+        var user = await _userManager.FindByNameAsync(model.UserName);
+        if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
         {
-            if (loginVM.Password == null)
-            {
-                response._errors.Add("Please enter password.");
-            }
-            if (loginVM.UserName == null)
-            {
-                response._errors.Add("Please enter UserName.");
-            }
-            var user = await _userManager.FindByNameAsync(loginVM.UserName);
-            if (user != null && await _userManager.CheckPasswordAsync(user, loginVM.Password))
-            {
-                //added
-                var userRoles = await _userManager.GetRolesAsync(user);
-                //getting null here and no required
-                var authClaims = new List<Claim>
+            var userRoles = await _userManager.GetRolesAsync(user);
+
+            var authClaims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.Name, loginVM.UserName),
+                    new Claim(ClaimTypes.Name, user.UserName),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 };
-                //a user can have multiple roles
-                foreach (var userRole in userRoles)
-                {
-                    authClaims.Add(new Claim(ClaimTypes.Role, userRole));
-                }
-                var token = CreateToken(authClaims);
-                var refreshToken = GenerateRefreshToken();
-                int.TryParse(_configuration["JWT:RefreshTokenValidityInDays"], out int refreshTokenValidityInDays);
-                user.RefreshToken = refreshToken;
-                user.RefreshTokenExpiryTime = DateTime.Now.AddDays(refreshTokenValidityInDays);
-                await _userManager.UpdateAsync(user);
-                response._statusCode = StatusCodes.Status200OK;
-                //response._result = token;
-                //return Ok(new
-                //{
-                //    Token = new JwtSecurityTokenHandler().WriteToken(token),
-                //    RefreshToken = refreshToken,
-                //    Expiration = token.ValidTo
-                //});
-                response._statusCode = StatusCodes.Status200OK;
-                //var tokenString = CreateToken(loginVM);
-                //type = JwtSecurityToken class
 
-                //var tokenHandler = new JwtSecurityTokenHandler(); ;
-                ///var token = tokenHandler.CreateToken(token);
-
-
-                response._result = new JwtSecurityTokenHandler().WriteToken(token);
-                response._success.Add(refreshToken);
-                response._success.Add(token.ValidTo.ToString());
-                response._success.Add("Token generated successfully.");
-            }   
-            else
+            foreach (var userRole in userRoles)
             {
-                response._errors.Add("Token not generated.");
+                authClaims.Add(new Claim(ClaimTypes.Role, userRole));
             }
-            return Ok(response);
+
+            var token = CreateToken(authClaims);
+            var refreshToken = GenerateRefreshToken();
+
+            _ = int.TryParse(_configuration["JWT:RefreshTokenValidityInDays"], out int refreshTokenValidityInDays);
+
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.Now.AddDays(refreshTokenValidityInDays);
+
+            await _userManager.UpdateAsync(user);
+
+            return Ok(new
+            {
+                Token = new JwtSecurityTokenHandler().WriteToken(token),
+                RefreshToken = refreshToken,
+                Expiration = token.ValidTo
+            });
         }
-        catch (Exception ex)
-        {
-            response._statusCode = StatusCodes.Status400BadRequest;
-            response._errors.Add("Something went wrong, Please try later.");
-            response.exception = "Something went wrong, Please try later.";
-            return Ok(response);
-        }
+        return Unauthorized();
     }
+
     [HttpPost]
     [Authorize]
     public async Task<ActionResult<APIResponse_V<string>>> Register([FromBody] RegisterVM registerVM)
@@ -237,49 +200,26 @@ public class AppController : ControllerBase
         return Ok(response);
     }
 
-    [HttpPost]  
+    [HttpPost]
     [Route("register-admin")]
-    public async Task<ActionResult<APIResponse_V<string>>> RegisterAdmin([FromBody] RegisterVM model)
-      {
-        APIResponse_V<string> response = new APIResponse_V<string>();
-        response._success = new List<string>();
-        response._errors = new List<string>();
-        response._results = null;
-        response._result = null;
-        response.exception = null;
+    public async Task<IActionResult> RegisterAdmin([FromBody] RegisterVM model)
+    {
         var userExists = await _userManager.FindByNameAsync(model.UserName);
         if (userExists != null)
-        {
-            response._errors.Add("User already exists!");
-            response.exception = "Something went wrong, Please try later.";
-            response._statusCode = StatusCodes.Status500InternalServerError;
-            return response;
-        }
+            return StatusCode(StatusCodes.Status500InternalServerError, new { Status = "Error", Message = "User already exists!" });
+
         ApplicationUser user = new()
         {
-            FirstName = model.FirstName,
-            LastName = model.LastName,
             Email = model.Email,
-            CreatedBy = "",
-            CreatedDateTime = DateTime.Now,
             SecurityStamp = Guid.NewGuid().ToString(),
-            UserName = model.UserName,
-            Phone = model.Phone,
-            Pincode = model.Pincode,
-            RefreshTokenExpiryTime = DateTime.Now.AddDays(_configuration.GetValue<double>("RefreshTokenValidityInDays"))
+            UserName = model.UserName
         };
         var result = await _userManager.CreateAsync(user, model.Password);
         if (!result.Succeeded)
-        {
-            response._errors.Add("User creation failed! Please check user details and try again.");
-            response.exception = "Something went wrong, Please try later.";
-            response._statusCode = StatusCodes.Status500InternalServerError;
-            return response;
-        }
+            return StatusCode(StatusCodes.Status500InternalServerError, new { Status = "Error", Message = "User creation failed! Please check user details and try again." });
+
         if (!await _roleManager.RoleExistsAsync(UserRoles.Admin))
             await _roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
-        if (!await _roleManager.RoleExistsAsync(UserRoles.SuperAdmin))
-            await _roleManager.CreateAsync(new IdentityRole(UserRoles.SuperAdmin));
         if (!await _roleManager.RoleExistsAsync(UserRoles.User))
             await _roleManager.CreateAsync(new IdentityRole(UserRoles.User));
 
@@ -287,17 +227,31 @@ public class AppController : ControllerBase
         {
             await _userManager.AddToRoleAsync(user, UserRoles.Admin);
         }
-        if (await _roleManager.RoleExistsAsync(UserRoles.SuperAdmin))
-        {
-            await _userManager.AddToRoleAsync(user, UserRoles.SuperAdmin);
-        }
-        if (await _roleManager.RoleExistsAsync(UserRoles.User))
+        if (await _roleManager.RoleExistsAsync(UserRoles.Admin))
         {
             await _userManager.AddToRoleAsync(user, UserRoles.User);
         }
-        response._success.Add("User created successful.");
-        response._statusCode = StatusCodes.Status200OK;
-        return response;
+        return Ok(new { Status = "Success", Message = "User created successfully!" });
+    }
+    [HttpPost]
+    [Route("register")]
+    public async Task<IActionResult> Register_v([FromBody] RegisterVM model)
+    {
+        var userExists = await _userManager.FindByNameAsync(model.UserName);
+        if (userExists != null)
+            return StatusCode(StatusCodes.Status500InternalServerError, new { Status = "Error", Message = "User already exists!" });
+
+        ApplicationUser user = new()
+        {
+            Email = model.Email,
+            SecurityStamp = Guid.NewGuid().ToString(),
+            UserName = model.UserName
+        };
+        var result = await _userManager.CreateAsync(user, model.Password);
+        if (!result.Succeeded)
+            return StatusCode(StatusCodes.Status500InternalServerError, new { Status = "Error", Message = "User creation failed! Please check user details and try again." });
+
+        return Ok(new { Status = "Success", Message = "User created successfully!" });
     }
 
     [HttpPost]
@@ -318,11 +272,11 @@ public class AppController : ControllerBase
             return BadRequest("Invalid access token or refresh token");
         }
 
-        #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-        #pragma warning disable CS8602 // Dereference of a possibly null reference.
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
         string username = principal.Identity.Name;
-        #pragma warning restore CS8602 // Dereference of a possibly null reference.
-        #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 
         var user = await _userManager.FindByNameAsync(username);
 
@@ -730,12 +684,13 @@ public class AppController : ControllerBase
     [Authorize]
     public async Task<ActionResult<APIResponse_V<Classes>>> CreateClass([FromBody] Classes cls)
     {
-        APIResponse_V<Location> response = new APIResponse_V<Location>();
+        APIResponse_V<Classes> response = new APIResponse_V<Classes>();
         response._success = new List<string>();
         response._errors = new List<string>();
         response._results = null;
         response._result = null;
         response.exception = null;
+       
         try
         {
             if (ModelState.IsValid)
@@ -743,6 +698,7 @@ public class AppController : ControllerBase
                 cls.ClassName.Trim();
                 if (!_unitOfWork.Classes.IsExist(cls) && cls.ClassesId == 0)
                 {
+                    cls.CreatedDate = DateTime.UtcNow;
                     //cls.CreatedBy = _userManager.GetUserId();
                     _unitOfWork.BeginTransaction();
                     await _unitOfWork.Classes.InsertAsync(cls);
@@ -755,6 +711,8 @@ public class AppController : ControllerBase
                 //else if (!_unitOfWork.Locations.IsExistUpdate(loc))
                 {
                     _unitOfWork.BeginTransaction();
+                    var result = await _unitOfWork.Classes.GetByIdAsync(cls.ClassesId);
+                    cls.ModifiedDate = result.ModifiedDate == null? DateTime.UtcNow: result.ModifiedDate;
                     await _unitOfWork.Classes.UpdateAsync(cls);
                     await _unitOfWork.Classes.SaveAsync();
                     _unitOfWork.Commit();
@@ -799,6 +757,9 @@ public class AppController : ControllerBase
         APIResponse_V<Classes> response = new APIResponse_V<Classes>();
         response._success = new List<string>();
         response._errors = new List<string>();
+        response._results = null;
+        //response._result = null;
+        response.exception = null;
         try
         {
             _unitOfWork.BeginTransaction();
@@ -821,7 +782,12 @@ public class AppController : ControllerBase
     [Authorize]
     public async Task<ActionResult<APIResponse_V<Classes>>> GetAllClasses()
     {
-        APIResponse_V<Classes> response = new APIResponse_V<Classes>();
+        APIResponse_V<Classes> response = new APIResponse_V<Classes>();       
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        //response._result = null;
+        response.exception = null;
         try
         {
             response._results = await _unitOfWork.Classes.GetAllAsync();
@@ -874,11 +840,11 @@ public class AppController : ControllerBase
     [Authorize]
     public async Task<ActionResult<APIResponse_V<Subject>>> CreateSubject([FromBody] Subject sub)
     {
-        APIResponse_V<Subject> response = new APIResponse_V<Subject>();
+        APIResponse_V<Classes> response = new APIResponse_V<Classes>();
         response._success = new List<string>();
         response._errors = new List<string>();
         response._results = null;
-        response._result = null;
+        //response._result = null;
         response.exception = null;
         try
         {
@@ -1360,51 +1326,51 @@ public class AppController : ControllerBase
     #endregion olt
 
     #region JWT token starts
-    [HttpGet]
-    public string CreateToken(LoginVM user)
-    {
-        var issuer = _configuration["Jwt:Issuer"];
-        var audience = _configuration["Jwt:Audience"];
-        var key = Encoding.ASCII.GetBytes
-        (_configuration["Jwt:Key"]);
-        var tokenDescriptor = new SecurityTokenDescriptor
-        {
-            Subject = new ClaimsIdentity(new[]
-            {
-                new Claim("Id", Guid.NewGuid().ToString()),
-                //new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.Jti,
-                Guid.NewGuid().ToString())
-             }),
-            Expires = DateTime.UtcNow.AddMinutes(5),
-            Issuer = issuer,
-            Audience = audience,
-            SigningCredentials = new SigningCredentials
-            (new SymmetricSecurityKey(key),
-            SecurityAlgorithms.HmacSha512Signature)
-        };
-        var tokenHandler = new JwtSecurityTokenHandler();;
-        var token = tokenHandler.CreateToken(tokenDescriptor);
+    //[HttpGet]
+    //public string CreateToken(LoginVM user)
+    //{
+    //    var issuer = _configuration["Jwt:Issuer"];
+    //    var audience = _configuration["Jwt:Audience"];
+    //    var key = Encoding.ASCII.GetBytes
+    //    (_configuration["Jwt:Key"]);
+    //    var tokenDescriptor = new SecurityTokenDescriptor
+    //    {
+    //        Subject = new ClaimsIdentity(new[]
+    //        {
+    //            new Claim("Id", Guid.NewGuid().ToString()),
+    //            //new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+    //            new Claim(JwtRegisteredClaimNames.Email, user.Email),
+    //            new Claim(JwtRegisteredClaimNames.Jti,
+    //            Guid.NewGuid().ToString())
+    //         }),
+    //        Expires = DateTime.UtcNow.AddMinutes(5),
+    //        Issuer = issuer,
+    //        Audience = audience,
+    //        SigningCredentials = new SigningCredentials
+    //        (new SymmetricSecurityKey(key),
+    //        SecurityAlgorithms.HmacSha512Signature)
+    //    };
+    //    var tokenHandler = new JwtSecurityTokenHandler();;
+    //    var token = tokenHandler.CreateToken(tokenDescriptor);
 
-        #region added claims & refresh tokens
-        //https://www.c-sharpcorner.com/article/jwt-authentication-with-refresh-tokens-in-net-6-0/
-        var refreshToken = GenerateRefreshToken();
-        int.TryParse(_configuration.GetSection("Jwt")["RefreshTokenValidityInDays"], out int refreshTokenValidityInDays);
-        user.RefreshToken = refreshToken;
-        user.RefreshTokenExpiryTime = DateTime.Now.AddDays(refreshTokenValidityInDays);
-        //check below code later
-        //new
-        //{
-        //    Token = new JwtSecurityTokenHandler().WriteToken(token),
-        //    RefreshToken = refreshToken,
-        //    Expiration = token.ValidTo
-        //});
-        #endregion
+    //    #region added claims & refresh tokens
+    //    //https://www.c-sharpcorner.com/article/jwt-authentication-with-refresh-tokens-in-net-6-0/
+    //    var refreshToken = GenerateRefreshToken();
+    //    int.TryParse(_configuration.GetSection("Jwt")["RefreshTokenValidityInDays"], out int refreshTokenValidityInDays);
+    //    user.RefreshToken = refreshToken;
+    //    user.RefreshTokenExpiryTime = DateTime.Now.AddDays(refreshTokenValidityInDays);
+    //    //check below code later
+    //    //new
+    //    //{
+    //    //    Token = new JwtSecurityTokenHandler().WriteToken(token),
+    //    //    RefreshToken = refreshToken,
+    //    //    Expiration = token.ValidTo
+    //    //});
+    //    #endregion
 
-        var jwtToken = tokenHandler.WriteToken(token);
-        return jwtToken;
-    }
+    //    var jwtToken = tokenHandler.WriteToken(token);
+    //    return jwtToken;
+    //}
     #region GenerateRefreshToken
     private JwtSecurityToken CreateToken(List<Claim> authClaims)
     {
@@ -1525,23 +1491,6 @@ public class AppController : ControllerBase
         return Ok(new List<LoginVM> {
             new LoginVM() {Password="test",UserName="Rajeev" },
             new LoginVM(){Password = "123",UserName="Sonu" }
-        });
-    }
-    [HttpGet]
-    public ActionResult<List<LoginVM>> TestApi_ActionResult()
-    {
-        var s = 4;
-        if (4 == 4)
-        {
-            return new List<LoginVM> {
-            new LoginVM { FirstName ="Rajeev", LastName="Kumar" },
-            new LoginVM {FirstName ="Rajeev", LastName="Kumar"}
-        };
-        }
-        else
-            return Ok(new List<LoginVM> {
-            new LoginVM { FirstName ="Rajeev", LastName="Kumar" },
-            new LoginVM {FirstName ="Rajeev", LastName="Kumar"}
         });
     }
     #endregion
