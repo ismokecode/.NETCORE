@@ -36,6 +36,12 @@ namespace SWSS_v1.Models
         public int OptionId3 { get; set; }
         [NotMapped]
         public int OptionId4 { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? ModifiedBy { get; set; }
+        public DateTime? ModifiedDate = null;
+        //[NotMapped]
+        public DateTime? CreatedDate = null;
+        public bool? isActive { get; set; }
         //public Question(string questionText, List<Option> options, int correctAnswerId)
         //{
         //    QuestionText = questionText;

@@ -49,7 +49,9 @@ namespace SWSS_v1.UnitOfWork
             _emp.Email = obj.Email;
             _emp.PinCode = obj.PinCode;
             _emp.ClassesId = obj.ClassesId;
-            _emp.isActive = true;
+            _emp.isActive = obj.isActive;
+            _emp.ModifiedBy = obj.ModifiedBy;
+            _emp.ModifiedDate = obj.ModifiedDate;
             //wait _context.SaveChangesAsync();
         }
         public async Task<IEnumerable<Student>> SearchStudentByName(string input)

@@ -22,6 +22,7 @@ using NLog.Fluent;
 using System.Web.Http.ModelBinding;
 using SWSS_v1.Services;
 using System.Security.Cryptography;
+using Microsoft.AspNetCore.SignalR;
 
 namespace SWSS_v1.Controllers;
 
@@ -683,14 +684,13 @@ public class AppController : ControllerBase
     [HttpPost]
     [Authorize]
     public async Task<ActionResult<APIResponse_V<Classes>>> CreateClass([FromBody] Classes cls)
-    {
+    {;
         APIResponse_V<Classes> response = new APIResponse_V<Classes>();
         response._success = new List<string>();
         response._errors = new List<string>();
         response._results = null;
         response._result = null;
-        response.exception = null;
-       
+        response.exception = null;      
         try
         {
             if (ModelState.IsValid)
@@ -698,8 +698,9 @@ public class AppController : ControllerBase
                 cls.ClassName.Trim();
                 if (!_unitOfWork.Classes.IsExist(cls) && cls.ClassesId == 0)
                 {
-                    cls.CreatedDate = DateTime.UtcNow;
-                    //cls.CreatedBy = _userManager.GetUserId();
+                    cls.CreatedBy = User.Identity?.Name;
+                    cls.CreatedDate = DateTime.Now;
+                    cls.isActive = true;
                     _unitOfWork.BeginTransaction();
                     await _unitOfWork.Classes.InsertAsync(cls);
                     await _unitOfWork.Classes.SaveAsync();
@@ -712,7 +713,9 @@ public class AppController : ControllerBase
                 {
                     _unitOfWork.BeginTransaction();
                     var result = await _unitOfWork.Classes.GetByIdAsync(cls.ClassesId);
-                    cls.ModifiedDate = result.ModifiedDate == null? DateTime.UtcNow: result.ModifiedDate;
+                    cls.ModifiedDate = DateTime.Now;
+                    cls.ModifiedBy = User.Identity?.Name;
+                    cls.isActive = true;
                     await _unitOfWork.Classes.UpdateAsync(cls);
                     await _unitOfWork.Classes.SaveAsync();
                     _unitOfWork.Commit();
@@ -853,6 +856,9 @@ public class AppController : ControllerBase
                 sub.SubjectName.Trim();
                 if (!_unitOfWork.Subjects.IsExist(sub) && sub.SubjectID == 0)
                 {
+                    sub.CreatedBy = User.Identity?.Name;
+                    sub.CreatedDate = DateTime.Now;
+                    sub.isActive = true;
                     _unitOfWork.BeginTransaction();
                     await _unitOfWork.Subjects.InsertAsync(sub);
                     await _unitOfWork.Subjects.SaveAsync();
@@ -863,6 +869,9 @@ public class AppController : ControllerBase
                 else if (sub.SubjectID > 0)
                 //else if (!_unitOfWork.Locations.IsExistUpdate(loc))
                 {
+                    sub.ModifiedBy = User.Identity?.Name;
+                    sub.ModifiedDate = DateTime.Now;
+                    sub.isActive = true;
                     _unitOfWork.BeginTransaction();
                     await _unitOfWork.Subjects.UpdateAsync(sub);
                     await _unitOfWork.Subjects.SaveAsync();
@@ -998,6 +1007,9 @@ public class AppController : ControllerBase
                 stu.StudentName.Trim();
                 if (!_unitOfWork.Students.IsExist(stu) && stu.StudentId == 0)
                 {
+                    stu.CreatedBy = User.Identity?.Name;
+                    stu.CreatedDate = DateTime.UtcNow;
+                    stu.isActive = true;
                     _unitOfWork.BeginTransaction();
                     await _unitOfWork.Students.InsertAsync(stu);
                     await _unitOfWork.Students.SaveAsync();
@@ -1008,6 +1020,9 @@ public class AppController : ControllerBase
                 else if (stu.StudentId > 0)
                 //else if (!_unitOfWork.Locations.IsExistUpdate(loc))
                 {
+                    stu.ModifiedBy = User.Identity?.Name;
+                    stu.ModifiedDate = DateTime.UtcNow;
+                    stu.isActive = true;
                     _unitOfWork.BeginTransaction();
                     await _unitOfWork.Students.UpdateAsync(stu);
                     await _unitOfWork.Students.SaveAsync();
@@ -1146,6 +1161,9 @@ public class AppController : ControllerBase
                 
                 if (!_unitOfWork.Questions.IsExist(question) && question.QuestionId == 0)
                 {
+                    question.CreatedBy = User.Identity?.Name;
+                    question.CreatedDate = DateTime.Now;
+                    question.isActive = true;
                     _unitOfWork.BeginTransaction();
                     await _unitOfWork.Questions.InsertAsync(question);
                     await _unitOfWork.Options.SaveAsync();
@@ -1177,9 +1195,12 @@ public class AppController : ControllerBase
                 else if (question.QuestionId > 0)
                 //else if (!_unitOfWork.Locations.IsExistUpdate(loc))
                 {
+                    question.ModifiedBy = User.Identity?.Name;
+                    question.ModifiedDate = DateTime.Now;
+                    question.isActive = true;
                     _unitOfWork.BeginTransaction();
                     await _unitOfWork.Questions.UpdateAsync(question);
-                    await _unitOfWork.Questions.SaveAsync();
+                    //await _unitOfWork.Questions.SaveAsync();
                     //_unitOfWork.Commit();
                     question.Options.Add(new Option { OptionId = question.OptionId1, QuestionId = question.QuestionId, OptionText = question.Option1, isAnswer = false });
                     question.Options.Add(new Option { OptionId = question.OptionId2, QuestionId = question.QuestionId, OptionText = question.Option2, isAnswer = false });

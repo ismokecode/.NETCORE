@@ -42,7 +42,10 @@ namespace SWSS_v1.UnitOfWork
             //_context.Entry(obj.Customer).State = EntityState.Unchanged;
             var _emp = _context.Questions.FirstOrDefault(x => x.QuestionId == obj.QuestionId);
             _emp.QuestionText = obj.QuestionText;
-            //wait _context.SaveChangesAsync();
+            _emp.ModifiedDate = obj.ModifiedDate;
+            _emp.ModifiedBy = obj.ModifiedBy;
+            _emp.isActive = obj.isActive;
+            await _context.SaveChangesAsync();
         }
         public async Task<IEnumerable<Question>> SearchStudentByName(string input)
         {

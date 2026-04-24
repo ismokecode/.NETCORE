@@ -43,6 +43,9 @@ namespace SWSS_v1.UnitOfWork
             //_context.Entry(obj.Customer).State = EntityState.Unchanged;
             var _emp = _context.Subjects.FirstOrDefault(x => x.SubjectID == obj.SubjectID);
             _emp.SubjectName = obj.SubjectName;
+            _emp.ModifiedBy = obj.ModifiedBy;
+            _emp.ModifiedDate = obj.ModifiedDate;
+            _emp.isActive = obj.isActive;
             //wait _context.SaveChangesAsync();
         }
         public async Task<IEnumerable<Subject>> SearchLocationByName(string input)
