@@ -7,11 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-<<<<<<< HEAD
+
     <PackageReference Include="MailKit" Version="4.16.0" />
-=======
     <PackageReference Include="EntityFramework" Version="6.5.1" />
->>>>>>> 079a50cf56559be083db7d426a78ca2e8bbb22a0
     <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.5" />

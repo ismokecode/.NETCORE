@@ -28,6 +28,8 @@ namespace SWSS_v1.Models
         public string? RefreshToken { get; set; }
         [NotMapped]
         public DateTime? RefreshTokenExpiryTime { get; set; }
-        
+        public int InstituteId { get; set; }
+
+
     }
 }

@@ -112,7 +112,7 @@ public class AppController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles = "Admin,Super Admin")]
     public async Task<ActionResult<APIResponse_V<string>>> Register([FromBody] RegisterVM registerVM)
     {
         APIResponse_V<Customer> response = new APIResponse_V<Customer>();
@@ -135,24 +135,35 @@ public class AppController : ControllerBase
                     response._errors.Add("User name already taken.");
                     return Ok(response); ;
                 }
-
                 //Add the user to db
                 ApplicationUser user = new()
                 {
                     FirstName = registerVM.FirstName,
                     LastName = registerVM.LastName,
                     Email = registerVM.Email,
-                    CreatedBy = "",
+                    CreatedBy = User.Identity?.Name,
                     CreatedDateTime = DateTime.Now,
                     SecurityStamp = Guid.NewGuid().ToString(),
                     UserName = registerVM.UserName,
                     Phone = registerVM.Phone,
                     Pincode = registerVM.Pincode,
-                    RefreshTokenExpiryTime = DateTime.Now.AddDays(_configuration.GetValue<double>("RefreshTokenValidityInDays"))
-
+                    RefreshTokenExpiryTime = DateTime.Now.AddDays(_configuration.GetValue<double>("RefreshTokenValidityInDays")),
+                    InstituteId = registerVM.InstituteId
                 };
                 if (await _roleManager.RoleExistsAsync(registerVM.UserRole))
                 {
+                    string loggedInUser = User.Identity?.Name;
+                    // 1. Retrieve the user by their username
+                    var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
+                    // 2. Get the list of role names associated with that user
+
+                    _userManager.GetRolesAsync(loggedInUserDeatails);
+                    var roles = await _userManager.GetRolesAsync(user);
+                    foreach(var role in roles)
+                    {
+
+                    }
+
                     var result = await _userManager.CreateAsync(user, registerVM.Password);
                     if (result.Errors.Count() > 0)
                     {
@@ -1340,6 +1351,170 @@ public class AppController : ControllerBase
             response.exception = "Something went wrong, Please try later.";
             response._statusCode = StatusCodes.Status500InternalServerError;
             return Ok(response);
+        }
+    }
+    #endregion
+
+    #region Institue
+    [HttpPost]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<Institute>>> CreateInstitute([FromBody] Institute obj)
+    {
+        APIResponse_V<Institute> response = new APIResponse_V<Institute>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        response._result = null;
+        response.exception = null;
+        try
+        {
+            if (ModelState.IsValid)
+            {
+                obj.Name.Trim();
+                if (/*!_unitOfWork.Institutes.IsExist(obj) &&*/ obj.InstituteId == 0)
+                {
+                    obj.CreatedBy = User.Identity?.Name;
+                    var user = await _userManager.FindByNameAsync(obj.CreatedBy);
+                    obj.CreatedBy = user.Id;
+                    obj.CreatedDate = DateTime.Now;
+                    obj.isActive = true;
+                    _unitOfWork.BeginTransaction();
+                    await _unitOfWork.Institutes.InsertAsync(obj);
+                    await _unitOfWork.Institutes.SaveAsync();
+                    _unitOfWork.Commit();
+                    response._success.Add("Data saved successfully");
+                    return Ok(response);
+                }
+                else if (obj.InstituteId > 0)
+                //else if (!_unitOfWork.Locations.IsExistUpdate(loc))
+                {
+                    _unitOfWork.BeginTransaction();
+                    var result = await _unitOfWork.Institutes.GetByIdAsync(obj.InstituteId);
+                    obj.ModifiedBy = User.Identity?.Name;
+                    obj.ModifiedDate = DateTime.Now;
+                    obj.isActive = true;                  
+                    await _unitOfWork.Institutes.UpdateAsync(obj);
+                    await _unitOfWork.Institutes.SaveAsync();
+                    _unitOfWork.Commit();
+                    response._statusCode = StatusCodes.Status200OK;
+                    response._success.Add("Data updated successfully");
+                    return Ok(response);
+                }
+                else
+                {
+                    response._statusCode = StatusCodes.Status409Conflict;
+                    response._errors.Add(obj.Name + " already exist");
+                    return Ok(response);
+                }
+            }
+            else
+            {
+                foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry modelState in ModelState.Values)
+                {
+                    foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelError error in modelState.Errors)
+                    {
+                        response._errors.Add(error.ErrorMessage);
+                    }
+                }
+                response._statusCode = StatusCodes.Status400BadRequest;
+                return Ok(response);
+            }
+        }
+        catch (Exception ex)
+        {
+            _unitOfWork.Rollback();
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status400BadRequest;
+            //return new BadRequestException(ex.ToString());
+            return Ok(response);
+        }
+    }
+    [HttpDelete]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<Institute>>> DeleteInstitute(int id)
+    {
+        APIResponse_V<Institute> response = new APIResponse_V<Institute>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        //response._result = null;
+        response.exception = null;
+        try
+        {
+            _unitOfWork.BeginTransaction();
+            await _unitOfWork.Institutes.DeleteAsync(id);
+            await _unitOfWork.Institutes.SaveAsync();
+            _unitOfWork.Commit();
+            response._success.Add("Data deleted successfully");
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _unitOfWork.Rollback();
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return Ok(response);
+        }
+    }
+    [HttpGet]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<Institute>>> GetAllInstitute()
+    {
+        APIResponse_V<Institute> response = new APIResponse_V<Institute>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        //response._result = null;
+        response.exception = null;
+        try
+        {
+            response._results = await _unitOfWork.Institutes.GetAllAsync();
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return Ok(response);
+        }
+    }
+    [HttpGet]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<Institute>>> GetInstituteById(int id)
+    {
+        APIResponse_V<Institute> response = new APIResponse_V<Institute>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        //response._result = null;
+        response.exception = null;
+        try
+        {
+            _unitOfWork.BeginTransaction();
+        
+            response._result = await _unitOfWork.Institutes.GetByIdAsync(id);
+            _unitOfWork.Commit();
+            if (response._result == null)
+            {
+                response._errors.Add("No data found.");
+            }
+            else
+            {
+                response._success.Add("Successfully data fetched.");
+            }
+            response._statusCode = StatusCodes.Status200OK;
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _unitOfWork.Rollback();
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return BadRequest(response);
         }
     }
     #endregion

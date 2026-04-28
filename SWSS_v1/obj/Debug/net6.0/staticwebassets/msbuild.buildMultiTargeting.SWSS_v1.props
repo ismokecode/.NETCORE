@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\SWSS_v1.props" />
+</Project>

@@ -15,5 +15,6 @@ namespace SWSS_v1.Models
         public DateTime RefreshTokenExpiryTime { get; set; }
         public string CreatedBy { get; set; }
         public DateTime CreatedDateTime { get; set; }
+        public int InstituteId { get; set; }
     }
 }

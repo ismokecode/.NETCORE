@@ -1,11 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
-using NLog.Fluent;
+﻿//using Microsoft.EntityFrameworkCore;
+//using NLog.Fluent;
+//using ss=System.Data.Entity;
 
 namespace SWSS_v1.UnitOfBox
 {
     public class Repository<T> : IRepository<T> where T : class
     {
         private readonly CustomDbContext _dbContext;
+        //using Microsoft.EntityFrameworkCore;
         private readonly DbSet<T> _dbSet;
         //public Repository(DbContext dbContext)
         //{
@@ -24,10 +26,11 @@ namespace SWSS_v1.UnitOfBox
         }
         public virtual async Task<T?> GetByIdAsync(int Id)
         {
+            //_dbSet.AsNoTracking();
             return await _dbSet.FindAsync(Id);
         }
         public virtual async Task InsertAsync(T Entity)
-        {
+        {       
             //It will mark the Entity state as Added
             await _dbSet.AddAsync(Entity);
         }

@@ -20,6 +20,7 @@ namespace SWSS_v1.UnitOfBox
         StudentRepository Students { get; }
         QuestionRepository Questions { get; }
         OptionRepository Options { get; }
+        InstituteRepository Institutes { get; }
         
     }
 }

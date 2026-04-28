@@ -46,6 +46,9 @@ namespace SWSS_v1.UnitOfBox
             .HasMany(o => o.Questions)
             .WithOne(q => q.Subjects)
             .HasForeignKey(o => o.SubjectId);
+
+            //modelBuilder.Entity<Institutes>();
+
             base.OnModelCreating(modelBuilder);
         }
         public DbSet<Department> Departments { get; set; }
@@ -59,6 +62,8 @@ namespace SWSS_v1.UnitOfBox
         public DbSet<Answer> Answers { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<Question> Questions { get; set; }
+        public DbSet<Institute> Institutes { get; set; }
+
     }
 }
 
