@@ -85,3 +85,12 @@ login
   "refreshToken": null,
   "refreshTokenExpiryTime": "0001-01-01T00:00:00"
 }
+
+
+Admin Login
+as@ad
+Ad@123456
+
+User Login
+user007
+User@007

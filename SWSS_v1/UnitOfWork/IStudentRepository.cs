@@ -8,5 +8,7 @@ namespace SWSS_v1.UnitOfWork
         public Task<ICollection<Student>> GetStudentClassDetailsAsync();
         public Task<Student> GetStudentClassDetailsById(int id);
         public Task InActiveStudentAsync(int id);
+        public Task<IQueryable<Student>> GetStudentsByInstitute(int id);
+
     }
 }

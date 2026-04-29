@@ -12,5 +12,6 @@
         //[NotMapped]
         public DateTime? CreatedDate = null;
         public bool? isActive { get; set; }
+        public int? InstituteId { get; set; }
     }
 }

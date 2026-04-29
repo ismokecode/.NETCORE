@@ -13,5 +13,6 @@ namespace SWSS_v1.Models
         //[NotMapped]
         public DateTime? CreatedDate = null;
         public bool? isActive { get; set; }
+        public int? InstituteId { get; set; }
     }
 } 

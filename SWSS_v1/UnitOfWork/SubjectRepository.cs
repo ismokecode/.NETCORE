@@ -14,7 +14,7 @@ namespace SWSS_v1.UnitOfWork
         public bool IsExist(Subject obj)
         {
             bool isExist;
-            var result = _context.Subjects.Where<Subject>(x => x.SubjectName == obj.SubjectName).FirstOrDefault();
+            var result = _context.Subjects.Where<Subject>(x => x.SubjectName == obj.SubjectName && x.InstituteId==obj.InstituteId).FirstOrDefault();
             return isExist = result == null ? false : true;
         }
         public bool IsExistUpdate(Subject obj)
@@ -51,6 +51,11 @@ namespace SWSS_v1.UnitOfWork
         public async Task<IEnumerable<Subject>> SearchLocationByName(string input)
         {
             return await _context.Subjects.Where(x => x.SubjectName == input).ToListAsync();
+        }
+        public async Task<IQueryable<Subject>> GetSubjectsByInstitute(int Id)
+        {
+            var result = _context.Subjects.Where(x => x.InstituteId == Id && x.isActive==true);
+            return result;
         }
     }
 }

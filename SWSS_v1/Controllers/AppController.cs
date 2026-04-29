@@ -125,6 +125,24 @@ public class AppController : ControllerBase
         {
             if (ModelState.IsValid)
             {
+                string loggedInUser = User.Identity?.Name;
+                // 1. Retrieve the user by their username
+                var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
+                // 2. Get the list of role names associated with that user               
+                var roles = await _userManager.GetRolesAsync(loggedInUserDeatails);
+                foreach (var role in roles)
+                {
+                    //if super admin have multiple roles that condition is pending
+                    if(role.ToUpper()=="SUPER ADMIN")
+                    {
+                        registerVM.UserRole = "ADMIN";
+                    }
+                    else 
+                    {
+                        registerVM.UserRole = "USER";
+                    }
+                }
+                
                 _logger.LogInformation("Fetching all the Students");
                 //check user exists
                 var userExist = await _userManager.FindByNameAsync(registerVM.UserName);
@@ -152,17 +170,7 @@ public class AppController : ControllerBase
                 };
                 if (await _roleManager.RoleExistsAsync(registerVM.UserRole))
                 {
-                    string loggedInUser = User.Identity?.Name;
-                    // 1. Retrieve the user by their username
-                    var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
-                    // 2. Get the list of role names associated with that user
-
-                    _userManager.GetRolesAsync(loggedInUserDeatails);
-                    var roles = await _userManager.GetRolesAsync(user);
-                    foreach(var role in roles)
-                    {
-
-                    }
+                   
 
                     var result = await _userManager.CreateAsync(user, registerVM.Password);
                     if (result.Errors.Count() > 0)
@@ -695,7 +703,7 @@ public class AppController : ControllerBase
     [HttpPost]
     [Authorize]
     public async Task<ActionResult<APIResponse_V<Classes>>> CreateClass([FromBody] Classes cls)
-    {;
+    {
         APIResponse_V<Classes> response = new APIResponse_V<Classes>();
         response._success = new List<string>();
         response._errors = new List<string>();
@@ -706,9 +714,14 @@ public class AppController : ControllerBase
         {
             if (ModelState.IsValid)
             {
-                cls.ClassName.Trim();
+                // 1. Retrieve the user by their username
+                string loggedInUser = User.Identity?.Name;
+                // 2. Get the list of role names associated with that user
+                var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
+                cls.InstituteId = loggedInUserDeatails.InstituteId;
+                cls.ClassName.Trim();         
                 if (!_unitOfWork.Classes.IsExist(cls) && cls.ClassesId == 0)
-                {
+                {                   
                     cls.CreatedBy = User.Identity?.Name;
                     cls.CreatedDate = DateTime.Now;
                     cls.isActive = true;
@@ -804,7 +817,12 @@ public class AppController : ControllerBase
         response.exception = null;
         try
         {
-            response._results = await _unitOfWork.Classes.GetAllAsync();
+            // 1. Retrieve the user by their username
+            string loggedInUser = User.Identity?.Name;
+            // 2. Get the list of role names associated with that user
+            var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
+            int InstituteId = loggedInUserDeatails.InstituteId;
+            response._results = await _unitOfWork.Classes.GetClassesByInstitute(InstituteId);
             return Ok(response);    
         }
         catch (Exception ex)
@@ -864,6 +882,12 @@ public class AppController : ControllerBase
         {
             if (ModelState.IsValid)
             {
+                // 1. Retrieve the user by their username
+                string loggedInUser = User.Identity?.Name;
+                // 2. Get the list of role names associated with that user
+                var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
+                sub.InstituteId = loggedInUserDeatails.InstituteId;
+
                 sub.SubjectName.Trim();
                 if (!_unitOfWork.Subjects.IsExist(sub) && sub.SubjectID == 0)
                 {
@@ -960,7 +984,12 @@ public class AppController : ControllerBase
         APIResponse_V<Subject> response = new APIResponse_V<Subject>();
         try
         {
-            response._results = await _unitOfWork.Subjects.GetAllAsync();
+            // 1. Retrieve the user by their username
+            string loggedInUser = User.Identity?.Name;
+            // 2. Get the list of role names associated with that user
+            var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
+            int InstituteId = loggedInUserDeatails.InstituteId;
+            response._results = await _unitOfWork.Subjects.GetSubjectsByInstitute(InstituteId);
             return Ok(response);
         }
         catch (Exception ex)
@@ -1015,8 +1044,14 @@ public class AppController : ControllerBase
         {
             if (ModelState.IsValid)
             {
+                // 1. Retrieve the user by their username
+                string loggedInUser = User.Identity?.Name;
+                // 2. Get the list of role names associated with that user
+                var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
+                stu.InstituteId = loggedInUserDeatails.InstituteId;
+
                 stu.StudentName.Trim();
-                if (!_unitOfWork.Students.IsExist(stu) && stu.StudentId == 0)
+                if (stu.StudentId == 0)
                 {
                     stu.CreatedBy = User.Identity?.Name;
                     stu.CreatedDate = DateTime.UtcNow;
@@ -1111,8 +1146,14 @@ public class AppController : ControllerBase
         APIResponse_V<Student> response = new APIResponse_V<Student>();
         try
         {
+            // 1. Retrieve the user by their username
+            string loggedInUser = User.Identity?.Name;
+            // 2. Get the list of role names associated with that user
+            var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
+            int InstituteId = loggedInUserDeatails.InstituteId;
             //var s = await _istudentReposs.GetAllAsync();
-            response._results = await _istudentRepos.GetStudentClassDetailsAsync();
+            //response._results = await _istudentRepos.GetStudentClassDetailsAsync();
+            response._results = await _istudentRepos.GetStudentsByInstitute(InstituteId);
             //var ss = _unitOfWork.Students.GetAllAsync();
             //var result = await _unitOfWork.Students.GetStudentClassDetailsAsync();
             return Ok(response);
@@ -1168,9 +1209,15 @@ public class AppController : ControllerBase
         {
             if (ModelState.IsValid)
             {
+                // 1. Retrieve the user by their username
+                string loggedInUser = User.Identity?.Name;
+                // 2. Get the list of role names associated with that user
+                var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
+                question.InstituteId = loggedInUserDeatails.InstituteId;
+
                 question.QuestionText.Trim();
                 
-                if (!_unitOfWork.Questions.IsExist(question) && question.QuestionId == 0)
+                if (question.QuestionId == 0)
                 {
                     question.CreatedBy = User.Identity?.Name;
                     question.CreatedDate = DateTime.Now;
@@ -1315,7 +1362,12 @@ public class AppController : ControllerBase
         APIResponse_V<Question> response = new APIResponse_V<Question>();
         try
         {
-            response._results = await _iquestionRepos.GetQuestionOptionsAsync();
+            // 1. Retrieve the user by their username
+            string loggedInUser = User.Identity?.Name;
+            // 2. Get the list of role names associated with that user
+            var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
+            int InstituteId = loggedInUserDeatails.InstituteId;
+            response._results = await _iquestionRepos.GetQuestionOptionsByInstituteAsync(InstituteId);
             //response._results = await _unitOfWork.Questions.GetAllAsync();
             return Ok(response);
         }

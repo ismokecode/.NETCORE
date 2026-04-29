@@ -19,7 +19,7 @@ namespace SWSS_v1.Models
         [Required(ErrorMessage = "Please enter password")]
         [RegularExpression("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[#$^+=!*()@%&]).{8,}$")]
         public string Password { get; set; }
-        public string UserRole { get; set; }
+        public string? UserRole { get; set; }
         [Required(ErrorMessage = "Please enter phone number")]
         [RegularExpression("^[0-9]{10}$")]
         public string Phone { get; set; }

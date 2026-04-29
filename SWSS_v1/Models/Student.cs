@@ -23,5 +23,7 @@ namespace SWSS_v1.Models
         public bool isActive { get; set; }
         public DateTime? ModifiedDate = null;
         public DateTime? CreatedDate = null;
+        public int? InstituteId { get; set; }
+
     }
 }
