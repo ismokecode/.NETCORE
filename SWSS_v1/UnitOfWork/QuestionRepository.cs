@@ -78,5 +78,16 @@ namespace SWSS_v1.UnitOfWork
                              //.ToList();
             return questionWithOptions;
         }
+
+        public async Task<IQueryable<Question>> GetQuestionsByClassAndSubject(int clsId, int subId,int instituteId)
+        {
+            var questionWithOptions = _context.Questions
+                             .Where(x => x.InstituteId == instituteId && x.ClassID == clsId && x.SubjectId == subId)
+                             .Include(p => p.Options)
+                             .Include(p => p.Classes)
+                             .Include(p => p.Subjects);
+            //.ToList();
+            return questionWithOptions;
+        }
     }
 }

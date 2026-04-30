@@ -1379,6 +1379,31 @@ public class AppController : ControllerBase
             return Ok(response);
         }
     }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<Question>>> GetQuestionsByClassAndSubject(int classId,int subjectId)
+    {
+        APIResponse_V<Question> response = new APIResponse_V<Question>();
+        try
+        {
+            // 1. Retrieve the user by their username
+            string loggedInUser = User.Identity?.Name;
+            // 2. Get the list of role names associated with that user
+            var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
+            int InstituteId = loggedInUserDeatails.InstituteId;
+            response._results = await _iquestionRepos.GetQuestionsByClassAndSubject(classId, subjectId, InstituteId);
+            //response._results = await _unitOfWork.Questions.GetAllAsync();
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return Ok(response);
+        }
+    }
     [HttpDelete]
     [Authorize]
     public async Task<ActionResult<APIResponse_V<Question>>> DeleteQuestion(int id)

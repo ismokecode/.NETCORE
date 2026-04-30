@@ -8,6 +8,7 @@ namespace SWSS_v1.UnitOfWork
         public Task<IEnumerable<Question>> GetQuestionOptionsAsync();
         public Task<Question> GetQuestionOptionsByIdAsync(int id);
         public Task<IQueryable<Question>> GetQuestionOptionsByInstituteAsync(int id);
+        public Task<IQueryable<Question>> GetQuestionsByClassAndSubject(int clsId,int subId, int instituteId);
 
     }
 }
