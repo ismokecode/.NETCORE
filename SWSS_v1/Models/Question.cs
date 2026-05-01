@@ -43,6 +43,7 @@ namespace SWSS_v1.Models
         public DateTime? CreatedDate = null;
         public bool? isActive { get; set; }
         public int? InstituteId { get; set; }
+        public bool? isSetAsQuestion { get; set; }
 
         //public Question(string questionText, List<Option> options, int correctAnswerId)
         //{
