@@ -1325,8 +1325,9 @@ public class AppController : ControllerBase
 
     [HttpPost]
     [Authorize]
-    public async Task<ActionResult<APIResponse_V<Question>>> SetAsQuestion(int[] questionsId)
-    {
+    //public async Task<ActionResult<APIResponse_V<Question>>> SetAsQuestion(int[] questionsId, int classId, int subjectId)    public async Task<ActionResult<APIResponse_V<Question>>> SetAsQuestion(int[] questionsId, int classId, int subjectId)
+    public async Task<ActionResult<APIResponse_V<Question>>> SetAsQuestion([FromBody] QuestionRequest request)
+     {
         APIResponse_V<Question> response = new APIResponse_V<Question>();
         response._success = new List<string>(); 
         response._errors = new List<string>();
@@ -1338,7 +1339,7 @@ public class AppController : ControllerBase
             if (ModelState.IsValid)
             {
                 _unitOfWork.BeginTransaction();
-                await _unitOfWork.Questions.SetAsQuestions(questionsId);
+                await _unitOfWork.Questions.SetAsQuestions(request.questionsId, request.classId, request.subjectId);
 
                 _unitOfWork.Commit();
                 response._statusCode = StatusCodes.Status200OK;

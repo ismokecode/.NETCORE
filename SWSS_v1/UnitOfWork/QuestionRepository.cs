@@ -89,10 +89,13 @@ namespace SWSS_v1.UnitOfWork
             //.ToList();
             return questionWithOptions;
         }
-        public async Task SetAsQuestions(int[] questionsIds)
+        public async Task SetAsQuestions(int[] questionsIds,int classId, int subjectId)
         {
-                await _context.Questions
-                .Where(q => questionsIds.Contains(q.QuestionId))
+            await _context.Questions.Where(q => q.ClassID == classId && q.SubjectId == subjectId)
+                .ExecuteUpdateAsync(s => s.SetProperty(q => q.isSetAsQuestion, false));
+            
+            await _context.Questions
+                .Where(q => questionsIds.Contains(q.QuestionId)).Where(q=>q.ClassID==classId && q.SubjectId==subjectId)
                 .ExecuteUpdateAsync(s => s.SetProperty(q => q.isSetAsQuestion, true));
                 await _context.SaveChangesAsync();
         }
