@@ -1487,7 +1487,7 @@ public class AppController : ControllerBase
             // 2. Get the list of role names associated with that user
             var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
             int InstituteId = loggedInUserDeatails.InstituteId;
-            var results = await _iquestionRepos.GetQuestionsByClassAndSubject(classId, subjectId, InstituteId);
+            var results = await _iquestionRepos.GetQuizQuestionByClassAndSubject(classId, subjectId, InstituteId);
 
             if (results.Count() > 0)
             {
@@ -1498,10 +1498,10 @@ public class AppController : ControllerBase
                         QuestionText = quiz.QuestionText,
                         Options = new string[]
                         {
-                            quiz.Options[0].ToString(),
-                            quiz.Options[1].ToString(),
-                            quiz.Options[2].ToString(),
-                            quiz.Options[3].ToString()
+                            quiz.Options[0].OptionText.ToString(),
+                            quiz.Options[1].OptionText.ToString(),
+                            quiz.Options[2].OptionText.ToString(),
+                            quiz.Options[3].OptionText.ToString()
                         },
                         Answer = GetAnswer(quiz.Options)
                     });

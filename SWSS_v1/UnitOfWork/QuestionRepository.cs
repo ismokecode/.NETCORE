@@ -89,6 +89,16 @@ namespace SWSS_v1.UnitOfWork
             //.ToList();
             return questionWithOptions;
         }
+        public async Task<IQueryable<Question>> GetQuizQuestionByClassAndSubject(int clsId, int subId, int instituteId)
+        {
+            var questionWithOptions = _context.Questions
+                             .Where(x => x.InstituteId == instituteId && x.ClassID == clsId && x.SubjectId == subId && x.isSetAsQuestion==true)
+                             .Include(p => p.Options)
+                             .Include(p => p.Classes)
+                             .Include(p => p.Subjects);
+            //.ToList();
+            return questionWithOptions;
+        }
         public async Task SetAsQuestions(int[] questionsIds,int classId, int subjectId)
         {
             await _context.Questions.Where(q => q.ClassID == classId && q.SubjectId == subjectId)
