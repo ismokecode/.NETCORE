@@ -600,6 +600,11 @@ public class AppController : ControllerBase
     public async Task<ActionResult<APIResponse_V<Location>>> GetAllLocations()
     {
         APIResponse_V<Location> response = new APIResponse_V<Location>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        response._result = null;
+        response.exception = null;
         try
         {
             response._results = await _unitOfWork.Locations.GetAllAsync();
@@ -982,6 +987,11 @@ public class AppController : ControllerBase
     public async Task<ActionResult<APIResponse_V<Subject>>> GetAllSubjects()
     {
         APIResponse_V<Subject> response = new APIResponse_V<Subject>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        //response._result = null;
+        response.exception = null;
         try
         {
             // 1. Retrieve the user by their username
@@ -1144,6 +1154,11 @@ public class AppController : ControllerBase
     public async Task<ActionResult<APIResponse_V<Student>>> GetAllStudents()
     {
         APIResponse_V<Student> response = new APIResponse_V<Student>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        //response._result = null;
+        response.exception = null;
         try
         {
             // 1. Retrieve the user by their username
@@ -1404,6 +1419,11 @@ public class AppController : ControllerBase
     public async Task<ActionResult<APIResponse_V<Question>>> GetAllQuestions()
     {
         APIResponse_V<Question> response = new APIResponse_V<Question>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        //response._result = null;
+        response.exception = null;
         try
         {
             // 1. Retrieve the user by their username
@@ -1429,6 +1449,8 @@ public class AppController : ControllerBase
     public async Task<ActionResult<APIResponse_V<Question>>> GetQuestionsByClassAndSubject(int classId,int subjectId)
     {
         APIResponse_V<Question> response = new APIResponse_V<Question>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
         try
         {
             // 1. Retrieve the user by their username
@@ -1437,6 +1459,11 @@ public class AppController : ControllerBase
             var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
             int InstituteId = loggedInUserDeatails.InstituteId;
             response._results = await _iquestionRepos.GetQuestionsByClassAndSubject(classId, subjectId, InstituteId);
+            if(response._results.Count()==0)
+            {
+                response._success.Add("Sorry no records found.");
+
+            }
             //response._results = await _unitOfWork.Questions.GetAllAsync();
             return Ok(response);
         }
@@ -1448,6 +1475,62 @@ public class AppController : ControllerBase
             return Ok(response);
         }
     }
+    [HttpGet]
+    [Authorize]
+    public async Task<ActionResult<List<Quiz>>> GetQuizByClassAndSubject(int classId, int subjectId)
+    {
+        List<Quiz> response = new List<Quiz>();
+        try
+        {
+            // 1. Retrieve the user by their username
+            string loggedInUser = User.Identity?.Name;
+            // 2. Get the list of role names associated with that user
+            var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
+            int InstituteId = loggedInUserDeatails.InstituteId;
+            var results = await _iquestionRepos.GetQuestionsByClassAndSubject(classId, subjectId, InstituteId);
+
+            if (results.Count() > 0)
+            {
+                foreach(var quiz in results)
+                {
+                    response.Add(new Quiz
+                    {
+                        QuestionText = quiz.QuestionText,
+                        Options = new string[]
+                        {
+                            quiz.Options[0].ToString(),
+                            quiz.Options[1].ToString(),
+                            quiz.Options[2].ToString(),
+                            quiz.Options[3].ToString()
+                        },
+                        Answer = GetAnswer(quiz.Options)
+                    });
+                }
+             }
+            else
+            {
+                
+            }
+            //response._results = await _unitOfWork.Questions.GetAllAsync();
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            return Ok(response);
+        }
+    }
+    public static string GetAnswer(List<Option> options)
+    {
+        foreach(var option in options)
+        {
+            if(option.isAnswer)
+            {
+                return option.OptionText;
+            }
+        }
+        return "";
+    }
+
     [HttpDelete]
     [Authorize]
     public async Task<ActionResult<APIResponse_V<Question>>> DeleteQuestion(int id)
