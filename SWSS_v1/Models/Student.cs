@@ -24,6 +24,7 @@ namespace SWSS_v1.Models
         public DateTime? ModifiedDate = null;
         public DateTime? CreatedDate = null;
         public int? InstituteId { get; set; }
+        public bool? isSelected { get; set; }
 
     }
 }

@@ -1066,6 +1066,7 @@ public class AppController : ControllerBase
                     stu.CreatedBy = User.Identity?.Name;
                     stu.CreatedDate = DateTime.UtcNow;
                     stu.isActive = true;
+                    stu.isSelected = false;
                     _unitOfWork.BeginTransaction();
                     await _unitOfWork.Students.InsertAsync(stu);
                     await _unitOfWork.Students.SaveAsync();
@@ -1079,6 +1080,7 @@ public class AppController : ControllerBase
                     stu.ModifiedBy = User.Identity?.Name;
                     stu.ModifiedDate = DateTime.UtcNow;
                     stu.isActive = true;
+                    stu.isSelected = false;
                     _unitOfWork.BeginTransaction();
                     await _unitOfWork.Students.UpdateAsync(stu);
                     await _unitOfWork.Students.SaveAsync();
