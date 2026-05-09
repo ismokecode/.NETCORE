@@ -87,5 +87,11 @@ namespace SWSS_v1.UnitOfWork
              .Include(p => p.Classes);
             return studentsWithClasses;
         }
+        public async Task<IQueryable<Student>> GetStudentsByInstituteAndClassId(int id,int classId)
+        {
+            var studentsWithClasses = _context.Students.Where(u => u.isActive == true && u.InstituteId == id && u.ClassesId == classId)
+             .Include(p => p.Classes);
+            return studentsWithClasses;
+        }
     }
 }

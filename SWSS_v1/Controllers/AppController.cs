@@ -1181,6 +1181,40 @@ public class AppController : ControllerBase
             return Ok(response);
         }
     }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<Student>>> GetStudentsByClassId(int classId)
+    {
+        APIResponse_V<Student> response = new APIResponse_V<Student>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        //response._result = null;
+        response.exception = null;
+        try
+        {
+            // 1. Retrieve the user by their username
+            string loggedInUser = User.Identity?.Name;
+            // 2. Get the list of role names associated with that user
+            var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
+            int InstituteId = loggedInUserDeatails.InstituteId;
+            //var s = await _istudentReposs.GetAllAsync();
+            //response._results = await _istudentRepos.GetStudentClassDetailsAsync();
+            response._results = await _istudentRepos.GetStudentsByInstituteAndClassId(InstituteId,classId);
+            //var ss = _unitOfWork.Students.GetAllAsync();
+            //var result = await _unitOfWork.Students.GetStudentClassDetailsAsync();
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return Ok(response);
+        }
+    }
+
     [HttpDelete]
     [Authorize]
     public async Task<ActionResult<APIResponse_V<Student>>> DeleteStudent(int id)
@@ -1300,7 +1334,7 @@ public class AppController : ControllerBase
                     response._statusCode = StatusCodes.Status200OK;
                     var smtpSection = _configuration.GetSection("SmtpSettings");
                     var from = smtpSection["SenderEmail"]; // Accessing child key
-                    var to = "sudarshanbgs01@gmail.com"; // Accessing child key
+                    var to = "jha615462@gmail.com"; // Accessing child key
                     var password = smtpSection["Password"];
                     _imailCommunication.Send(from, to, "Test mail", "Test link is workig.", password);
                     response._success.Add("Data updated successfully");
