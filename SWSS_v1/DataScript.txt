@@ -1,0 +1,31 @@
+﻿  insert into Institutes 
+  ([Name],[Phone],[Email],[Address],IsActive
+  ,[CreatedDate],[CreatedBy],[ModifiedDate]) 
+  values('Master','8676968080','rajeevkr.co.in@gmail.com','Patna',1,
+  GETDATE(),'','')
+
+  //SUPER ADMIN CREATION
+  {
+  "firstName": "Super",
+  "lastName": "Admin",
+  "email": "rajeevkr.co.in@gmail.com",
+  "userName": "SuperAdmin007",
+  "password": "SuperAdmin@007",
+  "userRole": "Super Admin",
+  "phone": "8676968080",
+  "pincode": "851217",
+  "refreshToken": "string",
+  "refreshTokenExpiryTime": "2026-05-13T12:46:39.454Z",
+  "instituteId": 5
+}
+
+
+//scripts
+
+update AspNetUsers
+set InstituteId=5
+where Id='ec4641d4-3b5c-4a32-8a7d-d0ed2117ca46'
+
+update Classes
+set InstituteId=5
+where ClassesId in (1028,1029)

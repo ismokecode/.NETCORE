@@ -143,7 +143,7 @@ public class AppController : ControllerBase
                     }
                 }
                 
-                _logger.LogInformation("Fetching all the Students");
+                _logger.LogInformation("AppController register method called.");
                 //check user exists
                 var userExist = await _userManager.FindByNameAsync(registerVM.UserName);
                 if (userExist != null)
@@ -232,25 +232,33 @@ public class AppController : ControllerBase
         {
             Email = model.Email,
             SecurityStamp = Guid.NewGuid().ToString(),
-            UserName = model.UserName
+            UserName = model.UserName,
+            InstituteId=model.InstituteId,
+            FirstName=model.FirstName,
+            LastName=model.LastName
         };
         var result = await _userManager.CreateAsync(user, model.Password);
         if (!result.Succeeded)
             return StatusCode(StatusCodes.Status500InternalServerError, new { Status = "Error", Message = "User creation failed! Please check user details and try again." });
-
+        if (!await _roleManager.RoleExistsAsync(UserRoles.SuperAdmin))
+            await _roleManager.CreateAsync(new IdentityRole(UserRoles.SuperAdmin));
         if (!await _roleManager.RoleExistsAsync(UserRoles.Admin))
             await _roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
         if (!await _roleManager.RoleExistsAsync(UserRoles.User))
             await _roleManager.CreateAsync(new IdentityRole(UserRoles.User));
 
-        if (await _roleManager.RoleExistsAsync(UserRoles.Admin))
+        if (await _roleManager.RoleExistsAsync(UserRoles.SuperAdmin))
         {
-            await _userManager.AddToRoleAsync(user, UserRoles.Admin);
+            await _userManager.AddToRoleAsync(user, UserRoles.SuperAdmin);
         }
-        if (await _roleManager.RoleExistsAsync(UserRoles.Admin))
-        {
-            await _userManager.AddToRoleAsync(user, UserRoles.User);
-        }
+        //if (await _roleManager.RoleExistsAsync(UserRoles.Admin))
+        //{
+        //    await _userManager.AddToRoleAsync(user, UserRoles.Admin);
+        //}
+        //if (await _roleManager.RoleExistsAsync(UserRoles.User))
+        //{
+        //    await _userManager.AddToRoleAsync(user, UserRoles.User);
+        //}
         return Ok(new { Status = "Success", Message = "User created successfully!" });
     }
     [HttpPost]
@@ -838,6 +846,34 @@ public class AppController : ControllerBase
             return Ok(response);
         }
     }
+    
+    [HttpGet]
+    public async Task<ActionResult<APIResponse_V<Classes>>> GetAllClassesForVisitors()
+    {
+        APIResponse_V<Classes> response = new APIResponse_V<Classes>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        //response._result = null;
+        response.exception = null;
+        try
+        {
+            // 1. Retrieve the user by their username
+            //string loggedInUser = User.Identity?.Name;
+            // 2. Get the list of role names associated with that user
+            //var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
+            int InstituteId = 5;
+            response._results = await _unitOfWork.Classes.GetClassesByInstitute(InstituteId);
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return Ok(response);
+        }
+    }
     [HttpGet]
     [Authorize]
     public async Task<ActionResult<APIResponse_V<Classes>>> GetClassById(int id)
@@ -999,6 +1035,34 @@ public class AppController : ControllerBase
             // 2. Get the list of role names associated with that user
             var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
             int InstituteId = loggedInUserDeatails.InstituteId;
+            response._results = await _unitOfWork.Subjects.GetSubjectsByInstitute(InstituteId);
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return Ok(response);
+        }
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<APIResponse_V<Subject>>> GetAllSubjectForVisitors()
+    {
+        APIResponse_V<Subject> response = new APIResponse_V<Subject>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        //response._result = null;
+        response.exception = null;
+        try
+        {
+            // 1. Retrieve the user by their username
+            //string loggedInUser = User.Identity?.Name;
+            // 2. Get the list of role names associated with that user
+            //var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
+            int InstituteId = 5;
             response._results = await _unitOfWork.Subjects.GetSubjectsByInstitute(InstituteId);
             return Ok(response);
         }
@@ -1555,6 +1619,51 @@ public class AppController : ControllerBase
             return Ok(response);
         }
     }
+
+    [HttpGet]
+    public async Task<ActionResult<List<Quiz>>> GetQuizByClassAndSubjectForVisitors(int classId, int subjectId)
+    {
+        List<Quiz> response = new List<Quiz>();
+        try
+        {
+            // 1. Retrieve the user by their username
+            string loggedInUser = User.Identity?.Name;
+            // 2. Get the list of role names associated with that user
+            //var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
+            //int InstituteId = loggedInUserDeatails.InstituteId;
+            int InstituteId = 5;
+            var results = await _iquestionRepos.GetQuizQuestionByClassAndSubject(classId, subjectId, InstituteId);
+
+            if (results.Count() > 0)
+            {
+                foreach (var quiz in results)
+                {
+                    response.Add(new Quiz
+                    {
+                        QuestionText = quiz.QuestionText,
+                        Options = new string[]
+                        {
+                            quiz.Options[0].OptionText.ToString(),
+                            quiz.Options[1].OptionText.ToString(),
+                            quiz.Options[2].OptionText.ToString(),
+                            quiz.Options[3].OptionText.ToString()
+                        },
+                        Answer = GetAnswer(quiz.Options)
+                    });
+                }
+            }
+            else
+            {
+
+            }
+            //response._results = await _unitOfWork.Questions.GetAllAsync();
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            return Ok(response);
+        }
+    }
     public static string GetAnswer(List<Option> options)
     {
         foreach(var option in options)
@@ -1597,7 +1706,7 @@ public class AppController : ControllerBase
 
     #region Institue
     [HttpPost]
-    [Authorize]
+    [Authorize(Roles ="Super Admin")]
     public async Task<ActionResult<APIResponse_V<Institute>>> CreateInstitute([FromBody] Institute obj)
     {
         APIResponse_V<Institute> response = new APIResponse_V<Institute>();
