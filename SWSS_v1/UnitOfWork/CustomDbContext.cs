@@ -63,6 +63,7 @@ namespace SWSS_v1.UnitOfBox
         public DbSet<Student> Students { get; set; }
         public DbSet<Question> Questions { get; set; }
         public DbSet<Institute> Institutes { get; set; }
+        public DbSet<TestLink> TestLinks { get; set; }
 
     }
 }

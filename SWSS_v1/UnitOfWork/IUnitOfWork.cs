@@ -21,6 +21,7 @@ namespace SWSS_v1.UnitOfBox
         QuestionRepository Questions { get; }
         OptionRepository Options { get; }
         InstituteRepository Institutes { get; }
+        TestLinkRepository TestLinks { get; }
         
     }
 }

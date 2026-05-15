@@ -1479,7 +1479,47 @@ public class AppController : ControllerBase
         }
         return Ok(response);
     }
-            
+
+    [HttpPost]
+    [Authorize]
+    //public async Task<ActionResult<APIResponse_V<Question>>> SetAsQuestion(int[] questionsId, int classId, int subjectId)    public async Task<ActionResult<APIResponse_V<Question>>> SetAsQuestion(int[] questionsId, int classId, int subjectId)
+    public async Task<ActionResult<APIResponse_V<TestLink>>> CreateAndSendTestLinks([FromBody] TestLink request)
+    {
+        APIResponse_V<TestLink> response = new APIResponse_V<TestLink>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        response._result = null;
+        response.exception = null;
+        try
+        {
+            if (ModelState.IsValid)
+            {
+                _unitOfWork.BeginTransaction();
+                await _unitOfWork.TestLinks.SaveTestLinkAsync(request);
+                _unitOfWork.Commit();
+                response._statusCode = StatusCodes.Status200OK;
+                #region email functionality
+                //var smtpSection = _configuration.GetSection("SmtpSettings");
+                //var from = smtpSection["SenderEmail"]; // Accessing child key
+                //var to = "sudarshanbgs01@gmail.com"; // Accessing child key
+                //var password = smtpSection["Password"];
+                //_imailCommunication.Send(from, to, "Test mail", "Test link is workig.", password);
+                #endregion
+                response._success.Add("Data updated successfully");
+
+                return Ok(response);
+            }
+        }
+        catch (Exception ex)
+        {
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return Ok(response);
+        }
+        return Ok(response);
+    }
 
     [HttpGet]
     [Authorize]
