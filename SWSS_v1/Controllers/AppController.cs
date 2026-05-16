@@ -1495,6 +1495,15 @@ public class AppController : ControllerBase
         {
             if (ModelState.IsValid)
             {
+
+                request.ExpiryDateTime = DateTime.UtcNow.AddHours(12);
+
+                // 1. Retrieve the user by their username
+                string loggedInUser = User.Identity?.Name;
+                // 2. Get the list of role names associated with that user
+                var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
+                request.InstituteId = loggedInUserDeatails.InstituteId;
+
                 _unitOfWork.BeginTransaction();
                 await _unitOfWork.TestLinks.SaveTestLinkAsync(request);
                 _unitOfWork.Commit();

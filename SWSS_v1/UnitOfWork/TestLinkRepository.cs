@@ -15,15 +15,21 @@ namespace SWSS_v1.UnitOfWork
             //int userId = 101; // The shared value
             //int[] roleIds = { 1, 2, 3, 4, 5 }; // The array of IDs
             // 1. Create a list of entities by projecting the array
-            var userRoles = obj.StudentId.Select(id => new TestLink
+            var linkDetails = obj.StudentsId.Select(id => new TestLink
             {
+                StudentId = id,
                 ClassId = obj.ClassId,
-                SubjectId = obj.SubjectId
+                SubjectId = obj.SubjectId,
+                ExpiryDateTime = obj.ExpiryDateTime,
+                Durations = obj.Durations,
+                TotalQuestions = obj.TotalQuestions,
+                OnlineLineTestLink = Guid.NewGuid().ToString(),
+                InstituteId=obj.InstituteId
             }).ToList();
 
             // 2. Add the range to the DbContext
-            _context.TestLinks.AddRange(userRoles);
-            await _context.AddAsync(obj);
+            _context.TestLinks.AddRange(linkDetails);
+            await _context.SaveChangesAsync();
         }
     }
 }
