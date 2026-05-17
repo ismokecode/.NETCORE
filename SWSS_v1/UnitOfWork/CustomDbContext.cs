@@ -39,13 +39,19 @@ namespace SWSS_v1.UnitOfBox
 
             modelBuilder.Entity<Classes>()
             .HasMany(o => o.lstQuestion)
-            .WithOne(q => q.Classes)
+            .WithOne(q => q.Classes)            
             .HasForeignKey(o => o.ClassID);
 
             modelBuilder.Entity<Subject>()
             .HasMany(o => o.Questions)
             .WithOne(q => q.Subjects)
             .HasForeignKey(o => o.SubjectId);
+
+            //modelBuilder.Entity<Classes>(b =>
+            //{
+            //    b.HasMany<Subject>(b => b.lstSubject)
+            //    .WithMany(b => b.Classes);            
+            //});
 
             //modelBuilder.Entity<Institutes>();
 

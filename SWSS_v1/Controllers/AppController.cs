@@ -1036,6 +1036,8 @@ public class AppController : ControllerBase
             var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
             int InstituteId = loggedInUserDeatails.InstituteId;
             response._results = await _unitOfWork.Subjects.GetSubjectsByInstitute(InstituteId);
+            response._success.Add("Data Saved successfully");
+            response._statusCode = StatusCodes.Status200OK;
             return Ok(response);
         }
         catch (Exception ex)
@@ -1048,7 +1050,7 @@ public class AppController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<APIResponse_V<Subject>>> GetAllSubjectForVisitors()
+    public async Task<ActionResult<APIResponse_V<Subject>>> GetAllSubjectForVisitors(int classId)
     {
         APIResponse_V<Subject> response = new APIResponse_V<Subject>();
         response._success = new List<string>();
@@ -1063,7 +1065,7 @@ public class AppController : ControllerBase
             // 2. Get the list of role names associated with that user
             //var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
             int InstituteId = 5;
-            response._results = await _unitOfWork.Subjects.GetSubjectsByInstitute(InstituteId);
+            response._results = await _unitOfWork.Subjects.GetSubjectsForVisitors(InstituteId,classId);
             return Ok(response);
         }
         catch (Exception ex)
@@ -1471,6 +1473,40 @@ public class AppController : ControllerBase
             }
         }
         catch(Exception ex)
+        {
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return Ok(response);
+        }
+        return Ok(response);
+    }
+
+    [HttpPost]
+    [Authorize]
+    //public async Task<ActionResult<APIResponse_V<Question>>> SetAsQuestion(int[] questionsId, int classId, int subjectId)    public async Task<ActionResult<APIResponse_V<Question>>> SetAsQuestion(int[] questionsId, int classId, int subjectId)
+    public async Task<ActionResult<APIResponse_V<String>>> ClassAndSubjectMapper([FromBody] ClassSubjectMapper obj)
+    {
+        APIResponse_V<Question> response = new APIResponse_V<Question>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        response._result = null;
+        response.exception = null;
+        try
+        {
+            if (ModelState.IsValid)
+            {
+                _unitOfWork.BeginTransaction();
+                await _unitOfWork.Subjects.ClassAndSubjectMapper(obj.ClassId,obj.SubjectId);
+
+                _unitOfWork.Commit();
+                response._statusCode = StatusCodes.Status200OK;
+                response._success.Add("Data updated successfully");
+                return Ok(response);
+            }
+        }
+        catch (Exception ex)
         {
             response._errors.Add("Something went wrong, Please try later.");
             response.exception = "Something went wrong, Please try later.";

@@ -95,3 +95,6 @@ Ad@123456
 User Login
 user007
 User@007
+
+SuperAdmin
+SuperAdmin@007

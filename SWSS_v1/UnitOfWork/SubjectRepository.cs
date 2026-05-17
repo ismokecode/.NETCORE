@@ -57,5 +57,17 @@ namespace SWSS_v1.UnitOfWork
             var result = _context.Subjects.Where(x => x.InstituteId == Id && x.isActive==true);
             return result;
         }
+        public async Task ClassAndSubjectMapper(int classId,int subjecId)
+        {
+            await _context.Subjects
+                  .Where(u => u.SubjectID==subjecId)
+                  .ExecuteUpdateAsync(s => s.SetProperty(u => u.ClassId, classId));
+
+        }
+        public async Task<IQueryable<Subject>> GetSubjectsForVisitors(int Id,int classId)
+        {
+            var result = _context.Subjects.Where(x => x.InstituteId == Id && x.isActive == true && x.ClassId==classId);
+            return result;
+        }
     }
 }

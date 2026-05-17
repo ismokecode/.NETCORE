@@ -13,5 +13,7 @@
         public DateTime? CreatedDate = null;
         public bool? isActive { get; set; }
         public int? InstituteId { get; set; }
+        public List<Classes>? Classes { get; }
+        public int? ClassId { get; set; }
     }
 }

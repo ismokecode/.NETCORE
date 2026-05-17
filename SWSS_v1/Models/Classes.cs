@@ -7,6 +7,7 @@ namespace SWSS_v1.Models
         public string ClassName { get; set; }
         public IEnumerable<Student>? lstStudents { get; }
         public IEnumerable<Question>? lstQuestion { get; }
+        public IEnumerable<Subject>? lstSubject { get; }
         public string? CreatedBy { get; set; }
         public string? ModifiedBy { get; set; }
         public DateTime? ModifiedDate = null;
