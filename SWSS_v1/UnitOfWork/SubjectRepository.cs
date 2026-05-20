@@ -67,7 +67,7 @@ namespace SWSS_v1.UnitOfWork
         public async Task<IQueryable<Subject>> GetSubjectsForVisitors(int instituteId,int[] subjectsId)
         {
             int[] tar = new[] { 1,2,3};
-            return _context.Subjects.Where(x => subjectsId.Contains(x.SubjectID));
+            return _context.Subjects.Where(x => subjectsId.Contains(x.SubjectID)).Distinct();
             //var result = _context.Subjects.Where(x => x.InstituteId == instituteId && x.isActive == true && x.ClassId==classId);
             //return result;
         }
