@@ -64,10 +64,12 @@ namespace SWSS_v1.UnitOfWork
                   .ExecuteUpdateAsync(s => s.SetProperty(u => u.ClassId, classId));
 
         }
-        public async Task<IQueryable<Subject>> GetSubjectsForVisitors(int Id,int classId)
+        public async Task<IQueryable<Subject>> GetSubjectsForVisitors(int instituteId,int[] subjectsId)
         {
-            var result = _context.Subjects.Where(x => x.InstituteId == Id && x.isActive == true && x.ClassId==classId);
-            return result;
+            int[] tar = new[] { 1,2,3};
+            return _context.Subjects.Where(x => subjectsId.Contains(x.SubjectID));
+            //var result = _context.Subjects.Where(x => x.InstituteId == instituteId && x.isActive == true && x.ClassId==classId);
+            //return result;
         }
     }
 }

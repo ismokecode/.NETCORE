@@ -1060,12 +1060,14 @@ public class AppController : ControllerBase
         response.exception = null;
         try
         {
-            // 1. Retrieve the user by their username
-            //string loggedInUser = User.Identity?.Name;
-            // 2. Get the list of role names associated with that user
-            //var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
-            int InstituteId = 5;
-            response._results = await _unitOfWork.Subjects.GetSubjectsForVisitors(InstituteId,classId);
+            //1.Retrieve the user by their username
+            string loggedInUser = User.Identity?.Name;
+            //2.Get the list of role names associated with that user
+            var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
+            int instituteId = loggedInUserDeatails.InstituteId;
+            int[] subjectsId = await _unitOfWork.ClassSubjectMappers.GetSubjectsIdByClassIdForVisitors(instituteId, classId);
+            
+            response._results = await _unitOfWork.Subjects.GetSubjectsForVisitors(instituteId, subjectsId);
             return Ok(response);
         }
         catch (Exception ex)
@@ -1497,21 +1499,38 @@ public class AppController : ControllerBase
         {
             if (ModelState.IsValid)
             {
-                _unitOfWork.BeginTransaction();
-                await _unitOfWork.Subjects.ClassAndSubjectMapper(obj.ClassId,obj.SubjectId);
-
-                _unitOfWork.Commit();
-                response._statusCode = StatusCodes.Status200OK;
-                response._success.Add("Data updated successfully");
-                return Ok(response);
+                // 1. Retrieve the user by their username
+                string loggedInUser = User.Identity?.Name;
+                // 2. Get the list of role names associated with that user
+                var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
+                obj.InstituteId = loggedInUserDeatails.InstituteId;
+                if (!_unitOfWork.ClassSubjectMappers.IsExist(obj))
+                {
+                   
+                    _unitOfWork.BeginTransaction();
+                    await _unitOfWork.ClassSubjectMappers.AddAsync(obj);
+                    _unitOfWork.ClassSubjectMappers.SaveAsync();
+                    _unitOfWork.Commit();
+                    response._statusCode = StatusCodes.Status200OK;
+                    response._success.Add("Data saved successfully");
+                    return Ok(response);
+                }
+                else
+                {
+                    response._success.Add("Data already exist");
+                }
             }
         }
         catch (Exception ex)
         {
+            _unitOfWork.Rollback();
             response._errors.Add("Something went wrong, Please try later.");
             response.exception = "Something went wrong, Please try later.";
             response._statusCode = StatusCodes.Status500InternalServerError;
             return Ok(response);
+        }
+        finally
+        {
         }
         return Ok(response);
     }

@@ -6,7 +6,7 @@ namespace SWSS_v1.UnitOfWork
     {
         public bool IsExist(Subject obj);
         public Task<IQueryable<Subject>> GetSubjectsByInstitute(int Id);
-        public Task<IQueryable<Subject>> GetSubjectsForVisitors(int id, int classId);
+        public Task<IQueryable<Subject>> GetSubjectsForVisitors(int instituteId, int[] subjectsId);
 
     }
 }

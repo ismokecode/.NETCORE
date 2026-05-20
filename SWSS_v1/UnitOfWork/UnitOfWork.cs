@@ -6,6 +6,8 @@ namespace SWSS_v1.UnitOfBox
 {
     public class UnitOfWork: IUnitOfWork, IDisposable
     {
+        //dbContext object shared from here to the individual entity repository class and common repository class
+        //to maintain integrity and transaction
         private readonly CustomDbContext _dbContext;
         private IDbContextTransaction? _objTran = null;
         public DepartmentRepository Departments { get; private set; }
@@ -19,11 +21,13 @@ namespace SWSS_v1.UnitOfBox
         public OptionRepository Options { get; private set; }
         public InstituteRepository Institutes { get; private set; }
         public TestLinkRepository TestLinks { get; private set; }
+        public ClassSubjectMapperRepository ClassSubjectMappers { get; private set; }
         //public class Repository<T> : IRepository<T> where T : class
         public IRepository<T> Repository<T>() where T : class
         {
             return new Repository<T>(_dbContext);
         }
+
         private bool disposed = false;
         public UnitOfWork(CustomDbContext dbContext)
         {
@@ -39,6 +43,7 @@ namespace SWSS_v1.UnitOfBox
             Options = new OptionRepository(_dbContext);
             Institutes = new InstituteRepository(_dbContext);
             TestLinks = new TestLinkRepository(_dbContext);
+            ClassSubjectMappers = new ClassSubjectMapperRepository(_dbContext);
         }
         public void BeginTransaction()
         {

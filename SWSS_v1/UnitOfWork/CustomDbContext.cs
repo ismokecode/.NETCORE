@@ -16,8 +16,8 @@ namespace SWSS_v1.UnitOfBox
         {
             modelBuilder.Entity<Student>(b =>
             {
-                b.HasOne<Classes>(b=>b.Classes)
-                .WithMany(b=>b.lstStudents)
+                b.HasOne<Classes>(b => b.Classes)
+                .WithMany(b => b.lstStudents)
                 .HasForeignKey(ur => ur.ClassesId).IsRequired();
             });
 
@@ -39,7 +39,7 @@ namespace SWSS_v1.UnitOfBox
 
             modelBuilder.Entity<Classes>()
             .HasMany(o => o.lstQuestion)
-            .WithOne(q => q.Classes)            
+            .WithOne(q => q.Classes)
             .HasForeignKey(o => o.ClassID);
 
             modelBuilder.Entity<Subject>()
@@ -70,6 +70,7 @@ namespace SWSS_v1.UnitOfBox
         public DbSet<Question> Questions { get; set; }
         public DbSet<Institute> Institutes { get; set; }
         public DbSet<TestLink> TestLinks { get; set; }
+        public DbSet<ClassSubjectMapper> ClassSubjectMappers { get; set; }
 
     }
 }
