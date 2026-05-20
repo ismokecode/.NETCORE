@@ -1060,11 +1060,8 @@ public class AppController : ControllerBase
         response.exception = null;
         try
         {
-            //1.Retrieve the user by their username
-            string loggedInUser = User.Identity?.Name;
-            //2.Get the list of role names associated with that user
-            var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
-            int instituteId = loggedInUserDeatails.InstituteId;
+            //keep hard coded visitors by default instituteId 5
+            int instituteId = 5;
             int[] subjectsId = await _unitOfWork.ClassSubjectMappers.GetSubjectsIdByClassIdForVisitors(instituteId, classId);
             
             response._results = await _unitOfWork.Subjects.GetSubjectsForVisitors(instituteId, subjectsId);
