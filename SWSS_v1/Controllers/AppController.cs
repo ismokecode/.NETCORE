@@ -1565,10 +1565,12 @@ public class AppController : ControllerBase
 
                 _unitOfWork.TestLinks.SaveTestLinkAsync(linkDetails);
                 _unitOfWork.Commit();
+                _unitOfWork.BeginTransaction();
                 response._statusCode = StatusCodes.Status200OK;
                 //get all students details by StudentsId[]
                 #region email functionality
                 string[] emails = await _unitOfWork.Students.GetStudentsEmailById(request.StudentsId);
+                _unitOfWork.Commit();
                 //configuration section not to store into var
                 var smtpSection = _configuration.GetSection("SmtpSettings");
                 string from = smtpSection["SenderEmail"]; // Accessing child key
@@ -1982,7 +1984,8 @@ public class AppController : ControllerBase
     }
     #endregion
 
-    #region Student Exam Section Based On Guid create link
+    #region online test link get questions for students
+    [HttpGet]
     public async Task<ActionResult<List<Quiz>>> OnlineTestLinkForStudents(string id)
     {
         List<Quiz> response = new List<Quiz>();
