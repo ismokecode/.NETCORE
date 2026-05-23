@@ -10,11 +10,12 @@ namespace SWSS_v1.UnitOfWork
         {
             _context = context;
         }
-        public async Task SaveTestLinkAsync(TestLink obj)
+        public void SaveTestLinkAsync(TestLink obj ,out IEnumerable<TestLink> returnVal)
         {
             //int userId = 101; // The shared value
             //int[] roleIds = { 1, 2, 3, 4, 5 }; // The array of IDs
             // 1. Create a list of entities by projecting the array
+
             var linkDetails = obj.StudentsId.Select(id => new TestLink
             {
                 StudentId = id,
@@ -23,13 +24,29 @@ namespace SWSS_v1.UnitOfWork
                 ExpiryDateTime = obj.ExpiryDateTime,
                 Durations = obj.Durations,
                 TotalQuestions = obj.TotalQuestions,
-                OnlineLineTestLink = Guid.NewGuid().ToString(),
+                OnlineLineTestLink = Convert.ToString(Guid.NewGuid())+ "instituteId=" + obj.InstituteId+ "classId=" + obj.ClassId+ "subjectId=" + obj.SubjectId.ToString(),
                 InstituteId=obj.InstituteId
             }).ToList();
 
+            returnVal = linkDetails;
+            // 2. Add the range to the DbContext
+            _context.TestLinks.AddRange(linkDetails);
+            _context.SaveChangesAsync();
+        }
+        public async Task SaveTestLinkAsync(List<TestLink> linkDetails)
+        {
             // 2. Add the range to the DbContext
             _context.TestLinks.AddRange(linkDetails);
             await _context.SaveChangesAsync();
+        }
+        public async Task<TestLink>GetByIdAsync(string urlId)
+        {
+            return _context.TestLinks.Where(x => x.OnlineLineTestLink == urlId).FirstOrDefault();
+        }
+        public bool isEarlier(DateTime dt)
+        {
+            bool isEarlier = DateTime.Now.CompareTo(dt) < 0;
+            return isEarlier;
         }
     }
 }

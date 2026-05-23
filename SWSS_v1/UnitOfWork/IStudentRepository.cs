@@ -10,6 +10,7 @@ namespace SWSS_v1.UnitOfWork
         public Task InActiveStudentAsync(int id);
         public Task<IQueryable<Student>> GetStudentsByInstitute(int id);
         public Task<IQueryable<Student>> GetStudentsByInstituteAndClassId(int id, int classId);
+        public Task<string[]> GetStudentsEmailById(int[] students);
 
     }
 }

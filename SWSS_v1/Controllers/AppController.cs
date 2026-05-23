@@ -1399,13 +1399,7 @@ public class AppController : ControllerBase
                     await _unitOfWork.Options.SaveAsync();
                     _unitOfWork.Commit();
                     response._statusCode = StatusCodes.Status200OK;
-                    var smtpSection = _configuration.GetSection("SmtpSettings");
-                    var from = smtpSection["SenderEmail"]; // Accessing child key
-                    var to = "jha615462@gmail.com"; // Accessing child key
-                    var password = smtpSection["Password"];
-                    _imailCommunication.Send(from, to, "Test mail", "Test link is workig.", password);
                     response._success.Add("Data updated successfully");
-
                     return Ok(response);
                 }
                 else
@@ -1547,9 +1541,7 @@ public class AppController : ControllerBase
         {
             if (ModelState.IsValid)
             {
-
                 request.ExpiryDateTime = DateTime.UtcNow.AddHours(12);
-
                 // 1. Retrieve the user by their username
                 string loggedInUser = User.Identity?.Name;
                 // 2. Get the list of role names associated with that user
@@ -1557,18 +1549,39 @@ public class AppController : ControllerBase
                 request.InstituteId = loggedInUserDeatails.InstituteId;
 
                 _unitOfWork.BeginTransaction();
-                await _unitOfWork.TestLinks.SaveTestLinkAsync(request);
+                IEnumerable<TestLink> returnVal;
+
+                List<TestLink> linkDetails= request.StudentsId.Select(id => new TestLink
+                {
+                    StudentId = id,
+                    ClassId = request.ClassId,
+                    SubjectId = request.SubjectId,
+                    ExpiryDateTime = request.ExpiryDateTime,
+                    Durations = request.Durations,
+                    TotalQuestions = request.TotalQuestions,
+                    OnlineLineTestLink = Convert.ToString(Guid.NewGuid()) + "instituteId=" + request.InstituteId + "classId=" + request.ClassId + "subjectId=" + request.SubjectId.ToString(),
+                    InstituteId = request.InstituteId
+                }).ToList();
+
+                _unitOfWork.TestLinks.SaveTestLinkAsync(linkDetails);
                 _unitOfWork.Commit();
                 response._statusCode = StatusCodes.Status200OK;
+                //get all students details by StudentsId[]
                 #region email functionality
-                //var smtpSection = _configuration.GetSection("SmtpSettings");
-                //var from = smtpSection["SenderEmail"]; // Accessing child key
-                //var to = "sudarshanbgs01@gmail.com"; // Accessing child key
-                //var password = smtpSection["Password"];
-                //_imailCommunication.Send(from, to, "Test mail", "Test link is workig.", password);
+                string[] emails = await _unitOfWork.Students.GetStudentsEmailById(request.StudentsId);
+                //configuration section not to store into var
+                var smtpSection = _configuration.GetSection("SmtpSettings");
+                string from = smtpSection["SenderEmail"]; // Accessing child key
+                string password = smtpSection["Password"];
+                string to = string.Empty;
+                for (int i=0; i<emails.Length; i++)
+                {                    
+                    //getting students emails using StudentsId[]              
+                    to = emails[i]; // Accessing child key                  
+                    _imailCommunication.Send(from, to, "TQIndida Test link: ", "http://localhost:4200/test/" + linkDetails[i].OnlineLineTestLink, "Amapola@786619");                  
+                }
                 #endregion
                 response._success.Add("Data updated successfully");
-
                 return Ok(response);
             }
         }
@@ -1965,6 +1978,59 @@ public class AppController : ControllerBase
             response.exception = "Something went wrong, Please try later.";
             response._statusCode = StatusCodes.Status500InternalServerError;
             return BadRequest(response);
+        }
+    }
+    #endregion
+
+    #region Student Exam Section Based On Guid create link
+    public async Task<ActionResult<List<Quiz>>> OnlineTestLinkForStudents(string id)
+    {
+        List<Quiz> response = new List<Quiz>();
+        try
+        {
+            //link start
+            if (id != null)
+            {
+                TestLink obj = await _unitOfWork.TestLinks.GetByIdAsync(id);
+                if (obj != null)
+                {
+                    if (_unitOfWork.TestLinks.isEarlier(obj.ExpiryDateTime ?? DateTime.Now))
+                    {
+                    var results = await _iquestionRepos.GetQuizQuestionByClassAndSubject(obj.ClassId, obj.SubjectId, obj.InstituteId ?? 0);
+
+                    if (results.Count() > 0)
+                    {
+                        foreach (var quiz in results)
+                        {
+                            response.Add(new Quiz
+                            {
+                                QuestionText = quiz.QuestionText,
+                                Options = new string[]
+                                {
+                                    quiz.Options[0].OptionText.ToString(),
+                                    quiz.Options[1].OptionText.ToString(),
+                                    quiz.Options[2].OptionText.ToString(),
+                                    quiz.Options[3].OptionText.ToString()
+                                },
+                                Answer = GetAnswer(quiz.Options)
+                            });
+                        }
+                    }
+                    else
+                    {
+
+                    }
+                    //response._results = await _unitOfWork.Questions.GetAllAsync();
+                    return Ok(response);
+                }
+            }
+                return Ok(response);
+            }
+            return Ok(response);
+        }      
+        catch (Exception ex)
+        {
+            return Ok(response);
         }
     }
     #endregion

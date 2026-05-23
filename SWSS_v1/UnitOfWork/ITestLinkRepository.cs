@@ -4,6 +4,9 @@ namespace SWSS_v1.UnitOfWork
 {
     public interface ITestLinkRepository: IRepository<TestLink>
     {
-        Task SaveTestLinkAsync(TestLink obj);
+        void SaveTestLinkAsync(TestLink obj, out IEnumerable<TestLink> returnVal);
+        Task SaveTestLinkAsync(List<TestLink> linkDetails);
+        Task<TestLink> GetByIdAsync(string urlId);
+        bool isEarlier(DateTime expiryTime);
     }
 }
