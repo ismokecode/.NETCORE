@@ -96,7 +96,7 @@ namespace SWSS_v1.UnitOfWork
         public Task<string[]> GetStudentsEmailById(int[]guids)
         {
             var result = _context.Students.Where(u => guids.Contains(u.StudentId)).Select(u=>u.Email).ToArray();
-            return null;
+            return Task.FromResult(result);
         }
     }
 }

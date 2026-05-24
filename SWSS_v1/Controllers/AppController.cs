@@ -1564,8 +1564,7 @@ public class AppController : ControllerBase
                 }).ToList();
 
                 _unitOfWork.TestLinks.SaveTestLinkAsync(linkDetails);
-                _unitOfWork.Commit();
-                _unitOfWork.BeginTransaction();
+
                 response._statusCode = StatusCodes.Status200OK;
                 //get all students details by StudentsId[]
                 #region email functionality
@@ -1580,7 +1579,7 @@ public class AppController : ControllerBase
                 {                    
                     //getting students emails using StudentsId[]              
                     to = emails[i]; // Accessing child key                  
-                    _imailCommunication.Send(from, to, "TQIndida Test link: ", "http://localhost:4200/test/" + linkDetails[i].OnlineLineTestLink, "Amapola@786619");                  
+                    _imailCommunication.Send(from, to, "TQIndida Test link: ", "http://localhost:4200/test?id=" + linkDetails[i].OnlineLineTestLink, "Amapola@786619");                  
                 }
                 #endregion
                 response._success.Add("Data updated successfully");

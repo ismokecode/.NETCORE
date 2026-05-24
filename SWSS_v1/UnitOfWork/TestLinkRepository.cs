@@ -41,7 +41,8 @@ namespace SWSS_v1.UnitOfWork
         }
         public async Task<TestLink>GetByIdAsync(string urlId)
         {
-            return _context.TestLinks.Where(x => x.OnlineLineTestLink == urlId).FirstOrDefault();
+            var result = _context.TestLinks.Where(x => x.OnlineLineTestLink == urlId).FirstOrDefault();
+            return result;
         }
         public bool isEarlier(DateTime dt)
         {
