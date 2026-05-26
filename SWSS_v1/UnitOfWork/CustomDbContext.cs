@@ -51,9 +51,7 @@ namespace SWSS_v1.UnitOfBox
             //{
             //    b.HasMany<Subject>(b => b.lstSubject)
             //    .WithMany(b => b.Classes);            
-            //});
-
-            //modelBuilder.Entity<Institutes>();
+            //})    
 
             base.OnModelCreating(modelBuilder);
         }

@@ -94,7 +94,7 @@ namespace SWSS_v1.UnitOfWork
             int count = await _context.Questions.CountAsync();
             int index = new Random().Next(0, count);
             var questionWithOptions = _context.Questions
-                             .Skip(index)
+                             //.Skip(index)
                              .Where(x => x.InstituteId == instituteId && x.ClassID == clsId && x.SubjectId == subId && x.isSetAsQuestion==true)
                              .Include(p => p.Options)
                              .Include(p => p.Classes)

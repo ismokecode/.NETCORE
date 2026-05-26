@@ -1579,7 +1579,7 @@ public class AppController : ControllerBase
                 {                    
                     //getting students emails using StudentsId[]              
                     to = emails[i]; // Accessing child key                  
-                    _imailCommunication.Send(from, to, "TQIndida Test link: ", "http://localhost:4200/test?id=" + linkDetails[i].OnlineLineTestLink, "Amapola@786619");                  
+                    _imailCommunication.Send(from, to, "TQIndida Test link: ", "http://localhost:4200/test?id=" + linkDetails[i].OnlineLineTestLink, "password");                  
                 }
                 #endregion
                 response._success.Add("Data updated successfully");
@@ -1989,13 +1989,14 @@ public class AppController : ControllerBase
     {
         List<Quiz> response = new List<Quiz>();
         try
-        {
+       {
             //link start
             if (id != null)
             {
                 TestLink obj = await _unitOfWork.TestLinks.GetByIdAsync(id);
                 if (obj != null)
                 {
+                    //check link expiry start
                     if (_unitOfWork.TestLinks.isEarlier(obj.ExpiryDateTime ?? DateTime.Now))
                     {
                     var results = await _iquestionRepos.GetQuizQuestionByClassAndSubject(obj.ClassId, obj.SubjectId, obj.InstituteId ?? 0);
@@ -2025,7 +2026,8 @@ public class AppController : ControllerBase
                     //response._results = await _unitOfWork.Questions.GetAllAsync();
                     return Ok(response);
                 }
-            }
+               //check link expiry end
+                }
                 return Ok(response);
             }
             return Ok(response);

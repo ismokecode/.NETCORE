@@ -39,9 +39,12 @@ namespace SWSS_v1.UnitOfWork
             _context.TestLinks.AddRange(linkDetails);
             await _context.SaveChangesAsync();
         }
-        public async Task<TestLink>GetByIdAsync(string urlId)
+        public async Task<TestLink>GetByIdAsync(string uri)
         {
-            var result = _context.TestLinks.Where(x => x.OnlineLineTestLink == urlId).FirstOrDefault();
+            var result = _context.TestLinks.FirstOrDefault(x => x.OnlineLineTestLink == uri);
+
+            //var result = _context.TestLinks.Where(x => x.OnlineLineTestLink.Equals(urlId, StringComparison.OrdinalIgnoreCase));
+            //var result = _context.TestLinks.Contains(x => x.OnlineLineTestLink == urlId).FirstOrDefault();
             return result;
         }
         public bool isEarlier(DateTime dt)
