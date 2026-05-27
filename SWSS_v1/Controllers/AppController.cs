@@ -233,9 +233,9 @@ public class AppController : ControllerBase
             Email = model.Email,
             SecurityStamp = Guid.NewGuid().ToString(),
             UserName = model.UserName,
-            InstituteId=model.InstituteId,
-            FirstName=model.FirstName,
-            LastName=model.LastName
+            FirstName = model.FirstName,
+            LastName = model.LastName,
+            InstituteId = _configuration.GetValue<int>("instititueId")
         };
         var result = await _userManager.CreateAsync(user, model.Password);
         if (!result.Succeeded)
@@ -862,7 +862,7 @@ public class AppController : ControllerBase
             //string loggedInUser = User.Identity?.Name;
             // 2. Get the list of role names associated with that user
             //var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
-            int InstituteId = 5;
+            int InstituteId = _configuration.GetValue<int>("instititueId");
             response._results = await _unitOfWork.Classes.GetClassesByInstitute(InstituteId);
             return Ok(response);
         }
@@ -1061,7 +1061,7 @@ public class AppController : ControllerBase
         try
         {
             //keep hard coded visitors by default instituteId 5
-            int instituteId = 5;
+            int instituteId = _configuration.GetValue<int>("instititueId");
             int[] subjectsId = await _unitOfWork.ClassSubjectMappers.GetSubjectsIdByClassIdForVisitors(instituteId, classId);
             
             response._results = await _unitOfWork.Subjects.GetSubjectsForVisitors(instituteId, subjectsId);
@@ -1574,12 +1574,14 @@ public class AppController : ControllerBase
                 var smtpSection = _configuration.GetSection("SmtpSettings");
                 string from = smtpSection["SenderEmail"]; // Accessing child key
                 string password = smtpSection["Password"];
+                string subject = smtpSection["Subject"];
+                string testLink = smtpSection["TestLink"];
                 string to = string.Empty;
                 for (int i=0; i<emails.Length; i++)
                 {                    
                     //getting students emails using StudentsId[]              
                     to = emails[i]; // Accessing child key                  
-                    _imailCommunication.Send(from, to, "TQIndida Test link: ", "http://localhost:4200/test?id=" + linkDetails[i].OnlineLineTestLink, "password");                  
+                    _imailCommunication.Send(from, to, subject, testLink + linkDetails[i].OnlineLineTestLink,password);                  
                 }
                 #endregion
                 response._success.Add("Data updated successfully");
@@ -1746,7 +1748,7 @@ public class AppController : ControllerBase
             // 2. Get the list of role names associated with that user
             //var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
             //int InstituteId = loggedInUserDeatails.InstituteId;
-            int InstituteId = 5;
+            int InstituteId = _configuration.GetValue<int>("instititueId");       
             var results = await _iquestionRepos.GetQuizQuestionByClassAndSubject(classId, subjectId, InstituteId);
 
             if (results.Count() > 0)
