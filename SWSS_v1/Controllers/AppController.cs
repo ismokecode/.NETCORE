@@ -71,6 +71,121 @@ public class AppController : ControllerBase
         _imailCommunication = imailCommunication;
     }
     #region IdentityUser 
+
+    #region Reset Password Using Email token
+    [HttpPost]
+    public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+    {
+        if (!ModelState.IsValid) return BadRequest();
+
+        var user = await _userManager.FindByEmailAsync(model.Email);
+        if (user == null) return RedirectToAction("ResetPasswordConfirmation");
+
+        // Attempt to reset the password using the token
+        var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+
+        if (result.Succeeded)
+        {
+            return RedirectToAction("ResetPasswordConfirmation");
+        }
+
+        foreach (var error in result.Errors)
+        {
+            ModelState.AddModelError(string.Empty, error.Description);
+        }
+        return Ok();
+    }
+
+
+    #region ForgotPassword
+    [HttpPost]
+    public async Task<string> ForgotPassword(string email)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+        {
+            // Don't reveal if the user exists for security
+            return "Please enter registered email.";
+        }
+
+        // Generate the reset token
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+        // Create the callback URL
+        var callbackUrl = Url.Action("ResetPassword", "Account",
+            new { userId = user.Id, token = token }, protocol: Request.Scheme);
+
+        // Send email using your IEmailSender implementation
+
+        #region email functionality
+        var smtpSection = _configuration.GetSection("SmtpSettings");
+        var from = smtpSection["SenderEmail"]; // Accessing child key
+        var to = "sudarshanbgs01@gmail.com"; // Accessing child key
+        var password = smtpSection["Password"];
+        _imailCommunication.Send(from, to, "Reset Password", $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>", password);
+        #endregion
+        return "test";
+    }
+    #endregion
+
+
+    #region Reset Password working
+    [HttpPost]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<string>>> ResetPassword([FromBody] ResetPassword obj)
+    {
+        APIResponse_V<string> response = new APIResponse_V<string>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        response._result = null;
+        response.exception = null;
+        try
+        {
+            if (ModelState.IsValid)
+            {
+                var userName = User.Identity.Name;
+                var user = await _userManager.FindByNameAsync(userName);
+                if (user != null)
+                {
+                    var result = await _userManager.ChangePasswordAsync(user, obj.OldPassword, obj.NewPassword);
+                    if(result.Succeeded)
+                    {
+                    response._success.Add("Password changed successfully.");
+                    }
+                    else 
+                    {
+                        response._success.Add("Incorrect old password.");
+                    }
+                    return Ok(response);
+                }
+                else
+                {
+                    response._errors.Add("Please enter registered username");
+                    return Ok(response);
+                }             
+            }
+            else
+            {
+                foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry modelState in ModelState.Values)
+                {
+                    foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelError error in modelState.Errors)
+                    {
+                        response._errors.Add(error.ErrorMessage);
+                    }
+                }
+                response._statusCode = StatusCodes.Status400BadRequest;
+                return Ok(response);
+            }
+        }
+        catch (Exception ex) 
+        {
+            response._errors.Add("Something went wrong.");
+            return Ok(response);
+        }
+    }
+    #endregion
+
     [HttpPost]
     //[Route("login")]
     public async Task<IActionResult> Login([FromBody] LoginVM model)
@@ -235,7 +350,7 @@ public class AppController : ControllerBase
             UserName = model.UserName,
             FirstName = model.FirstName,
             LastName = model.LastName,
-            InstituteId = _configuration.GetValue<int>("instititueId")
+            InstituteId = _configuration.GetValue<int>("instititueId"),     
         };
         var result = await _userManager.CreateAsync(user, model.Password);
         if (!result.Succeeded)
