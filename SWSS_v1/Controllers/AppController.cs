@@ -72,7 +72,46 @@ public class AppController : ControllerBase
     }
     #region IdentityUser 
 
-    #region Reset Password Using Email token
+    #region required email
+    [HttpPost]
+    public async Task<ActionResult<APIResponse<string>>> ForgotPasswordTokenGeneration([FromBody] PasswordTokenGeneration obj)
+    {
+        APIResponse_V<string> response = new APIResponse_V<string>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        response._result = null;
+        response.exception = null;
+        var user = await _userManager.FindByEmailAsync(obj.Email);
+        //if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+        if(user == null)
+        {
+            response._errors.Add("Please enter registered email address.");
+            // Don't reveal if the user exists for security
+            return Ok(response);
+        }
+
+        // Generate the reset token
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+        // Create the callback URL
+        var smtpSection = _configuration.GetSection("SmtpSettings");
+        var callbackUrl = smtpSection["LoginResetPasswordUrl"] + token;
+
+        // Send email using your IEmailSender implementation
+
+        #region email functionality
+        var from = smtpSection["SenderEmail"]; // Accessing child key
+        var to = obj.Email; // Accessing child key
+        var password = smtpSection["Password"];
+        await _imailCommunication.Send(from, to, "Reset Password", $"Please reset your password by clicking here: <a href={callbackUrl}>link</a>", password);
+        #endregion
+        response._success.Add("A password reset link shared to your registered email address.");
+        return Ok(response);
+    }
+    #endregion
+
+    #region required new pwd
     [HttpPost]
     public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
     {
@@ -95,44 +134,12 @@ public class AppController : ControllerBase
         }
         return Ok();
     }
-
-
-    #region ForgotPassword
-    [HttpPost]
-    public async Task<string> ForgotPassword(string email)
-    {
-        var user = await _userManager.FindByEmailAsync(email);
-        if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
-        {
-            // Don't reveal if the user exists for security
-            return "Please enter registered email.";
-        }
-
-        // Generate the reset token
-        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-
-        // Create the callback URL
-        var callbackUrl = Url.Action("ResetPassword", "Account",
-            new { userId = user.Id, token = token }, protocol: Request.Scheme);
-
-        // Send email using your IEmailSender implementation
-
-        #region email functionality
-        var smtpSection = _configuration.GetSection("SmtpSettings");
-        var from = smtpSection["SenderEmail"]; // Accessing child key
-        var to = "sudarshanbgs01@gmail.com"; // Accessing child key
-        var password = smtpSection["Password"];
-        _imailCommunication.Send(from, to, "Reset Password", $"Please reset your password by clicking here: <a href='{callbackUrl}'>link</a>", password);
-        #endregion
-        return "test";
-    }
     #endregion
-
 
     #region Reset Password working
     [HttpPost]
     [Authorize]
-    public async Task<ActionResult<APIResponse_V<string>>> ResetPassword([FromBody] ResetPassword obj)
+    public async Task<ActionResult<APIResponse_V<string>>> ChangePassword([FromBody] ResetPassword obj)
     {
         APIResponse_V<string> response = new APIResponse_V<string>();
         response._success = new List<string>();
@@ -1567,14 +1574,7 @@ public class AppController : ControllerBase
                 await _unitOfWork.Questions.SetAsQuestions(request.questionsId, request.classId, request.subjectId);
 
                 _unitOfWork.Commit();
-                response._statusCode = StatusCodes.Status200OK;
-                #region email functionality
-                //var smtpSection = _configuration.GetSection("SmtpSettings");
-                //var from = smtpSection["SenderEmail"]; // Accessing child key
-                //var to = "sudarshanbgs01@gmail.com"; // Accessing child key
-                //var password = smtpSection["Password"];
-                //_imailCommunication.Send(from, to, "Test mail", "Test link is workig.", password);
-                #endregion
+                response._statusCode = StatusCodes.Status200OK;               
                 response._success.Add("Data updated successfully");
 
                 return Ok(response);

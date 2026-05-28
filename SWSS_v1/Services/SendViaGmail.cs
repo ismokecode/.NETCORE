@@ -22,7 +22,7 @@ namespace SWSS_v1.Services
             // Authenticate using your email and the generated App Password
             await smtp.AuthenticateAsync(from, appPasswprd);
 
-            await smtp.SendAsync(email);
+            string isDelivered = await smtp.SendAsync(email);
             await smtp.DisconnectAsync(true);
          }
     }
