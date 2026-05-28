@@ -113,8 +113,14 @@ public class AppController : ControllerBase
 
     #region required new pwd
     [HttpPost]
-    public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+    public async Task<ActionResult<string>> ResetPassword(ResetPasswordViewModel model)
     {
+        APIResponse_V<string> response = new APIResponse_V<string>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        response._result = null;
+        response.exception = null;
         if (!ModelState.IsValid) return BadRequest();
 
         var user = await _userManager.FindByEmailAsync(model.Email);
@@ -125,14 +131,16 @@ public class AppController : ControllerBase
 
         if (result.Succeeded)
         {
-            return RedirectToAction("ResetPasswordConfirmation");
+            response._success.Add("Password reset successfully.");
+            return Ok(response);
         }
 
         foreach (var error in result.Errors)
         {
-            ModelState.AddModelError(string.Empty, error.Description);
+            response._errors.Add(error.Description);
+            //ModelState.AddModelError(string.Empty, error.Description);
         }
-        return Ok();
+        return Ok(response);
     }
     #endregion
 
