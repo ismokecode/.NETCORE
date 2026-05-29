@@ -170,8 +170,6 @@ builder.Services.AddControllers()
     .AddJsonOptions(options => {
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
-
-
 //Run command#1 Add-Migration IdentityTablesAdded generate identity table using code first approch 
 //Error then Install Microsoft.EntityFrameworkCore.Tools (use latest versions)
 //Run command#2 update-database

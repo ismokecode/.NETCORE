@@ -45,6 +45,7 @@ public class AppController : ControllerBase
     private readonly IQuestionRepository _iquestionRepos;
     private readonly IOptionRepository _iOptionRepos;
     private readonly IMailCommunication _imailCommunication;
+    private readonly IWebHostEnvironment _env;
     public AppController(UserManager<ApplicationUser> userManager,
         RoleManager<IdentityRole> roleManager,
         //CustomDbContext context,
@@ -55,7 +56,8 @@ public class AppController : ControllerBase
         IStudentRepository istudentRepos,
         IQuestionRepository iQuestionRepos,
         IOptionRepository iOptionRepos,
-        IMailCommunication imailCommunication
+        IMailCommunication imailCommunication,
+        IWebHostEnvironment env
         )
     {
         _userManager = userManager;
@@ -69,6 +71,7 @@ public class AppController : ControllerBase
         _iquestionRepos = iQuestionRepos;
         _iOptionRepos = iOptionRepos;
         _imailCommunication = imailCommunication;
+        _env = env;
     }
     #region IdentityUser 
 
@@ -82,6 +85,18 @@ public class AppController : ControllerBase
         response._results = null;
         response._result = null;
         response.exception = null;
+        if (!ModelState.IsValid)
+        {
+            foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry modelState in ModelState.Values)
+            {
+                foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelError error in modelState.Errors)
+                {
+                    response._errors.Add(error.ErrorMessage);
+                }
+            }
+            response._statusCode = StatusCodes.Status400BadRequest;
+            return Ok(response);
+        }
         var user = await _userManager.FindByEmailAsync(obj.Email);
         //if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
         if(user == null)
@@ -104,9 +119,16 @@ public class AppController : ControllerBase
         var from = smtpSection["SenderEmail"]; // Accessing child key
         var to = obj.Email; // Accessing child key
         var password = smtpSection["Password"];
-        await _imailCommunication.Send(from, to, "Reset Password", $"Please reset your password by clicking here: <a href={callbackUrl}>link</a>", password);
-        #endregion
+        var folderName = smtpSection["EmailTemplateFolder"];
+        var fileName = smtpSection["RecoverPasswordEmailTemplate"];
+        string path = Path.Combine(_env.ContentRootPath, folderName, fileName);
+        string readTemplate = await System.IO.File.ReadAllTextAsync(path);
+        string emailHtmlBody = readTemplate.Replace("{{ResetLink}}", callbackUrl);
+        await _imailCommunication.Send(from, to, "Reset Password", emailHtmlBody, password);
+
+        //await _imailCommunication.Send(from, to, "Reset Password", $"Please reset your password by clicking here: <a href={callbackUrl}>link</a>", password);
         response._success.Add("A password reset link shared to your registered email address.");
+        #endregion
         return Ok(response);
     }
     #endregion
@@ -121,7 +143,18 @@ public class AppController : ControllerBase
         response._results = null;
         response._result = null;
         response.exception = null;
-        if (!ModelState.IsValid) return BadRequest();
+        if (!ModelState.IsValid) 
+        {
+            foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry modelState in ModelState.Values)
+            {
+                foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelError error in modelState.Errors)
+                {
+                    response._errors.Add(error.ErrorMessage);
+                }
+            }
+            response._statusCode = StatusCodes.Status400BadRequest;
+            return Ok(response);
+        }
 
         var user = await _userManager.FindByEmailAsync(model.Email);
         if (user == null) return RedirectToAction("ResetPasswordConfirmation");
@@ -357,7 +390,8 @@ public class AppController : ControllerBase
         var userExists = await _userManager.FindByNameAsync(model.UserName);
         if (userExists != null)
             return StatusCode(StatusCodes.Status500InternalServerError, new { Status = "Error", Message = "User already exists!" });
-
+        var InstituteId = _configuration.GetSection("InstituteSection");
+        int instId = InstituteId.GetValue<int>("instituteId");
         ApplicationUser user = new()
         {
             Email = model.Email,
@@ -365,7 +399,7 @@ public class AppController : ControllerBase
             UserName = model.UserName,
             FirstName = model.FirstName,
             LastName = model.LastName,
-            InstituteId = _configuration.GetValue<int>("instititueId"),     
+            InstituteId = instId    
         };
         var result = await _userManager.CreateAsync(user, model.Password);
         if (!result.Succeeded)
@@ -992,8 +1026,9 @@ public class AppController : ControllerBase
             //string loggedInUser = User.Identity?.Name;
             // 2. Get the list of role names associated with that user
             //var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
-            int InstituteId = _configuration.GetValue<int>("instititueId");
-            response._results = await _unitOfWork.Classes.GetClassesByInstitute(InstituteId);
+            var InstituteId = _configuration.GetSection("InstituteSection");
+            int instId = InstituteId.GetValue<int>("instituteId");
+            response._results = await _unitOfWork.Classes.GetClassesByInstitute(instId);
             return Ok(response);
         }
         catch (Exception ex)
@@ -1191,10 +1226,10 @@ public class AppController : ControllerBase
         try
         {
             //keep hard coded visitors by default instituteId 5
-            int instituteId = _configuration.GetValue<int>("instititueId");
-            int[] subjectsId = await _unitOfWork.ClassSubjectMappers.GetSubjectsIdByClassIdForVisitors(instituteId, classId);
-            
-            response._results = await _unitOfWork.Subjects.GetSubjectsForVisitors(instituteId, subjectsId);
+            var InstituteId = _configuration.GetSection("InstituteSection");
+            int instId = InstituteId.GetValue<int>("instituteId");
+            int[] subjectsId = await _unitOfWork.ClassSubjectMappers.GetSubjectsIdByClassIdForVisitors(instId, classId);         
+            response._results = await _unitOfWork.Subjects.GetSubjectsForVisitors(instId, subjectsId);
             return Ok(response);
         }
         catch (Exception ex)
@@ -1699,12 +1734,17 @@ public class AppController : ControllerBase
                 string password = smtpSection["Password"];
                 string subject = smtpSection["Subject"];
                 string testLink = smtpSection["TestLink"];
+
+                var folderName = smtpSection["EmailTemplateFolder"];
+                var fileName = smtpSection["TestLinkEmailTemplate"];
+                string path = Path.Combine(_env.ContentRootPath, folderName, fileName);
+                string readTemplate = await System.IO.File.ReadAllTextAsync(path);
                 string to = string.Empty;
                 for (int i=0; i<emails.Length; i++)
                 {                    
                     //getting students emails using StudentsId[]              
                     to = emails[i]; // Accessing child key                  
-                    _imailCommunication.Send(from, to, subject, testLink + linkDetails[i].OnlineLineTestLink,password);                  
+                    _imailCommunication.Send(from, to, subject, readTemplate.Replace("{{StartTestLink}}", linkDetails[i].OnlineLineTestLink),password);                  
                 }
                 #endregion
                 response._success.Add("Data updated successfully");
@@ -1871,9 +1911,9 @@ public class AppController : ControllerBase
             // 2. Get the list of role names associated with that user
             //var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
             //int InstituteId = loggedInUserDeatails.InstituteId;
-            int InstituteId = _configuration.GetValue<int>("instititueId");       
-            var results = await _iquestionRepos.GetQuizQuestionByClassAndSubject(classId, subjectId, InstituteId);
-
+            var InstituteId = _configuration.GetSection("InstituteSection");
+            int instId = InstituteId.GetValue<int>("instituteId");
+            var results = await _iquestionRepos.GetQuizQuestionByClassAndSubject(classId, subjectId, instId);
             if (results.Count() > 0)
             {
                 foreach (var quiz in results)
