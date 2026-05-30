@@ -162,6 +162,10 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
     .AddEntityFrameworkStores<CustomDbContext>()
     .AddDefaultTokenProviders();
 
+// Optional: Set token lifespan (default is often 1 day)
+builder.Services.Configure<DataProtectionTokenProviderOptions>(opt =>
+    opt.TokenLifespan = TimeSpan.FromHours(2));
+
 //When a method like GetAllClasses returns objects with bidirectional relationships 
 //(e.g., a Class containing a list of Students, where each Student also references that same Class),
 //standard JSON serializers like System.Text.Json or Newtonsoft.Json will fail with a JsonException or

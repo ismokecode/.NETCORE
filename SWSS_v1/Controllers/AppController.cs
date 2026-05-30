@@ -107,11 +107,14 @@ public class AppController : ControllerBase
         }
 
         // Generate the reset token
+        ///, and =. If you pass this token via a URL query string, the browser interprets the + 
+        ///character as a space ( ). When it reaches your API or MVC controller, the corrupted string fails validation.
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var validToken = Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(System.Text.Encoding.UTF8.GetBytes(token));
 
         // Create the callback URL
         var smtpSection = _configuration.GetSection("SmtpSettings");
-        var callbackUrl = smtpSection["LoginResetPasswordUrl"] + token;
+        var callbackUrl = smtpSection["LoginResetPasswordUrl"] + validToken;
 
         // Send email using your IEmailSender implementation
 
@@ -160,7 +163,9 @@ public class AppController : ControllerBase
         if (user == null) return RedirectToAction("ResetPasswordConfirmation");
 
         // Attempt to reset the password using the token
-        var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+        var decodedToken = System.Text.Encoding.UTF8.GetString(Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlDecode(model.Token));
+
+        var result = await _userManager.ResetPasswordAsync(user, decodedToken, model.NewPassword);
 
         if (result.Succeeded)
         {
