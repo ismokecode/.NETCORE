@@ -85,6 +85,8 @@ public class AppController : ControllerBase
         response._results = null;
         response._result = null;
         response.exception = null;
+        try 
+        {        
         if (!ModelState.IsValid)
         {
             foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry modelState in ModelState.Values)
@@ -111,7 +113,11 @@ public class AppController : ControllerBase
         ///character as a space ( ). When it reaches your API or MVC controller, the corrupted string fails validation.
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
         var validToken = Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(System.Text.Encoding.UTF8.GetBytes(token));
-
+        obj.Token = validToken;
+        _unitOfWork.BeginTransaction();
+        var result = _unitOfWork.PasswordTokenGenerations.InsertAsync(obj);
+        _unitOfWork.Save();
+        _unitOfWork.Commit();
         // Create the callback URL
         var smtpSection = _configuration.GetSection("SmtpSettings");
         var callbackUrl = smtpSection["LoginResetPasswordUrl"] + validToken;
@@ -133,6 +139,13 @@ public class AppController : ControllerBase
         response._success.Add("A password reset link shared to your registered email address.");
         #endregion
         return Ok(response);
+        }
+        catch (Exception ex) 
+        {
+            _unitOfWork.Rollback();
+            response._errors.Add("Something went wrong. Please try after sometime.");
+            return Ok(response);
+        }
     }
     #endregion
 
@@ -157,9 +170,10 @@ public class AppController : ControllerBase
             }
             response._statusCode = StatusCodes.Status400BadRequest;
             return Ok(response);
-        }
 
-        var user = await _userManager.FindByEmailAsync(model.Email);
+        }
+        string email = _unitOfWork.PasswordTokenGenerations.GetEmail(model.Token);
+        var user = await _userManager.FindByEmailAsync(email);
         if (user == null) return RedirectToAction("ResetPasswordConfirmation");
 
         // Attempt to reset the password using the token

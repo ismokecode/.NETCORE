@@ -22,6 +22,7 @@ namespace SWSS_v1.UnitOfBox
         public InstituteRepository Institutes { get; private set; }
         public TestLinkRepository TestLinks { get; private set; }
         public ClassSubjectMapperRepository ClassSubjectMappers { get; private set; }
+        public PasswordTokenGenerationRepository PasswordTokenGenerations { get; private set; }
         //public class Repository<T> : IRepository<T> where T : class
         public IRepository<T> Repository<T>() where T : class
         {
@@ -44,6 +45,7 @@ namespace SWSS_v1.UnitOfBox
             Institutes = new InstituteRepository(_dbContext);
             TestLinks = new TestLinkRepository(_dbContext);
             ClassSubjectMappers = new ClassSubjectMapperRepository(_dbContext);
+            PasswordTokenGenerations = new PasswordTokenGenerationRepository(_dbContext);
         }
         public void BeginTransaction()
         {

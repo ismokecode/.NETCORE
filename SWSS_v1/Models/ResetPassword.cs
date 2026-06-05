@@ -14,12 +14,19 @@ namespace SWSS_v1.Models
     }
     public class ResetPasswordViewModel
     {
-        public string? Email { get; set; }
+        [Required(ErrorMessage = "Please confirm your password")]
+        [DataType(DataType.Password)]
+        [Compare("NewPassword", ErrorMessage = "The password and confirmation password do not match.")]
+        public string ConfirmPassword { get; set; }
         public string? Token { get; set; }
+        [DataType(DataType.Password)]
+        [RegularExpression("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[#$^+=!*()@%&]).{8,}$", ErrorMessage = "A new password minimum of 8 characters, atleast one upper, lower case and special character.")]
         public string NewPassword { get; set; }
     }
     public class PasswordTokenGeneration
     {
+        public int Id { get; set; }
         public string Email { get; set; }
+        public string? Token { get; set; }
     }
 }

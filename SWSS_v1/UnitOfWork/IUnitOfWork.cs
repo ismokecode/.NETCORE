@@ -23,5 +23,6 @@ namespace SWSS_v1.UnitOfBox
         InstituteRepository Institutes { get; }
         TestLinkRepository TestLinks { get; }
         ClassSubjectMapperRepository ClassSubjectMappers { get; }
+        PasswordTokenGenerationRepository PasswordTokenGenerations { get; }
     }
 }
