@@ -33,6 +33,25 @@ Authantication > Authorization > Custom Middleware 1 > Custom Middleware 2 > End
   "pincode": "800008"
 }
 
+//Register super admin registration
+  insert into Institutes values ('Gurukul Classes','8676968080','rajeevkr.co.in@gmail.com',
+  'Begusrai',1,sysdatetime(),'rajeev','rajeev',sysdatetime())
+
+//new Register Admin before
+{
+  "firstName": "Rajeev",
+  "lastName": "Jha",
+  "email": "rajeevkr.co.in@gmail.com",
+  "userName": "rajeev",
+  "password": "Rajeev@8080",
+  "userRole": "SuperAdmin",
+  "phone": "8676968080",
+  "pincode": "8151207",
+  "refreshToken": "",
+  "refreshTokenExpiryTime": "2026-08-16T09:48:30.017Z",
+  "instituteId": 0
+}
+
 //
 Sample Query
 use swss
@@ -370,3 +389,31 @@ Login test data:
             return RedirectToAction(nameof(Index));
         }
     }
+
+
+    //DELETE RECORDS
+truncate table [AspNetUsers]
+truncate table [AspNetUserRoles]
+truncate table [AspNetRoles]
+
+update [AspNetRoles] set Id=3 where Id='b289cc17-9bcf-4827-b4b4-03be815d1383'
+
+delete [AspNetRoles] where Id in(1,2,3)
+
+DELETE FROM [dbo].[AspNetUserClaims];
+DELETE FROM [dbo].[AspNetUserLogins];
+DELETE FROM [dbo].[AspNetUserRoles];
+DELETE FROM [dbo].[AspNetUserTokens];
+
+-- Finally, delete from AspNetUsers
+DELETE FROM [dbo].[AspNetUsers];
+
+
+  truncate table Students
+  truncate table Classes
+  truncate table Questions
+  truncate table Subjects
+  truncate table ClassSubjectMappers
+  truncate table Institutes
+  truncate table TestLinks
+  delete from Classes

@@ -21,5 +21,10 @@ namespace SWSS_v1.UnitOfWork
             _institute.ModifiedDate = obj.ModifiedDate;
             //wait _context.SaveChangesAsync();
         }
+        public async Task<IQueryable<Institute>> GetInstituteByInstituteId(int Id)
+        {
+            var result = _context.Institutes.Where(x => x.InstituteId == Id && x.isActive == true);
+            return result;
+        }
     }
 }

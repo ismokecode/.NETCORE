@@ -36,10 +36,7 @@ support cycles.
 Path: $._results.Location.Customers.Location.Customers.Location.Customers.Location.Customers.Location.Customers.Location.Customers.Location.Customers.Location.Customers.Location.Customers.Location.Customers."
 }
  */
-
-builder.Services.AddControllers()
-              .AddJsonOptions(options =>
-                  options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
 //var connectionString = "Data Source = DESKTOP-9H0UC46; Initial Catalog=SWSS; User Id=ss; password=12345678; TrustServerCertificate=True";
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -280,6 +277,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseSwagger();
+app.UseSwaggerUI();
 #region redirection
 //When a web browser attempts to open a URL that has been redirected, a page with a different URL is opened.
 //The UseHttpsRedirection() method invocation enables the HTTPS redirection middleware.

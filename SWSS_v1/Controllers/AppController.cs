@@ -196,7 +196,7 @@ public class AppController : ControllerBase
     }
     #endregion
 
-    #region Reset Password working
+    #region Reset Password
     [HttpPost]
     [Authorize]
     public async Task<ActionResult<APIResponse_V<string>>> ChangePassword([FromBody] ResetPassword obj)
@@ -255,7 +255,7 @@ public class AppController : ControllerBase
 
     [HttpPost]
     //[Route("login")]
-    public async Task<IActionResult> Login([FromBody] LoginVM model)
+    public async Task<ActionResult> Login([FromBody] LoginVM model)
     {
         var user = await _userManager.FindByNameAsync(model.UserName);
         if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
@@ -290,7 +290,7 @@ public class AppController : ControllerBase
                 Expiration = token.ValidTo
             });
         }
-        return Unauthorized();
+        return Unauthorized(new {StatusCodes.Status401Unauthorized, Message="Invalid credential"});
     }
 
     [HttpPost]
@@ -404,7 +404,7 @@ public class AppController : ControllerBase
 
     [HttpPost]
     [Route("register-admin")]
-    public async Task<IActionResult> RegisterAdmin([FromBody] RegisterVM model)
+    public async Task<ActionResult> RegisterAdmin([FromBody] RegisterVM model)
     {
         var userExists = await _userManager.FindByNameAsync(model.UserName);
         if (userExists != null)
@@ -1677,7 +1677,7 @@ public class AppController : ControllerBase
                    
                     _unitOfWork.BeginTransaction();
                     await _unitOfWork.ClassSubjectMappers.AddAsync(obj);
-                    _unitOfWork.ClassSubjectMappers.SaveAsync();
+                    await _unitOfWork.ClassSubjectMappers.SaveAsync();
                     _unitOfWork.Commit();
                     response._statusCode = StatusCodes.Status200OK;
                     response._success.Add("Data saved successfully");
@@ -1740,7 +1740,7 @@ public class AppController : ControllerBase
                     InstituteId = request.InstituteId
                 }).ToList();
 
-                _unitOfWork.TestLinks.SaveTestLinkAsync(linkDetails);
+                await _unitOfWork.TestLinks.SaveTestLinkAsync(linkDetails);
 
                 response._statusCode = StatusCodes.Status200OK;
                 //get all students details by StudentsId[]
@@ -1763,10 +1763,10 @@ public class AppController : ControllerBase
                 {                    
                     //getting students emails using StudentsId[]              
                     to = emails[i]; // Accessing child key                  
-                    _imailCommunication.Send(from, to, subject, readTemplate.Replace("{{StartTestLink}}", linkDetails[i].OnlineLineTestLink),password);                  
+                    _imailCommunication.Send(from, to, subject, readTemplate.Replace("{{StartTestLink}}", testLink+linkDetails[i].OnlineLineTestLink),password);                  
                 }
                 #endregion
-                response._success.Add("Data updated successfully");
+                response._success.Add("email sent successfully");
                 return Ok(response);
             }
         }
@@ -2118,7 +2118,18 @@ public class AppController : ControllerBase
         response.exception = null;
         try
         {
-            response._results = await _unitOfWork.Institutes.GetAllAsync();
+
+            // 1. Retrieve the user by their username
+            string loggedInUser = User.Identity?.Name;
+            // 2. Get the list of role names associated with that user
+            var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
+            int InstituteId = loggedInUserDeatails.InstituteId;
+            IList<string> roles = await _userManager.GetRolesAsync(loggedInUserDeatails);
+
+            if (roles[0]==UserRoles.SuperAdmin)
+                response._results = await _unitOfWork.Institutes.GetAllAsync();
+            else
+                response._results = await _unitOfWork.Institutes.GetInstituteByInstituteId(InstituteId);
             return Ok(response);
         }
         catch (Exception ex)
@@ -2221,9 +2232,55 @@ public class AppController : ControllerBase
             return Ok(response);
         }
     }
-    #endregion
+    #region Result Section
+    [HttpPost]
+    public async Task<ActionResult<APIResponse_V<StudentResult>>> StudentResult(StudentResult obj)
+    {
+        APIResponse_V<StudentResult> response = new APIResponse_V<StudentResult>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        response._result = null;
+        response.exception = null;
+        try
+        {
+            if (ModelState.IsValid)
+            {
+             _unitOfWork.BeginTransaction();
+                    await _unitOfWork.StudentResults.InsertAsync(obj);
+                    await _unitOfWork.StudentResults.SaveAsync();
+             _unitOfWork.Commit();
+                    response._success.Add("Data saved successfully");
+                    return Ok(response);           
+            }
+            else
+            {
+                foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry modelState in ModelState.Values)
+                {
+                    foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelError error in modelState.Errors)
+                    {
+                        response._errors.Add(error.ErrorMessage);
+                    }
+                }
+                response._statusCode = StatusCodes.Status400BadRequest;
+                return Ok(response);
+            }
+        }
+        catch (Exception ex)
+        {
+            _unitOfWork.Rollback();
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status400BadRequest;
+            //return new BadRequestException(ex.ToString());
+            return Ok(response);
+        }
+    }
+    #endregion result
 
     #endregion olt
+
+    #endregion
 
     #region JWT token starts
     //[HttpGet]
@@ -2271,7 +2328,6 @@ public class AppController : ControllerBase
     //    var jwtToken = tokenHandler.WriteToken(token);
     //    return jwtToken;
     //}
-    #region GenerateRefreshToken
     private JwtSecurityToken CreateToken(List<Claim> authClaims)
     {
         var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
@@ -2329,8 +2385,6 @@ public class AppController : ControllerBase
 
         return NoContent();
     }
-
-    #endregion
 
     #endregion End Jwt token
 

@@ -70,6 +70,7 @@ namespace SWSS_v1.UnitOfBox
         public DbSet<TestLink> TestLinks { get; set; }
         public DbSet<ClassSubjectMapper> ClassSubjectMappers { get; set; }
         public DbSet<PasswordTokenGeneration> PasswordTokenGenerations { get; set; }
+        public DbSet<StudentResult> StudentResults { get; set;}
 
     }
 }

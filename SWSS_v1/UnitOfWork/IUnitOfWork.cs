@@ -24,5 +24,6 @@ namespace SWSS_v1.UnitOfBox
         TestLinkRepository TestLinks { get; }
         ClassSubjectMapperRepository ClassSubjectMappers { get; }
         PasswordTokenGenerationRepository PasswordTokenGenerations { get; }
+        StudentResultRepositoty StudentResults { get; }
     }
 }
