@@ -2184,45 +2184,53 @@ public class AppController : ControllerBase
     {
         List<Quiz> response = new List<Quiz>();
         try
-       {
+        {
             //link start
             if (id != null)
             {
+                var _stuResult = await _unitOfWork.StudentResults.GetByIdAsync(id);
+                if (_stuResult != null) 
+                {
+                    return NotFound();
+                }
+                else 
+                { 
                 TestLink obj = await _unitOfWork.TestLinks.GetByIdAsync(id);
                 if (obj != null)
                 {
                     //check link expiry start
                     if (_unitOfWork.TestLinks.isEarlier(obj.ExpiryDateTime ?? DateTime.Now))
                     {
-                    var results = await _iquestionRepos.GetQuizQuestionByClassAndSubject(obj.ClassId, obj.SubjectId, obj.InstituteId ?? 0);
+                        var results = await _iquestionRepos.GetQuizQuestionByClassAndSubject(obj.ClassId, obj.SubjectId, obj.InstituteId ?? 0);
 
-                    if (results.Count() > 0)
-                    {
-                        foreach (var quiz in results)
+                        if (results.Count() > 0)
                         {
-                            response.Add(new Quiz
+                            foreach (var quiz in results)
                             {
-                                QuestionText = quiz.QuestionText,
-                                Options = new string[]
+                                response.Add(new Quiz
                                 {
+                                    QuestionText = quiz.QuestionText,
+                                    Options = new string[]
+                                    {
                                     quiz.Options[0].OptionText.ToString(),
                                     quiz.Options[1].OptionText.ToString(),
                                     quiz.Options[2].OptionText.ToString(),
                                     quiz.Options[3].OptionText.ToString()
-                                },
-                                Answer = GetAnswer(quiz.Options)
-                            });
+                                    },
+                                    Answer = GetAnswer(quiz.Options)
+                                });
+                            }
                         }
-                    }
-                    else
-                    {
+                        else
+                        {
 
+                        }
+                        //response._results = await _unitOfWork.Questions.GetAllAsync();
+                        return Ok(response);
                     }
-                    //response._results = await _unitOfWork.Questions.GetAllAsync();
-                    return Ok(response);
+                    //check link expiry end
                 }
-               //check link expiry end
-                }
+                }   
                 return Ok(response);
             }
             return Ok(response);
