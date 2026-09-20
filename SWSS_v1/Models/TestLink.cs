@@ -17,7 +17,7 @@ namespace SWSS_v1.Models
         [Required(ErrorMessage ="Please select class")]
         public int ClassId { get; set; }
         public int? InstituteId { get; set; }
-        public string? OnlineLineTestLink { get; set; }
+        public string? OnlineTestLink { get; set; }
         [Required(ErrorMessage ="Please select valid for")]
         [NotMapped]
         public int? Expiry { get; set; }

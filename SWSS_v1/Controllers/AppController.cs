@@ -1736,7 +1736,7 @@ public class AppController : ControllerBase
                     ExpiryDateTime = request.ExpiryDateTime,
                     Durations = request.Durations,
                     TotalQuestions = request.TotalQuestions,
-                    OnlineLineTestLink = Convert.ToString(Guid.NewGuid()) + "instituteId=" + request.InstituteId + "classId=" + request.ClassId + "subjectId=" + request.SubjectId.ToString(),
+                    OnlineTestLink = Convert.ToString(Guid.NewGuid()) + "instituteId=" + request.InstituteId + "classId=" + request.ClassId + "subjectId=" + request.SubjectId.ToString(),
                     InstituteId = request.InstituteId
                 }).ToList();
 
@@ -1763,7 +1763,7 @@ public class AppController : ControllerBase
                 {                    
                     //getting students emails using StudentsId[]              
                     to = emails[i]; // Accessing child key                  
-                    _imailCommunication.Send(from, to, subject, readTemplate.Replace("{{StartTestLink}}", testLink+linkDetails[i].OnlineLineTestLink),password);                  
+                    _imailCommunication.Send(from, to, subject, readTemplate.Replace("{{StartTestLink}}", testLink+linkDetails[i].OnlineTestLink),password);                  
                 }
                 #endregion
                 response._success.Add("email sent successfully");
@@ -2198,36 +2198,40 @@ public class AppController : ControllerBase
                 TestLink obj = await _unitOfWork.TestLinks.GetByIdAsync(id);
                 if (obj != null)
                 {
-                    //check link expiry start
-                    if (_unitOfWork.TestLinks.isEarlier(obj.ExpiryDateTime ?? DateTime.Now))
-                    {
-                        var results = await _iquestionRepos.GetQuizQuestionByClassAndSubject(obj.ClassId, obj.SubjectId, obj.InstituteId ?? 0);
-
-                        if (results.Count() > 0)
+                        //check link expiry start
+                        if (_unitOfWork.TestLinks.isEarlier(obj.ExpiryDateTime ?? DateTime.Now))
                         {
-                            foreach (var quiz in results)
+                            var results = await _iquestionRepos.GetQuizQuestionByClassAndSubject(obj.ClassId, obj.SubjectId, obj.InstituteId ?? 0);
+
+                            if (results.Count() > 0)
                             {
-                                response.Add(new Quiz
+                                foreach (var quiz in results)
                                 {
-                                    QuestionText = quiz.QuestionText,
-                                    Options = new string[]
+                                    response.Add(new Quiz
                                     {
+                                        QuestionText = quiz.QuestionText,
+                                        Options = new string[]
+                                        {
                                     quiz.Options[0].OptionText.ToString(),
                                     quiz.Options[1].OptionText.ToString(),
                                     quiz.Options[2].OptionText.ToString(),
                                     quiz.Options[3].OptionText.ToString()
-                                    },
-                                    Answer = GetAnswer(quiz.Options)
-                                });
+                                        },
+                                        Answer = GetAnswer(quiz.Options)
+                                    });
+                                }
                             }
-                        }
-                        else
-                        {
+                            else
+                            {
 
+                            }
+                            //response._results = await _unitOfWork.Questions.GetAllAsync();
+                            return Ok(response);
                         }
-                        //response._results = await _unitOfWork.Questions.GetAllAsync();
-                        return Ok(response);
-                    }
+                        else 
+                        {
+                            return NotFound(new { message = "Sorry this link expired."});
+                        }
                     //check link expiry end
                 }
                 }   
@@ -2242,7 +2246,7 @@ public class AppController : ControllerBase
     }
     #region Result Section
     [HttpPost]
-    public async Task<ActionResult<APIResponse_V<StudentResult>>> StudentResult(StudentResult obj)
+    public async Task<ActionResult<APIResponse_V<StudentResult>>> StudentResult([FromBody] StudentResult obj)
     {
         APIResponse_V<StudentResult> response = new APIResponse_V<StudentResult>();
         response._success = new List<string>();
@@ -2254,12 +2258,18 @@ public class AppController : ControllerBase
         {
             if (ModelState.IsValid)
             {
-             _unitOfWork.BeginTransaction();
+             var res = await _unitOfWork.TestLinks.GetByIdAsync(obj.TestLinkGuid);
+                if (res != null)
+                {
+                    _unitOfWork.BeginTransaction();
                     await _unitOfWork.StudentResults.InsertAsync(obj);
                     await _unitOfWork.StudentResults.SaveAsync();
-             _unitOfWork.Commit();
+                    _unitOfWork.Commit();
                     response._success.Add("Data saved successfully");
-                    return Ok(response);           
+                    return Ok(response);
+                }
+                response._errors.Add("Invalid Test link");
+                return NotFound(response);
             }
             else
             {

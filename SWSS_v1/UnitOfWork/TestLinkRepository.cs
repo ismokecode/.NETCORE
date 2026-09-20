@@ -24,7 +24,7 @@ namespace SWSS_v1.UnitOfWork
                 ExpiryDateTime = obj.ExpiryDateTime,
                 Durations = obj.Durations,
                 TotalQuestions = obj.TotalQuestions,
-                OnlineLineTestLink = Convert.ToString(Guid.NewGuid())+ "instituteId=" + obj.InstituteId+ "classId=" + obj.ClassId+ "subjectId=" + obj.SubjectId.ToString(),
+                OnlineTestLink = Convert.ToString(Guid.NewGuid())+ "instituteId=" + obj.InstituteId+ "classId=" + obj.ClassId+ "subjectId=" + obj.SubjectId.ToString(),
                 InstituteId=obj.InstituteId
             }).ToList();
 
@@ -41,7 +41,7 @@ namespace SWSS_v1.UnitOfWork
         }
         public async Task<TestLink>GetByIdAsync(string uri)
         {
-            var result = _context.TestLinks.FirstOrDefault(x => x.OnlineLineTestLink == uri);
+            var result = _context.TestLinks.FirstOrDefault(x => x.OnlineTestLink == uri);
 
             //var result = _context.TestLinks.Where(x => x.OnlineLineTestLink.Equals(urlId, StringComparison.OrdinalIgnoreCase));
             //var result = _context.TestLinks.Contains(x => x.OnlineLineTestLink == urlId).FirstOrDefault();
