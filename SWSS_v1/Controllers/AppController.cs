@@ -2264,6 +2264,8 @@ public class AppController : ControllerBase
                 {
                     _unitOfWork.BeginTransaction();
                     obj.CreatedDateTime = DateTime.UtcNow;
+                    var result = await _unitOfWork.TestLinks.GetByIdAsync(obj.TestLinkGuid);
+                    obj.TestLinkId = result.LinkId;
                     await _unitOfWork.StudentResults.InsertAsync(obj);
                     await _unitOfWork.StudentResults.SaveAsync();
                     _unitOfWork.Commit();
@@ -2298,9 +2300,9 @@ public class AppController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<APIResponse_V<TestLink>>> GetStudentsResultByClassAndSubject([FromQuery] int classId, [FromQuery] int subjectId)
+    public async Task<ActionResult<APIResponse_V<StudentResult>>> GetStudentsResultByClassAndSubject([FromQuery] int classId, [FromQuery] int subjectId)
     {
-        APIResponse_V<TestLink> response = new APIResponse_V<TestLink>();
+        APIResponse_V<StudentResult> response = new APIResponse_V<StudentResult>();
         response._success = new List<string>();
         response._errors = new List<string>();
         response._results = null;
@@ -2314,7 +2316,12 @@ public class AppController : ControllerBase
                 {
                     return BadRequest("Invalid Class or Subject ID.");
                 }
-                response._results = await _unitOfWork.TestLinks.GetStudentResultsAsync(classId, subjectId);
+                // 1. Retrieve the user by their username
+                string loggedInUser = User.Identity?.Name;
+                // 2. Get the list of role names associated with that user
+                var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
+                int InstituteId = loggedInUserDeatails.InstituteId;
+                response._results = await _unitOfWork.StudentResults.GetStudentResultsAsync(classId, subjectId, InstituteId);
                 response._success.Add("Data saved successfully");
                 return Ok(response);   
             }

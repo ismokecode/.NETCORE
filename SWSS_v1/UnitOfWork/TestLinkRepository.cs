@@ -53,13 +53,13 @@ namespace SWSS_v1.UnitOfWork
             bool isEarlier = DateTime.Now.CompareTo(dt) < 0;
             return isEarlier;
         }
-        public async Task<List<TestLink>> GetStudentResultsAsync(int classId, int subjectId)
+        public async Task<List<TestLink>> GetStudentResultsAsync(int classId, int subjectId,int instituteId)
         {
             var results = await _context.TestLinks
                 .Include(t => t.Students)
                 .Include(t => t.Classes)
                 .Include(t => t.Subjects)
-                .Where(t => t.ClassId == classId && t.SubjectId == subjectId)
+                .Where(t => t.ClassId == classId && t.SubjectId == subjectId && t.InstituteId==instituteId)
                 .OrderByDescending(t => t.CreatedDate)
                 .Select(t => new TestLink
                 {
@@ -71,12 +71,16 @@ namespace SWSS_v1.UnitOfWork
                     SubjectName = t.Subjects.SubjectName,
 
                     StudentId = t.StudentId,
-                    StudentName = t.StudentName,
-                    StudentEmail = t.StudentEmail,
+                    StudentName = t.Students.StudentName,
+                    StudentEmail = t.Students.Email,
+                    Phone = t.Students.Phone,
+
+                    TotalQuestions = t.TotalQuestions,
+                    Marks = t.StudentResults.MarksObtained,
 
                     LinkId = t.LinkId,
                     OnlineTestLink=t.OnlineTestLink
-                })
+                }).Distinct()
                 .ToListAsync(); // Added 'await' here
 
             return results;

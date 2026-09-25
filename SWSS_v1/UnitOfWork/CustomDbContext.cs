@@ -47,12 +47,9 @@ namespace SWSS_v1.UnitOfBox
             modelBuilder.Entity<Subject>()
             .HasMany(o => o.Questions)
             .WithOne(q => q.Subjects)
-            .HasForeignKey(o => o.SubjectId);
+            .HasForeignKey(o => o.SubjectId);       
 
-            //modelBuilder.Entity<StudentResult>()
-            //.HasOne(o => o.TestLink)
-            //.WithOne(s => s.StudentResults)
-            //.HasForeignKey(typeof(StudentResult), "OnlineTestLink");
+            #region TestLinks
 
             modelBuilder.Entity<TestLink>()
             .HasOne(o => o.Classes)
@@ -66,6 +63,20 @@ namespace SWSS_v1.UnitOfBox
             .HasOne(o => o.Students)
             .WithMany(o=>o.TestLinksList)
             .HasForeignKey(f=>f.StudentId);
+
+            #endregion
+
+            #region StudentResults
+
+            modelBuilder.Entity<StudentResult>(b =>
+            {
+                b.HasOne(sr => sr.TestLinks)               // 1. Point to the navigation property on StudentResult
+                 .WithOne(tl => tl.StudentResults)          // 2. Point to the inverse navigation property on TestLink
+                 .HasForeignKey<StudentResult>(sr => sr.TestLinkId) // 3. Specify the generic type holding the Foreign Key
+                 .IsRequired();
+            });
+
+            #endregion
 
             base.OnModelCreating(modelBuilder);
         }
