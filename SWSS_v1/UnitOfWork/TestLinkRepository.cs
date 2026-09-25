@@ -1,4 +1,5 @@
-﻿using SWSS_v1.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using SWSS_v1.Models;
 using SWSS_v1.UnitOfBox;
 
 namespace SWSS_v1.UnitOfWork
@@ -51,6 +52,34 @@ namespace SWSS_v1.UnitOfWork
         {
             bool isEarlier = DateTime.Now.CompareTo(dt) < 0;
             return isEarlier;
+        }
+        public async Task<List<TestLink>> GetStudentResultsAsync(int classId, int subjectId)
+        {
+            var results = await _context.TestLinks
+                .Include(t => t.Students)
+                .Include(t => t.Classes)
+                .Include(t => t.Subjects)
+                .Where(t => t.ClassId == classId && t.SubjectId == subjectId)
+                .OrderByDescending(t => t.CreatedDate)
+                .Select(t => new TestLink
+                {
+                    // Explicitly map column by column using Name = Value
+                    ClassId=t.ClassId,
+                    ClassName = t.Classes.ClassName,
+
+                    SubjectId = t.SubjectId,
+                    SubjectName = t.Subjects.SubjectName,
+
+                    StudentId = t.StudentId,
+                    StudentName = t.StudentName,
+                    StudentEmail = t.StudentEmail,
+
+                    LinkId = t.LinkId,
+                    OnlineTestLink=t.OnlineTestLink
+                })
+                .ToListAsync(); // Added 'await' here
+
+            return results;
         }
     }
 }

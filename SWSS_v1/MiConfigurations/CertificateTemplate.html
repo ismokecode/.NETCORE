@@ -1,0 +1,323 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate of Excellence</title>
+    <!-- Importing premium elegant fonts -->
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Cinzel:wght@500;700&family=Montserrat:wght@300;400;600&family=Pinyon+Script&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary-gold: #c5a059;
+            --dark-gold: #9e7d3b;
+            --light-gold: #f3e5ab;
+            --text-dark: #1c2434;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Montserrat', sans-serif;
+            -webkit-print-color-adjust: exact;
+        }
+
+        /* Certificate Container: Optimized for standard landscape printing */
+        .certificate-container {
+            position: relative;
+            width: 1050px;
+            height: 740px;
+            background: #ffffff;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+            /* Sophisticated Geometric Background Pattern */
+            .certificate-container::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background-image: radial-gradient(circle at 100% 150%, transparent 24%, #fcf9f2 24%, #fcf9f2 28%, transparent 28%, transparent), radial-gradient(circle at 0% 150%, transparent 24%, #fcf9f2 24%, #fcf9f2 28%, transparent 28%, transparent), linear-gradient(45deg, transparent 46%, #faf6ec 46%, #faf6ec 54%, transparent 54%), linear-gradient(-45deg, transparent 46%, #faf6ec 46%, #faf6ec 54%, transparent 54%);
+                background-size: 100px 100px;
+                opacity: 0.6;
+                z-index: 1;
+            }
+
+        /* Outer Elegant Border */
+        .outer-border {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            border: 4px solid var(--primary-gold);
+            padding: 10px;
+        }
+
+        /* Inner Thin Border */
+        .inner-border {
+            width: 100%;
+            height: 100%;
+            border: 1px solid var(--dark-gold);
+            background: rgba(255, 255, 255, 0.92);
+            padding: 40px 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Corner Decorative Elements */
+        .corner-element {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 4px solid var(--dark-gold);
+            z-index: 3;
+        }
+
+        .top-left {
+            top: 8px;
+            left: 8px;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .top-right {
+            top: 8px;
+            right: 8px;
+            border-left: none;
+            border-bottom: none;
+        }
+
+        .bottom-left {
+            bottom: 8px;
+            left: 8px;
+            border-right: none;
+            border-top: none;
+        }
+
+        .bottom-right {
+            bottom: 8px;
+            right: 8px;
+            border-left: none;
+            border-top: none;
+        }
+
+        /* Content Styling */
+        .logo-placeholder {
+            font-family: 'Cinzel', serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            color: var(--text-dark);
+            text-transform: uppercase;
+        }
+
+        .certificate-title {
+            font-family: 'Cinzel', serif;
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin: 10px 0 5px 0;
+            letter-spacing: 6px;
+            text-align: center;
+        }
+
+        .sub-title {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            color: var(--primary-gold);
+            font-weight: 600;
+            margin-bottom: 25px;
+        }
+
+        .presentation-text {
+            font-size: 15px;
+            color: var(--text-muted);
+            font-style: italic;
+            margin-bottom: 5px;
+        }
+
+        .recipient-name {
+            font-family: 'Pinyon Script', cursive;
+            font-size: 64px;
+            color: var(--dark-gold);
+            margin: 10px 0;
+            text-align: center;
+            line-height: 1;
+        }
+
+        .name-line {
+            width: 60%;
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--primary-gold), transparent);
+            margin-bottom: 20px;
+        }
+
+        .achievement-details {
+            font-size: 15px;
+            color: var(--text-dark);
+            line-height: 1.8;
+            text-align: center;
+            max-width: 700px;
+            font-weight: 300;
+        }
+
+            .achievement-details strong {
+                font-weight: 600;
+                color: var(--text-dark);
+            }
+
+        /* Footer Section: Badge and Signatures */
+        .certificate-footer {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 30px;
+        }
+
+        .signature-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 200px;
+        }
+
+        .signature-line {
+            width: 100%;
+            border-top: 1px solid var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .signature-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* Luxury Medal / Badge Graphics */
+        .badge-container {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .badge-ribbon-left, .badge-ribbon-right {
+            position: absolute;
+            bottom: -20px;
+            width: 20px;
+            height: 50px;
+            background: var(--primary-gold);
+            clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 50% 85%, 0% 100%);
+            z-index: 1;
+        }
+
+        .badge-ribbon-left {
+            left: 18px;
+            transform: rotate(15deg);
+            background: var(--dark-gold);
+        }
+
+        .badge-ribbon-right {
+            right: 18px;
+            transform: rotate(-15deg);
+        }
+
+        .badge-circle {
+            position: relative;
+            z-index: 2;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--light-gold) 0%, var(--primary-gold) 70%, var(--dark-gold) 100%);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px dashed #ffffff;
+        }
+
+            .badge-circle::after {
+                content: "★";
+                color: #ffffff;
+                font-size: 24px;
+                text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            }
+    </style>
+</head>
+<body>
+
+    <div class="certificate-container">
+        <div class="outer-border">
+            <!-- Decorative Corners -->
+            <div class="corner-element top-left"></div>
+            <div class="corner-element top-right"></div>
+            <div class="corner-element bottom-left"></div>
+            <div class="corner-element bottom-right"></div>
+
+            <div class="inner-border">
+                <!-- Top Brand Logo Placeholder -->
+                <div class="logo-placeholder">ACADEMY OF EXCELLENCE</div>
+
+                <!-- Main Titles -->
+                <div style="text-align: center; width: 100%;">
+                    <div class="certificate-title">CERTIFICATE of APPRECIATION</div>
+                    <div class="sub-title">Honoring Outstanding Achievement</div>
+                </div>
+
+                <!-- Recipient Info -->
+                <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+                    <div class="presentation-text">This certificate is proudly presented to</div>
+                    <div class="recipient-name">Alexander Mercer</div>
+                    <div class="name-line"></div>
+                </div>
+
+                <!-- Description Description -->
+                <div class="achievement-details">
+                    For successfully demonstrating exceptional mastery, dedication, and expertise in
+                    <strong>Advanced UI/UX Architecture & Design Systems</strong>. Your commitment to maintaining
+                    the highest standards of digital innovation sets a benchmark for professionals worldwide.
+                </div>
+
+                <!-- Signatures & Emblem Footer -->
+                <div class="certificate-footer">
+                    <div class="signature-block">
+                        <div class="signature-line"></div>
+                        <div class="signature-title">Issued Date</div>
+                    </div>
+
+                    <!-- CSS-only Premium Badge -->
+                    <div class="badge-container">
+                        <div class="badge-ribbon-left"></div>
+                        <div class="badge-ribbon-right"></div>
+                        <div class="badge-circle"></div>
+                    </div>
+
+                    <div class="signature-block">
+                        <div class="signature-line"></div>
+                        <div class="signature-title">Director Signature</div>
+
+

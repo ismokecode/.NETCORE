@@ -1718,7 +1718,7 @@ public class AppController : ControllerBase
         {
             if (ModelState.IsValid)
             {
-                request.ExpiryDateTime = DateTime.UtcNow.AddHours(12);
+                request.ExpiryDateTime = DateTime.UtcNow.AddHours((double)(request.Expiry ?? 0));
                 // 1. Retrieve the user by their username
                 string loggedInUser = User.Identity?.Name;
                 // 2. Get the list of role names associated with that user
@@ -1734,6 +1734,7 @@ public class AppController : ControllerBase
                     ClassId = request.ClassId,
                     SubjectId = request.SubjectId,
                     ExpiryDateTime = request.ExpiryDateTime,
+                    CreatedDate = DateTime.UtcNow,
                     Durations = request.Durations,
                     TotalQuestions = request.TotalQuestions,
                     OnlineTestLink = Convert.ToString(Guid.NewGuid()) + "instituteId=" + request.InstituteId + "classId=" + request.ClassId + "subjectId=" + request.SubjectId.ToString(),
@@ -2262,6 +2263,7 @@ public class AppController : ControllerBase
                 if (res != null)
                 {
                     _unitOfWork.BeginTransaction();
+                    obj.CreatedDateTime = DateTime.UtcNow;
                     await _unitOfWork.StudentResults.InsertAsync(obj);
                     await _unitOfWork.StudentResults.SaveAsync();
                     _unitOfWork.Commit();
@@ -2270,6 +2272,51 @@ public class AppController : ControllerBase
                 }
                 response._errors.Add("Invalid Test link");
                 return NotFound(response);
+            }
+            else
+            {
+                foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry modelState in ModelState.Values)
+                {
+                    foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelError error in modelState.Errors)
+                    {
+                        response._errors.Add(error.ErrorMessage);
+                    }
+                }
+                response._statusCode = StatusCodes.Status400BadRequest;
+                return Ok(response);
+            }
+        }
+        catch (Exception ex)
+        {
+            _unitOfWork.Rollback();
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status400BadRequest;
+            //return new BadRequestException(ex.ToString());
+            return Ok(response);
+        }
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<APIResponse_V<TestLink>>> GetStudentsResultByClassAndSubject([FromQuery] int classId, [FromQuery] int subjectId)
+    {
+        APIResponse_V<TestLink> response = new APIResponse_V<TestLink>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        response._result = null;
+        response.exception = null;
+        try
+        {
+            if (ModelState.IsValid)
+            {
+                if (classId <= 0 || subjectId <= 0)
+                {
+                    return BadRequest("Invalid Class or Subject ID.");
+                }
+                response._results = await _unitOfWork.TestLinks.GetStudentResultsAsync(classId, subjectId);
+                response._success.Add("Data saved successfully");
+                return Ok(response);   
             }
             else
             {

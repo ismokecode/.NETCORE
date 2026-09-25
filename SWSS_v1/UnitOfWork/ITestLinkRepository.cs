@@ -8,5 +8,6 @@ namespace SWSS_v1.UnitOfWork
         Task SaveTestLinkAsync(List<TestLink> linkDetails);
         Task<TestLink> GetByIdAsync(string urlId);
         bool isEarlier(DateTime expiryTime);
+        Task<List<TestLink>> GetStudentResultsAsync(int classId,int subjectId);
     }
 }

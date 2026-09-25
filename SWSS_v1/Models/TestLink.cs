@@ -28,5 +28,21 @@ namespace SWSS_v1.Models
         public DateTime? CreatedBy { get; set; }
         public int StudentId { get; set; }
 
+
+        
+        public virtual StudentResult StudentResults { get; }
+        public virtual TestLink TestLinks { get; }
+        public virtual Student Students { get; }
+        //[NotMapped]
+        public virtual Classes Classes { get; }
+
+        public virtual Subject Subjects { get; }
+
+        public string? ClassName { get; set; }
+        public string? SubjectName { get; set; }
+
+        public string? StudentName { get; set; }
+        public string? StudentEmail { get; set; }
+
     }
 }

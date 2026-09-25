@@ -26,5 +26,8 @@ namespace SWSS_v1.Models
         public int? InstituteId { get; set; }
         public bool? isSelected { get; set; }
 
+        public List<TestLink>? TestLinksList { get; }
+
+
     }
 }

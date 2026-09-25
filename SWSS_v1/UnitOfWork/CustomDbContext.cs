@@ -22,6 +22,7 @@ namespace SWSS_v1.UnitOfBox
             });
 
             //modelBuilder.Entity<Question> question has subject one but many question for one subject
+            //Defines SubjectId inside the Question entity as the Foreign Key that links it to the Subject table.
             modelBuilder.Entity<Question>(b =>
             {
                 b.HasOne<Subject>(b => b.Subjects)
@@ -42,16 +43,29 @@ namespace SWSS_v1.UnitOfBox
             .WithOne(q => q.Classes)
             .HasForeignKey(o => o.ClassID);
 
+            //it tells the database that one Subject can have many Questions, and each Question belongs to exactly one Subject.
             modelBuilder.Entity<Subject>()
             .HasMany(o => o.Questions)
             .WithOne(q => q.Subjects)
             .HasForeignKey(o => o.SubjectId);
 
-            //modelBuilder.Entity<Classes>(b =>
-            //{
-            //    b.HasMany<Subject>(b => b.lstSubject)
-            //    .WithMany(b => b.Classes);            
-            //})    
+            //modelBuilder.Entity<StudentResult>()
+            //.HasOne(o => o.TestLink)
+            //.WithOne(s => s.StudentResults)
+            //.HasForeignKey(typeof(StudentResult), "OnlineTestLink");
+
+            modelBuilder.Entity<TestLink>()
+            .HasOne(o => o.Classes)
+            .WithMany(s=>s.TestLinksList)
+            .HasForeignKey(o=>o.ClassId);
+
+            modelBuilder.Entity<TestLink>()
+            .HasOne(o => o.Subjects);
+
+            modelBuilder.Entity<TestLink>()
+            .HasOne(o => o.Students)
+            .WithMany(o=>o.TestLinksList)
+            .HasForeignKey(f=>f.StudentId);
 
             base.OnModelCreating(modelBuilder);
         }
@@ -71,7 +85,6 @@ namespace SWSS_v1.UnitOfBox
         public DbSet<ClassSubjectMapper> ClassSubjectMappers { get; set; }
         public DbSet<PasswordTokenGeneration> PasswordTokenGenerations { get; set; }
         public DbSet<StudentResult> StudentResults { get; set;}
-
     }
 }
 

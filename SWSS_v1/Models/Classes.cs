@@ -15,5 +15,8 @@ namespace SWSS_v1.Models
         public DateTime? CreatedDate = null;
         public bool? isActive { get; set; }
         public int? InstituteId { get; set; }
+
+        public List<TestLink>? TestLinksList { get; }
+
     }
 } 
