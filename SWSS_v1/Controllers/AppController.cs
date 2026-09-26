@@ -2503,7 +2503,7 @@ public class AppController : ControllerBase
         // STEP 3: Construct the email and attach the PDF using MimeKit / MailKit
         var message = new MimeMessage();
         // Attach the PDF byte array directly from memory without saving to disk
-        bodyBuilder.Attachments.Add("Statement.pdf", pdfBytes, ContentType.Parse("application/pdf"));
+        bodyBuilder.Attachments.Add("Certificate.pdf", pdfBytes, ContentType.Parse("application/pdf"));
         message.Body = bodyBuilder.ToMessageBody();
         _imailCommunication.SendAttachement(from, to, subject, message, password);
         return Ok(new { Message ="Mail sent successfully."});
