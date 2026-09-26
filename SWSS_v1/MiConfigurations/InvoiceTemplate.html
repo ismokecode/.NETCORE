@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            color: #333;
+        }
+
+        .header {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .total {
+            text-align: right;
+            font-weight: bold;
+            font-size: 18px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">Invoice #{{InvoiceNumber}}</div>
+    <p><strong>Customer Name:</strong> {{CustomerName}}</p>
+    <p><strong>Date:</strong> {{Date}}</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each Items}}
+            <tr>
+                <td>{{Description}}</td>
+                <td>{{Quantity}}</td>
+                <td>${{Price}}</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+
+    <div class="total">Total: ${{Total}}</div>
+</body>
+</html>

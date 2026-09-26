@@ -2,6 +2,8 @@
 using MailKit.Security;
 using MimeKit;
 using MimeKit.Text;
+using WebDriverBiDi.Protocol;
+
 namespace SWSS_v1.Services
 {
     public class SendViaGmail : IMailCommunication
@@ -32,5 +34,30 @@ namespace SWSS_v1.Services
                 throw new Exception();
             }
          }
+        public async Task SendAttachement(string from, string to, string subject, MimeMessage message, string appPasswprd)
+        {
+            try
+            {
+                {
+                    var email = message;
+                    email.From.Add(MailboxAddress.Parse(from));
+                    email.To.Add(MailboxAddress.Parse(to));
+                    email.Subject = subject;
+                    using var smtp = new SmtpClient();
+                    // Use Port 587 with StartTls for the most secure connection
+                    await smtp.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
+
+                    // Authenticate using your email and the generated App Password
+                    await smtp.AuthenticateAsync(from, appPasswprd);
+
+                    await smtp.SendAsync(email);
+                    await smtp.DisconnectAsync(true);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception();
+            }
+        }
     }
 }

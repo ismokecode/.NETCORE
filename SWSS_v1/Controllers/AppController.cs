@@ -23,6 +23,11 @@ using System.Web.Http.ModelBinding;
 using SWSS_v1.Services;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.SignalR;
+using PuppeteerSharp;
+using HandlebarsDotNet;
+using System.IO;
+using MimeKit;
+using WebDriverBiDi.Protocol;
 
 namespace SWSS_v1.Controllers;
 
@@ -2349,6 +2354,218 @@ public class AppController : ControllerBase
         }
     }
     #endregion result
+
+    #region Certification
+    [HttpGet]
+    public async Task<IActionResult> DownloadCertificatePdf(int testLinkId)
+    {
+        if (testLinkId <= 0)
+        {
+            return BadRequest("Invalid data.");
+        }
+        // 1. Retrieve the user by their username
+        string loggedInUser = User.Identity?.Name;
+        // 2. Get the list of role names associated with that user
+        var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
+        int InstituteId = loggedInUserDeatails.InstituteId;
+        var result = await _unitOfWork.StudentResults.GetStudentResultsByIdAsync(testLinkId, InstituteId);
+        // 1. Mock Data for the Template
+        var invoiceData = new
+        {
+            StudentName = result.StudentName,
+            IssuedDate = DateTime.Now.ToString("dd-MM-yyyy"),
+            DirectorSignature = "",
+            Score = result.MarksObtained,
+            TotalScore = result.TotalQuestions,
+            SubjectName = result.SubjectName,
+            ClassName = result.ClassName,
+        };
+        var smtpSection = _configuration.GetSection("Certification");
+        var folderName = smtpSection["CertificateTemplateFolder"];
+        var fileName = smtpSection["CertificatePdfTemplate"];
+
+
+        // 2. Read and Compile the HTML Template using Handlebars
+        //var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "MiConfigurations", "InvoiceTemplate.html");
+        string templatePath = Path.Combine(_env.ContentRootPath, folderName, fileName);
+        var templateSource = await System.IO.File.ReadAllTextAsync(templatePath);
+
+        var template = Handlebars.Compile(templateSource);
+        string populatedHtml = template(invoiceData);
+
+        // 3. Configure PuppeteerSharp to Download Browser (Run once at app startup in production)
+        var browserFetcher = new BrowserFetcher();
+        await browserFetcher.DownloadAsync();
+
+        // 4. Launch Headless Browser and Generate PDF
+        using var browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true });
+        using var page = await browser.NewPageAsync();
+
+        // Pass the HTML string directly to the page context
+        await page.SetContentAsync(populatedHtml);
+
+        // Generate the PDF stream with formatting options
+        var pdfOptions = new PdfOptions
+        {
+            Format = PuppeteerSharp.Media.PaperFormat.A4,
+            PrintBackground = true, // Ensures CSS colors and background layouts render correctly
+            MarginOptions = new PuppeteerSharp.Media.MarginOptions
+            {
+                Top = "20px",
+                Bottom = "20px",
+                Left = "20px",
+                Right = "20px"
+            }
+        };
+
+        byte[] pdfBytes = await page.PdfDataAsync(pdfOptions);
+
+        // 5. Return the file as a PDF download
+        string fileNameObj = $"invoice_{invoiceData.StudentName}.pdf";
+        return File(pdfBytes, "application/pdf", fileNameObj);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> SendMailCertificate(int testLinkId)
+    {
+        if (testLinkId <= 0)
+        {
+            return BadRequest("Invalid data.");
+        }
+        // 1. Retrieve the user by their username
+        string loggedInUser = User.Identity?.Name;
+        // 2. Get the list of role names associated with that user
+        var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
+        int InstituteId = loggedInUserDeatails.InstituteId;
+        var result = await _unitOfWork.StudentResults.GetStudentResultsByIdAsync(testLinkId, InstituteId);
+        // 1. Mock Data for the Template
+        var invoiceData = new
+        {
+            StudentName = result.StudentName,
+            IssuedDate = DateTime.Now.ToString("dd-MM-yyyy"),
+            DirectorSignature = "",
+            Score = result.MarksObtained,
+            TotalScore = result.TotalQuestions,
+            SubjectName = result.SubjectName,
+            ClassName = result.ClassName,
+        };
+        var smtpSection = _configuration.GetSection("Certification");
+        var folderName = smtpSection["CertificateTemplateFolder"];
+        var fileName = smtpSection["CertificatePdfTemplate"];
+        var subject = smtpSection["CertificateMailSubject"];
+        subject = subject.Replace("[Name]", invoiceData.StudentName).Replace("[Test Name]",invoiceData.SubjectName);
+        string to = result.Email;
+        string from = smtpSection["SenderEmail"];
+        string password = smtpSection["Password"];
+
+        // 2. Read and Compile the HTML Template using Handlebars
+        //var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "MiConfigurations", "InvoiceTemplate.html");
+        string templatePath = Path.Combine(_env.ContentRootPath, folderName, fileName);
+        var templateSource = await System.IO.File.ReadAllTextAsync(templatePath);
+
+        var template = Handlebars.Compile(templateSource);
+        string populatedHtml = template(invoiceData);
+
+        // 3. Configure PuppeteerSharp to Download Browser (Run once at app startup in production)
+        var browserFetcher = new BrowserFetcher();
+        await browserFetcher.DownloadAsync();
+
+        // 4. Launch Headless Browser and Generate PDF
+        using var browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true });
+        using var page = await browser.NewPageAsync();
+
+        // Pass the HTML string directly to the page context
+        await page.SetContentAsync(populatedHtml);
+
+        // Generate the PDF stream with formatting options
+        var pdfOptions = new PdfOptions
+        {
+            Format = PuppeteerSharp.Media.PaperFormat.A4,
+            PrintBackground = true, // Ensures CSS colors and background layouts render correctly
+            MarginOptions = new PuppeteerSharp.Media.MarginOptions
+            {
+                Top = "20px",
+                Bottom = "20px",
+                Left = "20px",
+                Right = "20px"
+            }
+        };
+
+        byte[] pdfBytes = await page.PdfDataAsync(pdfOptions);
+
+        // 5. Return the file as a PDF download
+        string fileNameObj = $"invoice_{invoiceData.StudentName}.pdf";
+        //return File(pdfBytes, "application/pdf", fileNameObj);
+        var bodyBuilder = new BodyBuilder
+        {
+            TextBody = $"Dear {invoiceData.StudentName}, please find your certificate attached to this email as a PDF."
+        };
+        // STEP 3: Construct the email and attach the PDF using MimeKit / MailKit
+        var message = new MimeMessage();
+        // Attach the PDF byte array directly from memory without saving to disk
+        bodyBuilder.Attachments.Add("Statement.pdf", pdfBytes, ContentType.Parse("application/pdf"));
+        message.Body = bodyBuilder.ToMessageBody();
+        _imailCommunication.SendAttachement(from, to, subject, message, password);
+        return Ok(new { Message ="Mail sent successfully."});
+    }
+
+    [Authorize(Roles ="Super Admin")]
+    [HttpGet("download-invoice-pdf")]
+    public async Task<IActionResult> DownloadPdf()
+    {
+        // 1. Mock Data for the Template
+        var invoiceData = new
+        {
+            InvoiceNumber = "12345",
+            CustomerName = "Acme Corporation",
+            Date = DateTime.Now.ToString("yyyy-MM-dd"),
+            Items = new List<object>
+            {
+                new { Description = "Software Development Service", Quantity = 1, Price = 1500.00 },
+                new { Description = "Cloud Hosting Consultation", Quantity = 5, Price = 100.00 }
+            },
+            Total = 2000.00
+        };
+
+        // 2. Read and Compile the HTML Template using Handlebars
+        var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "MiConfigurations", "InvoiceTemplate.html");
+        var templateSource = await System.IO.File.ReadAllTextAsync(templatePath);
+
+        var template = Handlebars.Compile(templateSource);
+        string populatedHtml = template(invoiceData);
+
+        // 3. Configure PuppeteerSharp to Download Browser (Run once at app startup in production)
+        var browserFetcher = new BrowserFetcher();
+        await browserFetcher.DownloadAsync();
+
+        // 4. Launch Headless Browser and Generate PDF
+        using var browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true });
+        using var page = await browser.NewPageAsync();
+
+        // Pass the HTML string directly to the page context
+        await page.SetContentAsync(populatedHtml);
+
+        // Generate the PDF stream with formatting options
+        var pdfOptions = new PdfOptions
+        {
+            Format = PuppeteerSharp.Media.PaperFormat.A4,
+            PrintBackground = true, // Ensures CSS colors and background layouts render correctly
+            MarginOptions = new PuppeteerSharp.Media.MarginOptions
+            {
+                Top = "20px",
+                Bottom = "20px",
+                Left = "20px",
+                Right = "20px"
+            }
+        };
+
+        byte[] pdfBytes = await page.PdfDataAsync(pdfOptions);
+
+        // 5. Return the file as a PDF download
+        string fileName = $"invoice_{invoiceData.InvoiceNumber}.pdf";
+        return File(pdfBytes, "application/pdf", fileName);
+    }
+    #endregion
 
     #endregion olt
 
