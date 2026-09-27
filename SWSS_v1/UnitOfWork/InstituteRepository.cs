@@ -26,5 +26,14 @@ namespace SWSS_v1.UnitOfWork
             var result = _context.Institutes.Where(x => x.InstituteId == Id && x.isActive == true);
             return result;
         }
+        public async Task <bool> IsEmailExists(string email)
+        {
+            var result = _context.Institutes.Where(x => x.Email == email && x.isActive == true).FirstOrDefault();
+            if (result == null)
+            {
+                return false;
+            }
+            else return true;
+        }
     }
 }

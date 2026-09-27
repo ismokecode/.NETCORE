@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SWSS_v1.Models
 {
@@ -14,5 +15,9 @@ namespace SWSS_v1.Models
         public DateTime? ModifiedDate { get; set; }
         public string? ModifiedBy { get; set; }
         public string? CreatedBy { get; set; }
+        // Maps seamlessly to the 'imageFile' key appended in Angular
+        [NotMapped]
+        public IFormFile? ImageFile { get; set; }
+        public string? ImageFilePath { get; set; }
     }
 }

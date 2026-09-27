@@ -4,6 +4,6 @@ namespace SWSS_v1.UnitOfWork
 {
     public interface IInstituteRepository:IRepository<Institute>
     {
-
+        Task <bool> IsEmailExists(string email);
     }
 }

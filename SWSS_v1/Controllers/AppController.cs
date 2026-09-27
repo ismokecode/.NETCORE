@@ -2012,8 +2012,12 @@ public class AppController : ControllerBase
     #region Institue
     [HttpPost]
     [Authorize(Roles ="Super Admin")]
-    public async Task<ActionResult<APIResponse_V<Institute>>> CreateInstitute([FromBody] Institute obj)
+    public async Task<ActionResult<APIResponse_V<Institute>>> CreateInstitute([FromForm] Institute obj)
     {
+        //if (obj.ImageFile == null || obj.ImageFile.Length == 0)
+        //{
+        //    return BadRequest("A valid image file is required.");
+        //}
         APIResponse_V<Institute> response = new APIResponse_V<Institute>();
         response._success = new List<string>();
         response._errors = new List<string>();
@@ -2025,8 +2029,39 @@ public class AppController : ControllerBase
             if (ModelState.IsValid)
             {
                 obj.Name.Trim();
+                bool isEmailExist =await _unitOfWork.Institutes.IsEmailExists(obj.Email);
+                if (isEmailExist) 
+                {
+                    response._errors.Add("Email already exist");
+                    return Ok(response);
+                }
                 if (/*!_unitOfWork.Institutes.IsExist(obj) &&*/ obj.InstituteId == 0)
                 {
+                    #region fileUploadOption
+                    if (obj.ImageFile != null)
+                    {
+                        // 1. Establish path targeting 'wwwroot/uploads/images'
+                        string uploadsFolder = Path.Combine(_env.ContentRootPath, "uploads", "images");
+
+                        if (!Directory.Exists(uploadsFolder))
+                        {
+                            Directory.CreateDirectory(uploadsFolder);
+                        }
+
+                        // 2. Generate a secure, unique filename to avoid collision duplicates
+                        string uniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(obj.ImageFile.FileName)}";
+                        string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                        // 3. Save the incoming payload stream to disk asynchronously
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await obj.ImageFile.CopyToAsync(fileStream);
+                        }
+
+                        // 4. Determine the exact path record intended for the Database layer
+                        obj.ImageFilePath = $"/uploads/images/{uniqueFileName}";
+                    }
+                    #endregion fileUploadOptionEnd
                     obj.CreatedBy = User.Identity?.Name;
                     var user = await _userManager.FindByNameAsync(obj.CreatedBy);
                     obj.CreatedBy = user.Id;
@@ -2161,6 +2196,47 @@ public class AppController : ControllerBase
             _unitOfWork.BeginTransaction();
         
             response._result = await _unitOfWork.Institutes.GetByIdAsync(id);
+            _unitOfWork.Commit();
+            if (response._result == null)
+            {
+                response._errors.Add("No data found.");
+            }
+            else
+            {
+                response._success.Add("Successfully data fetched.");
+            }
+            response._statusCode = StatusCodes.Status200OK;
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            _unitOfWork.Rollback();
+            response._errors.Add("Something went wrong, Please try later.");
+            response.exception = "Something went wrong, Please try later.";
+            response._statusCode = StatusCodes.Status500InternalServerError;
+            return BadRequest(response);
+        }
+    }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<ActionResult<APIResponse_V<Institute>>> DashboardInstituteInfo()
+    {
+        APIResponse_V<Institute> response = new APIResponse_V<Institute>();
+        response._success = new List<string>();
+        response._errors = new List<string>();
+        response._results = null;
+        //response._result = null;
+        response.exception = null;
+        try
+        {
+            // 1. Retrieve the user by their username
+            string loggedInUser = User.Identity?.Name;
+            // 2. Get the list of role names associated with that user
+            var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
+            int InstituteId = loggedInUserDeatails.InstituteId;
+            _unitOfWork.BeginTransaction();
+            response._result = await _unitOfWork.Institutes.GetByIdAsync(InstituteId);
             _unitOfWork.Commit();
             if (response._result == null)
             {
