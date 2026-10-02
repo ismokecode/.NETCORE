@@ -90,62 +90,62 @@ public class AppController : ControllerBase
         response._results = null;
         response._result = null;
         response.exception = null;
-        try 
-        {        
-        if (!ModelState.IsValid)
+        try
         {
-            foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry modelState in ModelState.Values)
+            if (!ModelState.IsValid)
             {
-                foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelError error in modelState.Errors)
+                foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry modelState in ModelState.Values)
                 {
-                    response._errors.Add(error.ErrorMessage);
+                    foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelError error in modelState.Errors)
+                    {
+                        response._errors.Add(error.ErrorMessage);
+                    }
                 }
+                response._statusCode = StatusCodes.Status400BadRequest;
+                return Ok(response);
             }
-            response._statusCode = StatusCodes.Status400BadRequest;
+            var user = await _userManager.FindByEmailAsync(obj.Email);
+            //if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+            if (user == null)
+            {
+                response._errors.Add("Please enter registered email address.");
+                // Don't reveal if the user exists for security
+                return Ok(response);
+            }
+
+            // Generate the reset token
+            ///, and =. If you pass this token via a URL query string, the browser interprets the + 
+            ///character as a space ( ). When it reaches your API or MVC controller, the corrupted string fails validation.
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var validToken = Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(System.Text.Encoding.UTF8.GetBytes(token));
+            obj.Token = validToken;
+            _unitOfWork.BeginTransaction();
+            var result = _unitOfWork.PasswordTokenGenerations.InsertAsync(obj);
+            _unitOfWork.Save();
+            _unitOfWork.Commit();
+            // Create the callback URL
+            var smtpSection = _configuration.GetSection("SmtpSettings");
+            var callbackUrl = smtpSection["LoginResetPasswordUrl"] + validToken;
+
+            // Send email using your IEmailSender implementation
+
+            #region email functionality
+            var from = smtpSection["SenderEmail"]; // Accessing child key
+            var to = obj.Email; // Accessing child key
+            var password = smtpSection["Password"];
+            var folderName = smtpSection["EmailTemplateFolder"];
+            var fileName = smtpSection["RecoverPasswordEmailTemplate"];
+            string path = Path.Combine(_env.ContentRootPath, folderName, fileName);
+            string readTemplate = await System.IO.File.ReadAllTextAsync(path);
+            string emailHtmlBody = readTemplate.Replace("{{ResetLink}}", callbackUrl);
+            await _imailCommunication.Send(from, to, "Reset Password", emailHtmlBody, password);
+
+            //await _imailCommunication.Send(from, to, "Reset Password", $"Please reset your password by clicking here: <a href={callbackUrl}>link</a>", password);
+            response._success.Add("A password reset link shared to your registered email address.");
+            #endregion
             return Ok(response);
         }
-        var user = await _userManager.FindByEmailAsync(obj.Email);
-        //if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
-        if(user == null)
-        {
-            response._errors.Add("Please enter registered email address.");
-            // Don't reveal if the user exists for security
-            return Ok(response);
-        }
-
-        // Generate the reset token
-        ///, and =. If you pass this token via a URL query string, the browser interprets the + 
-        ///character as a space ( ). When it reaches your API or MVC controller, the corrupted string fails validation.
-        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-        var validToken = Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(System.Text.Encoding.UTF8.GetBytes(token));
-        obj.Token = validToken;
-        _unitOfWork.BeginTransaction();
-        var result = _unitOfWork.PasswordTokenGenerations.InsertAsync(obj);
-        _unitOfWork.Save();
-        _unitOfWork.Commit();
-        // Create the callback URL
-        var smtpSection = _configuration.GetSection("SmtpSettings");
-        var callbackUrl = smtpSection["LoginResetPasswordUrl"] + validToken;
-
-        // Send email using your IEmailSender implementation
-
-        #region email functionality
-        var from = smtpSection["SenderEmail"]; // Accessing child key
-        var to = obj.Email; // Accessing child key
-        var password = smtpSection["Password"];
-        var folderName = smtpSection["EmailTemplateFolder"];
-        var fileName = smtpSection["RecoverPasswordEmailTemplate"];
-        string path = Path.Combine(_env.ContentRootPath, folderName, fileName);
-        string readTemplate = await System.IO.File.ReadAllTextAsync(path);
-        string emailHtmlBody = readTemplate.Replace("{{ResetLink}}", callbackUrl);
-        await _imailCommunication.Send(from, to, "Reset Password", emailHtmlBody, password);
-
-        //await _imailCommunication.Send(from, to, "Reset Password", $"Please reset your password by clicking here: <a href={callbackUrl}>link</a>", password);
-        response._success.Add("A password reset link shared to your registered email address.");
-        #endregion
-        return Ok(response);
-        }
-        catch (Exception ex) 
+        catch (Exception ex)
         {
             _unitOfWork.Rollback();
             response._errors.Add("Something went wrong. Please try after sometime.");
@@ -164,7 +164,7 @@ public class AppController : ControllerBase
         response._results = null;
         response._result = null;
         response.exception = null;
-        if (!ModelState.IsValid) 
+        if (!ModelState.IsValid)
         {
             foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry modelState in ModelState.Values)
             {
@@ -221,11 +221,11 @@ public class AppController : ControllerBase
                 if (user != null)
                 {
                     var result = await _userManager.ChangePasswordAsync(user, obj.OldPassword, obj.NewPassword);
-                    if(result.Succeeded)
+                    if (result.Succeeded)
                     {
-                    response._success.Add("Password changed successfully.");
+                        response._success.Add("Password changed successfully.");
                     }
-                    else 
+                    else
                     {
                         response._success.Add("Incorrect old password.");
                     }
@@ -235,7 +235,7 @@ public class AppController : ControllerBase
                 {
                     response._errors.Add("Please enter registered username");
                     return Ok(response);
-                }             
+                }
             }
             else
             {
@@ -250,7 +250,7 @@ public class AppController : ControllerBase
                 return Ok(response);
             }
         }
-        catch (Exception ex) 
+        catch (Exception ex)
         {
             response._errors.Add("Something went wrong.");
             return Ok(response);
@@ -295,7 +295,7 @@ public class AppController : ControllerBase
                 Expiration = token.ValidTo
             });
         }
-        return Unauthorized(new {StatusCodes.Status401Unauthorized, Message="Invalid credential"});
+        return Unauthorized(new { StatusCodes.Status401Unauthorized, Message = "Invalid credential" });
     }
 
     [HttpPost]
@@ -320,16 +320,16 @@ public class AppController : ControllerBase
                 foreach (var role in roles)
                 {
                     //if super admin have multiple roles that condition is pending
-                    if(role.ToUpper()=="SUPER ADMIN")
+                    if (role.ToUpper() == "SUPER ADMIN")
                     {
                         registerVM.UserRole = "ADMIN";
                     }
-                    else 
+                    else
                     {
                         registerVM.UserRole = "USER";
                     }
                 }
-                
+
                 _logger.LogInformation("AppController register method called.");
                 //check user exists
                 var userExist = await _userManager.FindByNameAsync(registerVM.UserName);
@@ -357,7 +357,7 @@ public class AppController : ControllerBase
                 };
                 if (await _roleManager.RoleExistsAsync(registerVM.UserRole))
                 {
-                   
+
 
                     var result = await _userManager.CreateAsync(user, registerVM.Password);
                     if (result.Errors.Count() > 0)
@@ -423,7 +423,7 @@ public class AppController : ControllerBase
             UserName = model.UserName,
             FirstName = model.FirstName,
             LastName = model.LastName,
-            InstituteId = instId    
+            InstituteId = instId
         };
         var result = await _userManager.CreateAsync(user, model.Password);
         if (!result.Succeeded)
@@ -573,7 +573,7 @@ public class AppController : ControllerBase
 
                     return Ok(response);
                 }
-                else if(customer.CustomerId > 0)
+                else if (customer.CustomerId > 0)
                 //else if (!_unitOfWork.Customers.IsExistUpdate(customer))
                 {
                     _unitOfWork.BeginTransaction();
@@ -588,7 +588,7 @@ public class AppController : ControllerBase
                 else
                 {
                     response._statusCode = StatusCodes.Status409Conflict;
-                    response._errors.Add("Phone number "+ customer.Phone + " already exist");
+                    response._errors.Add("Phone number " + customer.Phone + " already exist");
                     return Ok(response);
                 }
             }
@@ -618,7 +618,7 @@ public class AppController : ControllerBase
     }
     [HttpGet]
     [Authorize]
-    public async Task<ActionResult<APIResponse_V<Customer>>>GetAllCustomer()
+    public async Task<ActionResult<APIResponse_V<Customer>>> GetAllCustomer()
     {
         APIResponse_V<Customer> response = new APIResponse_V<Customer>();
         response._success = new List<string>();
@@ -750,7 +750,7 @@ public class AppController : ControllerBase
                     response._success.Add("Data saved successfully");
                     return Ok(response);
                 }
-                else if(loc.LocationId>0)
+                else if (loc.LocationId > 0)
                 //else if (!_unitOfWork.Locations.IsExistUpdate(loc))
                 {
                     _unitOfWork.BeginTransaction();
@@ -761,11 +761,11 @@ public class AppController : ControllerBase
                     response._success.Add("Data updated successfully");
                     return Ok(response);
                 }
-                else 
+                else
                 {
                     response._statusCode = StatusCodes.Status409Conflict;
                     response._errors.Add(loc.LocationName + " already exist");
-                    return Ok(response); 
+                    return Ok(response);
                 }
             }
             else
@@ -852,12 +852,14 @@ public class AppController : ControllerBase
         try
         {
             response._result = await _unitOfWork.Locations.GetByIdAsync(id);
-            if (response._result == null) {
+            if (response._result == null)
+            {
                 response._errors.Add("No data found.");
             }
-            else {
+            else
+            {
                 response._success.Add("Successfully data fetched.");
-            }          
+            }
             response._statusCode = StatusCodes.Status200OK;
             return Ok(response);
         }
@@ -868,7 +870,7 @@ public class AppController : ControllerBase
             response._statusCode = StatusCodes.Status500InternalServerError;
             return BadRequest(response);
         }
-    }    
+    }
     [HttpDelete]
     [Authorize]
     public async Task<ActionResult<APIResponse_V<object>>> DeleteLocation(int id)
@@ -910,7 +912,7 @@ public class AppController : ControllerBase
         response._errors = new List<string>();
         response._results = null;
         response._result = null;
-        response.exception = null;      
+        response.exception = null;
         try
         {
             if (ModelState.IsValid)
@@ -920,9 +922,9 @@ public class AppController : ControllerBase
                 // 2. Get the list of role names associated with that user
                 var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
                 cls.InstituteId = loggedInUserDeatails.InstituteId;
-                cls.ClassName.Trim();         
+                cls.ClassName.Trim();
                 if (!_unitOfWork.Classes.IsExist(cls) && cls.ClassesId == 0)
-                {                   
+                {
                     cls.CreatedBy = User.Identity?.Name;
                     cls.CreatedDate = DateTime.Now;
                     cls.isActive = true;
@@ -1010,7 +1012,7 @@ public class AppController : ControllerBase
     [Authorize]
     public async Task<ActionResult<APIResponse_V<Classes>>> GetAllClasses()
     {
-        APIResponse_V<Classes> response = new APIResponse_V<Classes>();       
+        APIResponse_V<Classes> response = new APIResponse_V<Classes>();
         response._success = new List<string>();
         response._errors = new List<string>();
         response._results = null;
@@ -1024,17 +1026,17 @@ public class AppController : ControllerBase
             var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
             int InstituteId = loggedInUserDeatails.InstituteId;
             response._results = await _unitOfWork.Classes.GetClassesByInstitute(InstituteId);
-            return Ok(response);    
+            return Ok(response);
         }
         catch (Exception ex)
         {
             response._errors.Add("Something went wrong, Please try later.");
             response.exception = "Something went wrong, Please try later.";
-            response._statusCode = StatusCodes.Status500InternalServerError;    
+            response._statusCode = StatusCodes.Status500InternalServerError;
             return Ok(response);
         }
     }
-    
+
     [HttpGet]
     public async Task<ActionResult<APIResponse_V<Classes>>> GetAllClassesForVisitors()
     {
@@ -1096,7 +1098,7 @@ public class AppController : ControllerBase
         }
     }
     #endregion
-    
+
     #region Subjects
     [HttpPost]
     [Authorize]
@@ -1252,7 +1254,7 @@ public class AppController : ControllerBase
             //keep hard coded visitors by default instituteId 5
             var InstituteId = _configuration.GetSection("InstituteSection");
             int instId = InstituteId.GetValue<int>("instituteId");
-            int[] subjectsId = await _unitOfWork.ClassSubjectMappers.GetSubjectsIdByClassIdForVisitors(instId, classId);         
+            int[] subjectsId = await _unitOfWork.ClassSubjectMappers.GetSubjectsIdByClassIdForVisitors(instId, classId);
             response._results = await _unitOfWork.Subjects.GetSubjectsForVisitors(instId, subjectsId);
             return Ok(response);
         }
@@ -1457,7 +1459,7 @@ public class AppController : ControllerBase
             int InstituteId = loggedInUserDeatails.InstituteId;
             //var s = await _istudentReposs.GetAllAsync();
             //response._results = await _istudentRepos.GetStudentClassDetailsAsync();
-            response._results = await _istudentRepos.GetStudentsByInstituteAndClassId(InstituteId,classId);
+            response._results = await _istudentRepos.GetStudentsByInstituteAndClassId(InstituteId, classId);
             //var ss = _unitOfWork.Students.GetAllAsync();
             //var result = await _unitOfWork.Students.GetStudentClassDetailsAsync();
             return Ok(response);
@@ -1521,7 +1523,7 @@ public class AppController : ControllerBase
                 question.InstituteId = loggedInUserDeatails.InstituteId;
 
                 question.QuestionText.Trim();
-                
+
                 if (question.QuestionId == 0)
                 {
                     question.CreatedBy = User.Identity?.Name;
@@ -1537,9 +1539,9 @@ public class AppController : ControllerBase
                     question.Options.Add(new Option { QuestionId = id, OptionText = question.Option2, isAnswer = false });
                     question.Options.Add(new Option { QuestionId = id, OptionText = question.Option3, isAnswer = false });
                     question.Options.Add(new Option { QuestionId = id, OptionText = question.Option4, isAnswer = false });
-                    for(int i=0; i<4;i++)
+                    for (int i = 0; i < 4; i++)
                     {
-                        if (i==question.AnswerOptionId)
+                        if (i == question.AnswerOptionId)
                         {
                             question.Options[i].isAnswer = true;
                         }
@@ -1548,7 +1550,7 @@ public class AppController : ControllerBase
                             question.Options[i].isAnswer = false;
                         }
                         _unitOfWork.Options.InsertAsync(question.Options[i]);
-                        
+
                     }
                     await _unitOfWork.Options.SaveAsync();
                     _unitOfWork.Commit();
@@ -1568,7 +1570,7 @@ public class AppController : ControllerBase
                     question.Options.Add(new Option { OptionId = question.OptionId1, QuestionId = question.QuestionId, OptionText = question.Option1, isAnswer = false });
                     question.Options.Add(new Option { OptionId = question.OptionId2, QuestionId = question.QuestionId, OptionText = question.Option2, isAnswer = false });
                     question.Options.Add(new Option { OptionId = question.OptionId3, QuestionId = question.QuestionId, OptionText = question.Option3, isAnswer = false });
-                    question.Options.Add(new Option { OptionId=  question.OptionId4, QuestionId = question.QuestionId, OptionText = question.Option4, isAnswer = false });
+                    question.Options.Add(new Option { OptionId = question.OptionId4, QuestionId = question.QuestionId, OptionText = question.Option4, isAnswer = false });
                     for (int i = 0; i < 4; i++)
                     {
                         if (i == question.AnswerOptionId)
@@ -1603,7 +1605,7 @@ public class AppController : ControllerBase
                 foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateEntry modelState in ModelState.Values)
                 {
                     foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelError error in modelState.Errors)
-                    {   
+                    {
                         response._errors.Add(error.ErrorMessage);
                     }
                 }
@@ -1626,9 +1628,9 @@ public class AppController : ControllerBase
     [Authorize]
     //public async Task<ActionResult<APIResponse_V<Question>>> SetAsQuestion(int[] questionsId, int classId, int subjectId)    public async Task<ActionResult<APIResponse_V<Question>>> SetAsQuestion(int[] questionsId, int classId, int subjectId)
     public async Task<ActionResult<APIResponse_V<Question>>> SetAsQuestion([FromBody] QuestionRequest request)
-     {
+    {
         APIResponse_V<Question> response = new APIResponse_V<Question>();
-        response._success = new List<string>(); 
+        response._success = new List<string>();
         response._errors = new List<string>();
         response._results = null;
         response._result = null;
@@ -1641,13 +1643,13 @@ public class AppController : ControllerBase
                 await _unitOfWork.Questions.SetAsQuestions(request.questionsId, request.classId, request.subjectId);
 
                 _unitOfWork.Commit();
-                response._statusCode = StatusCodes.Status200OK;               
+                response._statusCode = StatusCodes.Status200OK;
                 response._success.Add("Data updated successfully");
 
                 return Ok(response);
             }
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             response._errors.Add("Something went wrong, Please try later.");
             response.exception = "Something went wrong, Please try later.";
@@ -1679,7 +1681,7 @@ public class AppController : ControllerBase
                 obj.InstituteId = loggedInUserDeatails.InstituteId;
                 if (!_unitOfWork.ClassSubjectMappers.IsExist(obj))
                 {
-                   
+
                     _unitOfWork.BeginTransaction();
                     await _unitOfWork.ClassSubjectMappers.AddAsync(obj);
                     await _unitOfWork.ClassSubjectMappers.SaveAsync();
@@ -1733,7 +1735,7 @@ public class AppController : ControllerBase
                 _unitOfWork.BeginTransaction();
                 IEnumerable<TestLink> returnVal;
 
-                List<TestLink> linkDetails= request.StudentsId.Select(id => new TestLink
+                List<TestLink> linkDetails = request.StudentsId.Select(id => new TestLink
                 {
                     StudentId = id,
                     ClassId = request.ClassId,
@@ -1765,11 +1767,11 @@ public class AppController : ControllerBase
                 string path = Path.Combine(_env.ContentRootPath, folderName, fileName);
                 string readTemplate = await System.IO.File.ReadAllTextAsync(path);
                 string to = string.Empty;
-                for (int i=0; i<emails.Length; i++)
-                {                    
+                for (int i = 0; i < emails.Length; i++)
+                {
                     //getting students emails using StudentsId[]              
                     to = emails[i]; // Accessing child key                  
-                    _imailCommunication.Send(from, to, subject, readTemplate.Replace("{{StartTestLink}}", testLink+linkDetails[i].OnlineTestLink),password);                  
+                    _imailCommunication.Send(from, to, subject, readTemplate.Replace("{{StartTestLink}}", testLink + linkDetails[i].OnlineTestLink), password);
                 }
                 #endregion
                 response._success.Add("email sent successfully");
@@ -1851,7 +1853,7 @@ public class AppController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public async Task<ActionResult<APIResponse_V<Question>>> GetQuestionsByClassAndSubject(int classId,int subjectId)
+    public async Task<ActionResult<APIResponse_V<Question>>> GetQuestionsByClassAndSubject(int classId, int subjectId)
     {
         APIResponse_V<Question> response = new APIResponse_V<Question>();
         response._success = new List<string>();
@@ -1864,7 +1866,7 @@ public class AppController : ControllerBase
             var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
             int InstituteId = loggedInUserDeatails.InstituteId;
             response._results = await _iquestionRepos.GetQuestionsByClassAndSubject(classId, subjectId, InstituteId);
-            if(response._results.Count()==0)
+            if (response._results.Count() == 0)
             {
                 response._success.Add("Sorry no records found.");
 
@@ -1896,7 +1898,7 @@ public class AppController : ControllerBase
 
             if (results.Count() > 0)
             {
-                foreach(var quiz in results)
+                foreach (var quiz in results)
                 {
                     response.Add(new Quiz
                     {
@@ -1911,10 +1913,10 @@ public class AppController : ControllerBase
                         Answer = GetAnswer(quiz.Options)
                     });
                 }
-             }
+            }
             else
             {
-                
+
             }
             //response._results = await _unitOfWork.Questions.GetAllAsync();
             return Ok(response);
@@ -1971,9 +1973,9 @@ public class AppController : ControllerBase
     }
     public static string GetAnswer(List<Option> options)
     {
-        foreach(var option in options)
+        foreach (var option in options)
         {
-            if(option.isAnswer)
+            if (option.isAnswer)
             {
                 return option.OptionText;
             }
@@ -2011,7 +2013,7 @@ public class AppController : ControllerBase
 
     #region Institue
     [HttpPost]
-    [Authorize(Roles ="Super Admin")]
+    [Authorize(Roles = "Super Admin")]
     public async Task<ActionResult<APIResponse_V<Institute>>> CreateInstitute([FromForm] Institute obj)
     {
         //if (obj.ImageFile == null || obj.ImageFile.Length == 0)
@@ -2029,8 +2031,8 @@ public class AppController : ControllerBase
             if (ModelState.IsValid)
             {
                 obj.Name.Trim();
-                bool isEmailExist =await _unitOfWork.Institutes.IsEmailExists(obj.Email);
-                if (isEmailExist) 
+                bool isEmailExist = await _unitOfWork.Institutes.IsEmailExists(obj.Email);
+                if (isEmailExist)
                 {
                     response._errors.Add("Email already exist");
                     return Ok(response);
@@ -2081,7 +2083,7 @@ public class AppController : ControllerBase
                     var result = await _unitOfWork.Institutes.GetByIdAsync(obj.InstituteId);
                     obj.ModifiedBy = User.Identity?.Name;
                     obj.ModifiedDate = DateTime.Now;
-                    obj.isActive = true;                  
+                    obj.isActive = true;
                     await _unitOfWork.Institutes.UpdateAsync(obj);
                     await _unitOfWork.Institutes.SaveAsync();
                     _unitOfWork.Commit();
@@ -2167,7 +2169,7 @@ public class AppController : ControllerBase
             int InstituteId = loggedInUserDeatails.InstituteId;
             IList<string> roles = await _userManager.GetRolesAsync(loggedInUserDeatails);
 
-            if (roles[0]==UserRoles.SuperAdmin)
+            if (roles[0] == UserRoles.SuperAdmin)
                 response._results = await _unitOfWork.Institutes.GetAllAsync();
             else
                 response._results = await _unitOfWork.Institutes.GetInstituteByInstituteId(InstituteId);
@@ -2194,7 +2196,7 @@ public class AppController : ControllerBase
         try
         {
             _unitOfWork.BeginTransaction();
-        
+
             response._result = await _unitOfWork.Institutes.GetByIdAsync(id);
             _unitOfWork.Commit();
             if (response._result == null)
@@ -2227,9 +2229,11 @@ public class AppController : ControllerBase
         response._errors = new List<string>();
         response._results = null;
         //response._result = null;
-        response.exception = null;
+        //response.exception = null;
+        //response.exception = null;
         try
         {
+            // 1. Retrieve the user by their username
             // 1. Retrieve the user by their username
             string loggedInUser = User.Identity?.Name;
             // 2. Get the list of role names associated with that user
@@ -2271,15 +2275,15 @@ public class AppController : ControllerBase
             if (id != null)
             {
                 var _stuResult = await _unitOfWork.StudentResults.GetByIdAsync(id);
-                if (_stuResult != null) 
+                if (_stuResult != null)
                 {
                     return NotFound();
                 }
-                else 
-                { 
-                TestLink obj = await _unitOfWork.TestLinks.GetByIdAsync(id);
-                if (obj != null)
+                else
                 {
+                    TestLink obj = await _unitOfWork.TestLinks.GetByIdAsync(id);
+                    if (obj != null)
+                    {
                         //check link expiry start
                         if (_unitOfWork.TestLinks.isEarlier(obj.ExpiryDateTime ?? DateTime.Now))
                         {
@@ -2310,17 +2314,17 @@ public class AppController : ControllerBase
                             //response._results = await _unitOfWork.Questions.GetAllAsync();
                             return Ok(response);
                         }
-                        else 
+                        else
                         {
-                            return NotFound(new { message = "Sorry this link expired."});
+                            return NotFound(new { message = "Sorry this link expired." });
                         }
-                    //check link expiry end
+                        //check link expiry end
+                    }
                 }
-                }   
                 return Ok(response);
             }
             return Ok(response);
-        }      
+        }
         catch (Exception ex)
         {
             return Ok(response);
@@ -2340,7 +2344,7 @@ public class AppController : ControllerBase
         {
             if (ModelState.IsValid)
             {
-             var res = await _unitOfWork.TestLinks.GetByIdAsync(obj.TestLinkGuid);
+                var res = await _unitOfWork.TestLinks.GetByIdAsync(obj.TestLinkGuid);
                 if (res != null)
                 {
                     _unitOfWork.BeginTransaction();
@@ -2404,7 +2408,7 @@ public class AppController : ControllerBase
                 int InstituteId = loggedInUserDeatails.InstituteId;
                 response._results = await _unitOfWork.StudentResults.GetStudentResultsAsync(classId, subjectId, InstituteId);
                 response._success.Add("Data saved successfully");
-                return Ok(response);   
+                return Ok(response);
             }
             else
             {
@@ -2529,7 +2533,7 @@ public class AppController : ControllerBase
         var folderName = smtpSection["CertificateTemplateFolder"];
         var fileName = smtpSection["CertificatePdfTemplate"];
         var subject = smtpSection["CertificateMailSubject"];
-        subject = subject.Replace("[Name]", invoiceData.StudentName).Replace("[Test Name]",invoiceData.SubjectName);
+        subject = subject.Replace("[Name]", invoiceData.StudentName).Replace("[Test Name]", invoiceData.SubjectName);
         string to = result.Email;
         string from = smtpSection["SenderEmail"];
         string password = smtpSection["Password"];
@@ -2582,10 +2586,10 @@ public class AppController : ControllerBase
         bodyBuilder.Attachments.Add("Certificate.pdf", pdfBytes, ContentType.Parse("application/pdf"));
         message.Body = bodyBuilder.ToMessageBody();
         _imailCommunication.SendAttachement(from, to, subject, message, password);
-        return Ok(new { Message ="Mail sent successfully."});
+        return Ok(new { Message = "Mail sent successfully." });
     }
 
-    [Authorize(Roles ="Super Admin")]
+    [Authorize(Roles = "Super Admin")]
     [HttpGet("download-invoice-pdf")]
     public async Task<IActionResult> DownloadPdf()
     {
@@ -2804,7 +2808,7 @@ public class AppController : ControllerBase
         CheckTheNumber(number);
         return Ok();
     }
-    [HttpGet] 
+    [HttpGet]
     public IActionResult TestApi_IActionResult()
     {
         return Ok(new List<LoginVM> {

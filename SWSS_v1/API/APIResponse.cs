@@ -1,8 +1,8 @@
 ﻿namespace SWSS_v1.API
 {
-    public class APIResponse<T> where T:class
+    public class APIResponse<T> where T : class
     {
-        public APIResponse(int statusCode, List<string> success, List<string> errors, T result, IEnumerable<T> results=null)
+        public APIResponse(int statusCode, List<string> success, List<string> errors, T result, IEnumerable<T> results = null)
         {
             this._statusCode = statusCode;
             this._result = result;
@@ -13,7 +13,7 @@
         }
         public int _statusCode { get; }
         public T _result { get; }
-        public IEnumerable<T> _results{ get; }
+        public IEnumerable<T> _results { get; }
         public List<string> _success = new List<string>();
         public List<string> _errors = new List<string>();
 
