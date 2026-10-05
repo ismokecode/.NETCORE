@@ -8,5 +8,6 @@
         public int QuestionId { get; set; }
         public string _success { get; set; }
         public string _error { get; set; }
+        public string? Summary { get; set; }
     }
 }

@@ -1948,6 +1948,7 @@ public class AppController : ControllerBase
                     response.Add(new Quiz
                     {
                         QuestionText = quiz.QuestionText,
+                        Summary = quiz.Summary,
                         Options = new string[]
                         {
                             quiz.Options[0].OptionText.ToString(),
