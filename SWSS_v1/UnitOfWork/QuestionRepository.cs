@@ -42,6 +42,7 @@ namespace SWSS_v1.UnitOfWork
             //_context.Entry(obj.Customer).State = EntityState.Unchanged;
             var _emp = _context.Questions.FirstOrDefault(x => x.QuestionId == obj.QuestionId);
             _emp.QuestionText = obj.QuestionText;
+            _emp.Summary = obj.Summary;
             _emp.ModifiedDate = obj.ModifiedDate;
             _emp.ModifiedBy = obj.ModifiedBy;
             _emp.isActive = obj.isActive;

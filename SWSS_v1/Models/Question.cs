@@ -44,6 +44,9 @@ namespace SWSS_v1.Models
         public bool? isActive { get; set; }
         public int? InstituteId { get; set; }
         public bool? isSetAsQuestion { get; set; }
+        //making it summary nullable bcoz dbSide also default value is null so both side balance it
+        public string? Summary { get; set; }
+
 
         //public Question(string questionText, List<Option> options, int correctAnswerId)
         //{
