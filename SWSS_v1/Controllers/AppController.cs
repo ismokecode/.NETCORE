@@ -2266,26 +2266,98 @@ public class AppController : ControllerBase
     #endregion
 
     #region online test link get questions for students
+    //[HttpGet]
+    //public async Task<ActionResult<List<Quiz>>> OnlineTestLinkForStudents(string id)
+    //{
+    //    List<Quiz> response = new List<Quiz>();
+    //    try
+    //    {
+    //        //link start
+    //        if (id != null)
+    //        {
+    //            var _stuResult = await _unitOfWork.StudentResults.GetByIdAsync(id);
+    //            if (_stuResult != null)
+    //            {
+    //                return NotFound();
+    //            }
+    //            else
+    //            {
+    //                TestLink obj = await _unitOfWork.TestLinks.GetByIdAsync(id);
+    //                if (obj != null)
+    //                {
+    //                    //check link expiry start
+    //                    if (_unitOfWork.TestLinks.isEarlier(obj.ExpiryDateTime ?? DateTime.Now))
+    //                    {
+    //                        var results = await _iquestionRepos.GetQuizQuestionByClassAndSubject(obj.ClassId, obj.SubjectId, obj.InstituteId ?? 0);
+
+    //                        if (results.Count() > 0)
+    //                        {
+    //                            foreach (var quiz in results)
+    //                            {
+    //                                response.Add(new Quiz
+    //                                {
+    //                                    QuestionText = quiz.QuestionText,
+    //                                    Options = new string[]
+    //                                    {
+    //                                quiz.Options[0].OptionText.ToString(),
+    //                                quiz.Options[1].OptionText.ToString(),
+    //                                quiz.Options[2].OptionText.ToString(),
+    //                                quiz.Options[3].OptionText.ToString()
+    //                                    },
+    //                                    Answer = GetAnswer(quiz.Options)
+    //                                });
+    //                            }
+    //                        }
+    //                        else
+    //                        {
+
+    //                        }
+    //                        //response._results = await _unitOfWork.Questions.GetAllAsync();
+    //                        return Ok(response);
+    //                    }
+    //                    else
+    //                    {
+    //                        return NotFound(new { message = "Sorry this link expired." });
+    //                    }
+    //                    //check link expiry end
+    //                }
+    //            }
+    //            return Ok(response);
+    //        }
+    //        return Ok(response);
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        return Ok(response);
+    //    }
+    //}
+
     [HttpGet]
-    public async Task<ActionResult<List<Quiz>>> OnlineTestLinkForStudents(string id)
+    public async Task<ActionResult<(int Duration, List<Quiz> Quizzes)>> OnlineTestLinkForStudents(string id)
     {
-        List<Quiz> response = new List<Quiz>();
+        // Initialize the tuple with a default int value (e.g., 0) and an empty list
+        (int Duration, List<Quiz> Quizzes) response = (0, new List<Quiz>());
+
         try
         {
-            //link start
+            // Link start
             if (id != null)
             {
                 var _stuResult = await _unitOfWork.StudentResults.GetByIdAsync(id);
                 if (_stuResult != null)
                 {
-                    return NotFound();
+                    return StatusCode(404, "Sorry no records found.");
                 }
                 else
                 {
                     TestLink obj = await _unitOfWork.TestLinks.GetByIdAsync(id);
                     if (obj != null)
                     {
-                        //check link expiry start
+                        // Assign the integer value from your database entity (e.g., Duration, TotalTime, etc.)
+                        //?? nullable operator works only if model variable marked as nullable to
+                        response.Duration = obj.Durations==0?15:obj.Durations; // <-- Replace 'Duration' with your actual property name
+
+                        // Check link expiry start
                         if (_unitOfWork.TestLinks.isEarlier(obj.ExpiryDateTime ?? DateTime.Now))
                         {
                             var results = await _iquestionRepos.GetQuizQuestionByClassAndSubject(obj.ClassId, obj.SubjectId, obj.InstituteId ?? 0);
@@ -2294,15 +2366,16 @@ public class AppController : ControllerBase
                             {
                                 foreach (var quiz in results)
                                 {
-                                    response.Add(new Quiz
+                                    // Add directly to the named list inside the tuple
+                                    response.Quizzes.Add(new Quiz
                                     {
                                         QuestionText = quiz.QuestionText,
                                         Options = new string[]
                                         {
-                                    quiz.Options[0].OptionText.ToString(),
-                                    quiz.Options[1].OptionText.ToString(),
-                                    quiz.Options[2].OptionText.ToString(),
-                                    quiz.Options[3].OptionText.ToString()
+                                        quiz.Options[0].OptionText.ToString(),
+                                        quiz.Options[1].OptionText.ToString(),
+                                        quiz.Options[2].OptionText.ToString(),
+                                        quiz.Options[3].OptionText.ToString()
                                         },
                                         Answer = GetAnswer(quiz.Options)
                                     });
@@ -2312,14 +2385,19 @@ public class AppController : ControllerBase
                             {
 
                             }
-                            //response._results = await _unitOfWork.Questions.GetAllAsync();
-                            return Ok(response);
+
+                            return Ok(new
+                            {
+                                duration = response.Duration,
+                                quizzes = response.Quizzes
+                            });
+
                         }
                         else
                         {
-                            return NotFound(new { message = "Sorry this link expired." });
+                            return StatusCode(404,"Link is expired.");
                         }
-                        //check link expiry end
+                        // Check link expiry end
                     }
                 }
                 return Ok(response);
@@ -2328,9 +2406,10 @@ public class AppController : ControllerBase
         }
         catch (Exception ex)
         {
-            return Ok(response);
+            return StatusCode(500, "Internal server error");
         }
     }
+
     #region Result Section
     [HttpPost]
     public async Task<ActionResult<APIResponse_V<StudentResult>>> StudentResult([FromBody] StudentResult obj)
