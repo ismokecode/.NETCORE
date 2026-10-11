@@ -1,5 +1,7 @@
-﻿using SWSS_v1.Models;
+﻿using HandlebarsDotNet;
+using SWSS_v1.Models;
 using SWSS_v1.UnitOfBox;
+using System.Globalization;
 
 namespace SWSS_v1.UnitOfWork
 {
@@ -20,32 +22,49 @@ namespace SWSS_v1.UnitOfWork
         }
         public async Task<List<StudentResult>> GetStudentResultsAsync(int classId, int subjectId, int instituteId)
         {
-            var results = await _context.StudentResults
-                // Ensure your navigation property to TestLink and related tables are included/accessed properly
-                .Where(t => t.TestLinks.ClassId == classId &&
-                            t.TestLinks.SubjectId == subjectId &&
-                            t.TestLinks.InstituteId == instituteId)
-                .OrderByDescending(t => t.CreatedDateTime)
-                .Select(t => new StudentResult
+            // 1. First, group and find the best StudentResultId for each student
+            var targetResultIdsQuery = _context.StudentResults
+                .Join(_context.TestLinks, sr => sr.TestLinkId, tl => tl.LinkId, (sr, tl) => new { sr, tl })
+                .Join(_context.Students, c => c.tl.StudentId, student => student.StudentId, (c, student) => new { c.sr, c.tl, student })
+                .Where(m => m.tl.ClassId == classId &&
+                            m.tl.SubjectId == subjectId &&
+                            m.student.InstituteId == instituteId)
+                .GroupBy(x => x.student.StudentId)
+                .Select(g => g.OrderByDescending(x => x.sr.CreatedDateTime)
+                              .ThenByDescending(x => x.sr.MarksObtained)
+                              .Select(x => x.sr.StudentResultId) // Just grab the ID
+                              .FirstOrDefault());
+
+            // 2. Now perform your full joins only on those specific unique records
+            var finalResultList = await _context.StudentResults
+                .Where(sr => targetResultIdsQuery.Contains(sr.StudentResultId)) // Filter by unique IDs
+                .Join(_context.TestLinks, sr => sr.TestLinkId, tl => tl.LinkId, (sr, tl) => new { sr, tl })
+                .Join(_context.Classes, c => c.tl.ClassId, cls => cls.ClassesId, (c, cls) => new { c.sr, c.tl, cls })
+                .Join(_context.Subjects, c => c.tl.SubjectId, sub => sub.SubjectID, (c, sub) => new { c.sr, c.tl, c.cls, sub })
+                .Join(_context.Students, c => c.tl.StudentId, student => student.StudentId, (c, student) => new { c.sr, c.tl, c.cls, c.sub, student })
+                .Select(m => new StudentResult
                 {
-                    ClassId = t.TestLinks.ClassId,
-                    ClassName = t.TestLinks.Classes.ClassName, // From Classes table via TestLinks
-                    SubjectId = t.TestLinks.SubjectId,
-                    SubjectName = t.TestLinks.Subjects.SubjectName, // From Subjects table via TestLinks
-                    StudentId = t.TestLinks.StudentId,
-                    StudentName = t.TestLinks.Students.StudentName, // From Students table via TestLinks
-                    Email = t.TestLinks.Students.Email,             // From Students table via TestLinks
-                    Phone = t.TestLinks.Students.Phone,             // From Students table via TestLinks
-                    TotalQuestions = t.TestLinks.TotalQuestions,
-                    MarksObtained = t.MarksObtained,                        // From StudentResults table
-                    LinkId = t.TestLinkId,
-                    OnlineTestLink = t.TestLinks.OnlineTestLink
+                    ClassId = (int?)m.cls.ClassesId,
+                    ClassName = m.cls.ClassName,
+                    SubjectId = (int?)m.sub.SubjectID,
+                    SubjectName = m.sub.SubjectName,
+                    StudentId = (int?)m.student.StudentId,
+                    StudentName = m.student.StudentName,
+                    Email = m.student.Email,
+                    Phone = m.student.Phone,
+                    TotalQuestions = m.tl.TotalQuestions,
+                    MarksObtained = m.sr.MarksObtained,
+                    LinkId = (int?)m.tl.LinkId,
+                    OnlineTestLink = m.tl.OnlineTestLink,
+                    CreatedDateTime = m.sr.CreatedDateTime
                 })
-                .Distinct()
+                .OrderByDescending(x => x.MarksObtained)
+                .ThenByDescending(x => x.CreatedDateTime)
                 .ToListAsync();
 
-            return results;
+            return finalResultList;
         }
+
         public async Task<StudentResult> GetStudentResultsByIdAsync(int testLinkId, int instituteId)
         {
             var result = await _context.StudentResults
