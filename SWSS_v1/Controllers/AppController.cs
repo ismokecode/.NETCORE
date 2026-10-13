@@ -2516,6 +2516,7 @@ public class AppController : ControllerBase
     #endregion result
 
     #region Certification
+    [Authorize]
     [HttpGet]
     public async Task<IActionResult> DownloadCertificatePdf(int testLinkId)
     {
@@ -2597,7 +2598,7 @@ public class AppController : ControllerBase
         string fileNameObj = $"invoice_{invoiceData.StudentName}.pdf";
         return File(pdfBytes, "application/pdf", fileNameObj);
     }
-
+    [Authorize]
     [HttpGet]
     public async Task<IActionResult> SendMailCertificate(int testLinkId)
     {
@@ -2611,6 +2612,19 @@ public class AppController : ControllerBase
         var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
         int InstituteId = loggedInUserDeatails.InstituteId;
         var result = await _unitOfWork.StudentResults.GetStudentResultsByIdAsync(testLinkId, InstituteId);
+        byte[] imageArray = null;
+        string base64Image = string.Empty;
+        if (System.IO.File.Exists(result.ImageFilePath))
+        {
+            imageArray = System.IO.File.ReadAllBytes(result.ImageFilePath);
+
+            // Get the file extension to determine the correct mime type (e.g., image/png or image/jpeg)
+            string extension = Path.GetExtension(result.ImageFilePath).ToLower().Replace(".", "");
+            string mimeType = extension == "png" ? "image/png" : "image/jpeg";
+
+            // Convert to Base64 and format it as a valid Data URI data source
+            base64Image = $"data:{mimeType};base64,{Convert.ToBase64String(imageArray)}";
+        }
         // 1. Mock Data for the Template
         var invoiceData = new
         {
@@ -2621,6 +2635,7 @@ public class AppController : ControllerBase
             TotalScore = result.TotalQuestions,
             SubjectName = result.SubjectName,
             ClassName = result.ClassName,
+            ImageFilePath = base64Image
         };
         var smtpSection = _configuration.GetSection("Certification");
         var folderName = smtpSection["CertificateTemplateFolder"];
