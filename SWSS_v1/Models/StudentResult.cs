@@ -56,17 +56,4 @@ namespace SWSS_v1.Models
         public string? InstituteName { get; set; }
         #endregion
     }
-    //[Table("StudentResults")]
-    public class StudentViewResult
-    {
-        public int StudentResultId { get; set; }
-        public int MarksObtained { get; set; }
-        public string TestLinkGuid { get; set; }
-        public DateTime? CreatedDateTime { get; set; }
-        public TestLink testLink { get; }
-        public Subject subject { get; }
-        public Classes classes { get; }
-        public Student student { get; }
-        public StudentResult studentResult = new StudentResult();
-    }
 }

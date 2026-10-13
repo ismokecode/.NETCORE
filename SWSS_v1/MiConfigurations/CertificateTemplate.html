@@ -1,5 +1,4 @@
-﻿
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -9,7 +8,6 @@
     <link rel="preconnect" href="https://googleapis.com">
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
     <link href="https://googleapis.com/css2?family=Cinzel:wght@500;700&family=Montserrat:wght@300;400;600&family=Pinyon+Script&display=swap" rel="stylesheet">
-
     <style>
         :root {
             --primary-gold: #c5a059;
@@ -34,7 +32,6 @@
             -webkit-print-color-adjust: exact;
         }
 
-        /* Certificate Container: Optimized for standard landscape printing */
         .certificate-container {
             position: relative;
             width: 1050px;
@@ -48,7 +45,6 @@
             overflow: hidden;
         }
 
-            /* Sophisticated Geometric Background Pattern */
             .certificate-container::before {
                 content: "";
                 position: absolute;
@@ -59,7 +55,6 @@
                 z-index: 1;
             }
 
-        /* Outer Elegant Border */
         .outer-border {
             position: relative;
             z-index: 2;
@@ -69,7 +64,6 @@
             padding: 10px;
         }
 
-        /* Inner Thin Border */
         .inner-border {
             width: 100%;
             height: 100%;
@@ -82,7 +76,6 @@
             justify-content: space-between;
         }
 
-        /* Corner Decorative Elements */
         .corner-element {
             position: absolute;
             width: 30px;
@@ -119,7 +112,6 @@
             border-top: none;
         }
 
-        /* Content Styling */
         .logo-placeholder {
             font-family: 'Cinzel', serif;
             font-size: 14px;
@@ -156,12 +148,15 @@
         }
 
         .recipient-name {
-            font-family: 'Pinyon Script', cursive;
-            font-size: 64px;
+            font-family: 'Cinzel', serif;
+            font-size: 38px;
+            font-weight: 700;
             color: var(--dark-gold);
-            margin: 10px 0;
+            margin: 15px 0;
             text-align: center;
-            line-height: 1;
+            line-height: 1.2;
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
 
         .name-line {
@@ -185,7 +180,6 @@
                 color: var(--text-dark);
             }
 
-        /* Footer Section: Badge and Signatures */
         .certificate-footer {
             width: 100%;
             display: flex;
@@ -215,7 +209,21 @@
             font-weight: 600;
         }
 
-        /* Luxury Medal / Badge Graphics */
+        /* Director Signature Image Styling */
+        .signature-img-container {
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 4px;
+        }
+
+        .signature-img {
+            max-height: 48px;
+            width: auto;
+            object-fit: contain;
+        }
+
         .badge-container {
             position: relative;
             width: 80px;
@@ -269,65 +277,60 @@
     </style>
 </head>
 <body>
-
     <div class="certificate-container">
         <div class="outer-border">
-            <!-- Decorative Corners -->
             <div class="corner-element top-left"></div>
             <div class="corner-element top-right"></div>
             <div class="corner-element bottom-left"></div>
             <div class="corner-element bottom-right"></div>
-
             <div class="inner-border">
-                <!-- Top Brand Logo Placeholder -->
                 <div class="logo-placeholder">ACADEMY OF EXCELLENCE</div>
-
-                <!-- Main Titles -->
                 <div style="text-align: center; width: 100%;">
                     <div class="certificate-title">CERTIFICATE of APPRECIATION</div>
                     <div class="sub-title">Honoring Outstanding Achievement</div>
                 </div>
-
-                <!-- Recipient Info -->
                 <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
                     <div class="presentation-text">This certificate is proudly presented to</div>
                     <div class="recipient-name">{{StudentName}}</div>
                     <div class="name-line"></div>
                 </div>
-
-
-
-                <!-- Description Description -->
                 <div class="achievement-details">
-                    For successfully demonstrating exceptional mastery, dedication, and academic excellence by 
-                    achieving a <strong>perfect score of {{Score}}/{{TotalScore}}</strong> in 
-                    <strong>{{SubjectName}} for {{ClassName}}</strong>. Your commitment to maintaining
-                    the highest standards of digital innovation sets a benchmark for professionals worldwide.
+                    For successfully demonstrating exceptional mastery, dedication, and academic excellence by achieving a <strong>perfect score of {{Score}} out of {{TotalScore}}</strong> in <strong>{{SubjectName}} for {{ClassName}}</strong>. Your commitment to maintaining the highest standards of digital innovation sets a benchmark for professionals worldwide.
                 </div>
-
-                <!-- Signatures & Emblem Footer -->
                 <div class="certificate-footer">
+                    <!-- Director Signature Block -->
                     <div class="signature-block">
+                        <div class="signature-img-container">
+                            <!-- Binds your Base64 string smoothly over the line -->
+                            {{#if ImageFilePath}}
+                            <img src="{{ImageFilePath}}" class="signature-img" alt="Director Signature" />
+                            {{else}}
+                            <div style="height: 48px;"></div> <!-- Maintains spacing alignment if empty -->
+                            {{/if}}
+                        </div>
                         <div class="signature-line"></div>
-                        <div class="signature-title">{{IssuedDate}}</div>
+                        <div class="signature-title">Director Signature</div>
                     </div>
 
-                    <!-- CSS-only Premium Badge -->
+                    <!-- Center Badge Accent -->
                     <div class="badge-container">
                         <div class="badge-ribbon-left"></div>
                         <div class="badge-ribbon-right"></div>
                         <div class="badge-circle"></div>
                     </div>
 
+                    <!-- Date Block -->
                     <div class="signature-block">
-                        <div class="signature-line"></div>
-                        <div class="signature-title">{{DirectorSignature}}</div>
+                        <div class="signature-img-container" style="font-size: 14px; font-weight: 600; color: var(--text-dark);">
+                            {{IssuedDate}}
                         </div>
+                        <div class="signature-line"></div>
+                        <div class="signature-title">Date of Issue</div>
                     </div>
                 </div>
+
             </div>
         </div>
-                    </body>
+    </div>
+</body>
 </html>
-
-

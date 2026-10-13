@@ -2062,7 +2062,7 @@ public class AppController : ControllerBase
                         }
 
                         // 4. Determine the exact path record intended for the Database layer
-                        obj.ImageFilePath = $"/uploads/images/{uniqueFileName}";
+                        obj.ImageFilePath = $"./uploads/images/{uniqueFileName}";
                     }
                     #endregion fileUploadOptionEnd
                     obj.CreatedBy = User.Identity?.Name;
@@ -2529,6 +2529,19 @@ public class AppController : ControllerBase
         var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
         int InstituteId = loggedInUserDeatails.InstituteId;
         var result = await _unitOfWork.StudentResults.GetStudentResultsByIdAsync(testLinkId, InstituteId);
+        byte[] imageArray = null;
+        string base64Image = string.Empty;
+        if (System.IO.File.Exists(result.ImageFilePath)) 
+        {
+            imageArray = System.IO.File.ReadAllBytes(result.ImageFilePath);
+
+            // Get the file extension to determine the correct mime type (e.g., image/png or image/jpeg)
+            string extension = Path.GetExtension(result.ImageFilePath).ToLower().Replace(".", "");
+            string mimeType = extension == "png" ? "image/png" : "image/jpeg";
+
+            // Convert to Base64 and format it as a valid Data URI data source
+            base64Image = $"data:{mimeType};base64,{Convert.ToBase64String(imageArray)}";
+        }
         // 1. Mock Data for the Template
         var invoiceData = new
         {
@@ -2539,12 +2552,11 @@ public class AppController : ControllerBase
             TotalScore = result.TotalQuestions,
             SubjectName = result.SubjectName,
             ClassName = result.ClassName,
-            ImageFilePath = Path.Combine(result.ImageFilePath)
+            ImageFilePath = base64Image
         };
         var smtpSection = _configuration.GetSection("Certification");
         var folderName = smtpSection["CertificateTemplateFolder"];
         var fileName = smtpSection["CertificatePdfTemplate"];
-
 
         // 2. Read and Compile the HTML Template using Handlebars
         //var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "MiConfigurations", "InvoiceTemplate.html");
