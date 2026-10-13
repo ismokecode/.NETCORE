@@ -2539,6 +2539,7 @@ public class AppController : ControllerBase
             TotalScore = result.TotalQuestions,
             SubjectName = result.SubjectName,
             ClassName = result.ClassName,
+            ImageFilePath = Path.Combine(result.ImageFilePath)
         };
         var smtpSection = _configuration.GetSection("Certification");
         var folderName = smtpSection["CertificateTemplateFolder"];

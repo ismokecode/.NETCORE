@@ -37,7 +37,6 @@ namespace SWSS_v1.Models
         public virtual Student? Students { get; }
         [NotMapped]
         public virtual Classes? Classes { get; }
-
         public virtual Subject? Subjects { get; }
         [NotMapped]
         public string? ClassName { get; set; }
@@ -51,6 +50,8 @@ namespace SWSS_v1.Models
         public string? Phone { get; set; }
         [NotMapped]
         public int? Marks { get; set; }
+        [NotMapped]
+        public virtual Institute? Institutes { get; set; }
 
     }
 }

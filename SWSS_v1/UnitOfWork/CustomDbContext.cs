@@ -64,6 +64,9 @@ namespace SWSS_v1.UnitOfBox
             .WithMany(o=>o.TestLinksList)
             .HasForeignKey(f=>f.StudentId);
 
+            modelBuilder.Entity<TestLink>()
+            .HasOne(ins => ins.Institutes);
+
             #endregion
 
             #region StudentResults

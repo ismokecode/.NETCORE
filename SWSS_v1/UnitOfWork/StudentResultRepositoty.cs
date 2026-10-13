@@ -70,15 +70,17 @@ namespace SWSS_v1.UnitOfWork
             var result = await _context.StudentResults
             // 1. Include the TestLink navigation property and its nested relations
             .Include(sr => sr.TestLinks)
-            .ThenInclude(tl => tl.Classes)
+                .ThenInclude(tl => tl.Classes)
             .Include(sr => sr.TestLinks)
-            .ThenInclude(tl => tl.Subjects)
+                .ThenInclude(tl => tl.Subjects)
             .Include(sr => sr.TestLinks)
-             .ThenInclude(tl => tl.Students)
+                .ThenInclude(tl => tl.Institutes)
+            .Include(sr => sr.TestLinks)//studentResult class
+                .ThenInclude(tl => tl.Students)//TestLinks class
             // 2. Apply filters
             .Where(sr => sr.TestLinkId == testLinkId
              && sr.TestLinks.InstituteId == instituteId)
-               // 3. Sort by creation date
+            // 3. Sort by creation date
             .OrderByDescending(sr => sr.CreatedDateTime)
             // 4. Project into a new object
             .Select(sr => new StudentResult
@@ -95,6 +97,8 @@ namespace SWSS_v1.UnitOfWork
                 MarksObtained = sr.MarksObtained,
                 LinkId = sr.TestLinkId,
                 OnlineTestLink = sr.TestLinks.OnlineTestLink,
+                ImageFilePath = sr.TestLinks.Institutes.ImageFilePath,
+                InstituteName = sr.TestLinks.Institutes.Name
             })
             // 5. Get the first distinct or default record matching the criteria
             .FirstOrDefaultAsync();

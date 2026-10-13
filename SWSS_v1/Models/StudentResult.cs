@@ -13,20 +13,21 @@ namespace SWSS_v1.Models
         public virtual TestLink? TestLinks { get; set; }
         [NotMapped]
         public string? OnlineTestLink { get; set; }
+        // Foreign Key pointing to TestLink
         [ForeignKey("fk_StudentResults_TestLinks")]
         public int TestLinkId { get; set; }
 
         #region VIEW
         [NotMapped]
         public int? InstituteId { get; set; }
-        [NotMapped]
-        public virtual StudentResult? StudentResults { get; set; }
-        [NotMapped]
-        public virtual Student? Students { get; }
-        [NotMapped]
-        public virtual Classes? Classes { get; }
-        [NotMapped]
-        public virtual Subject? Subjects { get; }
+        //[NotMapped]
+        //public virtual StudentResult? StudentResults { get; set; }
+        //[NotMapped]
+        //public virtual Student? Students { get; }
+        //[NotMapped]
+        //public virtual Classes? Classes { get; }
+        //[NotMapped]
+        //public virtual Subject? Subjects { get; }
         [NotMapped]
         public string? ClassName { get; set; }
         [NotMapped]
@@ -47,6 +48,12 @@ namespace SWSS_v1.Models
         public int? TotalQuestions { get; set; }
         [NotMapped]
         public int? LinkId { get; set; }
+        [NotMapped]
+        public string? ImageFilePath { get; set; }
+        //[NotMapped]
+        //public virtual Institute? Institutes { get; set; }
+        [NotMapped]
+        public string? InstituteName { get; set; }
         #endregion
     }
     //[Table("StudentResults")]
