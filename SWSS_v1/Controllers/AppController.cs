@@ -1527,7 +1527,7 @@ public class AppController : ControllerBase
 
                 question.QuestionText.Trim();
 
-                if (question.QuestionId == 0)
+                if (question.QuestionId == 0 && !_unitOfWork.Questions.IsExist(question))
                 {
                     question.CreatedBy = User.Identity?.Name;
                     question.CreatedDate = DateTime.Now;

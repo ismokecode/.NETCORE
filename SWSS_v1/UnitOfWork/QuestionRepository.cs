@@ -9,11 +9,11 @@ namespace SWSS_v1.UnitOfWork
         {
             _context = context;
         }
-
         public bool IsExist(Question obj)
         {
             bool isExist;
-            var result = _context.Questions.Where<Question>(x => x.QuestionText == obj.QuestionText).FirstOrDefault();
+            var result = _context.Questions.Where<Question>(x => x.QuestionText == obj.QuestionText
+            && x.InstituteId == obj.InstituteId && x.SubjectId == obj.SubjectId && x.ClassID == obj.ClassID).FirstOrDefault();
             return isExist = result == null ? false : true;
         }
         public bool IsExistUpdate(Question obj)
@@ -31,7 +31,6 @@ namespace SWSS_v1.UnitOfWork
             }
             return isExist;
         }
-
         public override async Task InsertAsync(Question obj)
         {
             //_context.Entry(obj.Customer).State = EntityState.Unchanged;
@@ -86,8 +85,12 @@ namespace SWSS_v1.UnitOfWork
                              .Where(x => x.InstituteId == instituteId && x.ClassID == clsId && x.SubjectId == subId)
                              .Include(p => p.Options)
                              .Include(p => p.Classes)
-                             .Include(p => p.Subjects);
-            //.ToList();
+                             .Include(p => p.Subjects)
+                             // Group by the composite key to find duplicates
+                            .GroupBy(x => new { x.ClassID, x.SubjectId, x.QuestionText })
+                            // Select the first complete Question object (including its relation data) from each group
+                            .Select(g => g.First());
+                            //.ToList();
             return questionWithOptions;
         }
         public async Task<IQueryable<Question>> GetQuizQuestionByClassAndSubject(int clsId, int subId, int instituteId)
@@ -99,8 +102,11 @@ namespace SWSS_v1.UnitOfWork
                              .Where(x => x.InstituteId == instituteId && x.ClassID == clsId && x.SubjectId == subId && x.isSetAsQuestion==true)
                              .Include(p => p.Options)
                              .Include(p => p.Classes)
-                             .Include(p => p.Subjects);
-            //.ToList();
+                             .Include(p => p.Subjects) 
+                             // Group by the composite key to find duplicates
+                            .GroupBy(x => new { x.ClassID, x.SubjectId, x.QuestionText })
+                            // Select the first complete Question object (including its relation data) from each group
+                            .Select(g => g.First());
             return questionWithOptions;
         }
         public async Task SetAsQuestions(int[] questionsIds,int classId, int subjectId)
