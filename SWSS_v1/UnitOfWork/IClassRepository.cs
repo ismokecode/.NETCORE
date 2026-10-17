@@ -6,5 +6,7 @@ namespace SWSS_v1.UnitOfWork
     {
         public bool IsExist(Classes cls);
         public Task<IQueryable<Classes>> GetClassesByInstitute(int Id);
+        public Task<int> GetClassIdByName(string ClassName);
+
     }
 }

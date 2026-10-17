@@ -28,6 +28,9 @@ using HandlebarsDotNet;
 using System.IO;
 using MimeKit;
 using WebDriverBiDi.Protocol;
+using ExcelDataReader;
+using System.Data;
+using System;
 
 namespace SWSS_v1.Controllers;
 
@@ -1531,7 +1534,7 @@ public class AppController : ControllerBase
                     question.isActive = true;
                     _unitOfWork.BeginTransaction();
                     await _unitOfWork.Questions.InsertAsync(question);
-                    await _unitOfWork.Options.SaveAsync();
+                    //await _unitOfWork.Options.SaveAsync();
                     int id = question.QuestionId;
                     //_unitOfWork.Commit();
                     //_unitOfWork.BeginTransaction();
@@ -1621,6 +1624,191 @@ public class AppController : ControllerBase
             response._statusCode = StatusCodes.Status400BadRequest;
             //return new BadRequestException(ex.ToString());
             return Ok(response);
+        }
+    }
+
+    //Excel upload Questions
+    [HttpPost]
+    //[Authorize]
+    public async Task<IActionResult> ReadQuestionsFromExcel(IFormFile file)
+    {
+        if (file != null)
+        {
+            // 1. Retrieve the user by their username
+            string loggedInUser = User.Identity?.Name;
+            // 2. Get the list of role names associated with that user
+            var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
+
+            string filePath = Path.Combine(_env.ContentRootPath, "uploads", "file");
+
+            if (!Directory.Exists(filePath))
+            {
+                Directory.CreateDirectory(filePath);
+            }
+
+            // 2. Generate a secure, unique filename to avoid collision duplicates
+            string uniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+            string uploadedFilePath = Path.Combine(filePath, uniqueFileName);
+
+            // 3. Save the incoming payload stream to disk asynchronously
+            using (var fileStream = new FileStream(uploadedFilePath, FileMode.Create))
+            {
+                await file.CopyToAsync(fileStream);
+            }
+            var questions = new List<Question>();
+
+            // Required initialization step for ExcelDataReader in .NET Core
+            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+
+            using (var stream = System.IO.File.Open(uploadedFilePath, FileMode.Open, FileAccess.Read))
+            {
+                using (var reader = ExcelReaderFactory.CreateReader(stream))
+                {
+                    bool isHeaderRow = true;
+
+                    // Convert the reader to a DataSet
+                    var result = reader.AsDataSet(new ExcelDataSetConfiguration()
+                    {
+                        ConfigureDataTable = (_) => new ExcelDataTableConfiguration()
+                        {
+                            UseHeaderRow = false // Set to false to treat row 0 as a data row
+                        }
+                    });
+                    // Access the first sheet/table
+                    DataTable table = result.Tables[0];
+
+                    // Read row [1], column [0]
+                    string ClassName = table.Rows[1][0].ToString().Trim();
+                    string SubjectName = table.Rows[1][1].ToString().Trim();
+                    if (!string.IsNullOrEmpty(ClassName) || string.IsNullOrEmpty(SubjectName))
+                    {
+                        int classId = await _unitOfWork.Classes.GetClassIdByName(ClassName);
+                        int subjectId = await _unitOfWork.Subjects.GetSubjectIdByName(SubjectName);
+                        Classes cls = new Classes();
+                        Subject sub = new Subject();
+                        if (classId <= 0)
+                        {
+                            cls.ClassName = ClassName;
+                            cls.CreatedBy = User.Identity?.Name;
+                            cls.CreatedDate = DateTime.Now;
+                            cls.isActive = true;
+                            await _unitOfWork.Classes.InsertAsync(cls);
+                            await _unitOfWork.Classes.SaveAsync();
+                        }
+                        if (subjectId <= 0)
+                        {
+                            sub.SubjectName = SubjectName;
+                            sub.CreatedBy = User.Identity?.Name;
+                            sub.CreatedDate = DateTime.Now;
+                            sub.isActive = true;
+                            await _unitOfWork.Subjects.InsertAsync(sub);
+                            await _unitOfWork.Subjects.SaveAsync();
+                        }
+                        
+                        //_unitOfWork.BeginTransaction();
+                        try
+                        {
+                            while (reader.Read())
+                            {
+                                // 1. Skip the title/header row entirely
+                                if (isHeaderRow)
+                                {
+                                    isHeaderRow = false;
+                                    continue;
+                                }
+
+                                // Extract text strings safely from columns
+                                string questionText = reader.GetValue(2)?.ToString()?.Trim();
+                                string opt1 = reader.GetValue(3)?.ToString()?.Trim();
+                                string opt2 = reader.GetValue(4)?.ToString()?.Trim();
+                                string opt3 = reader.GetValue(5)?.ToString()?.Trim();
+                                string opt4 = reader.GetValue(6)?.ToString()?.Trim();
+                                //string opt1 = "A";
+                                //string opt2 = "B";
+                                //string opt3 = "C";
+                                //string opt4 = "D";
+                                string correctAnswerLetter = reader.GetValue(7)?.ToString()?.Trim().ToString();
+                                string solutionText = reader.GetValue(8)?.ToString()?.Trim();
+
+                                // Stop reading if we hit empty tail rows
+                                if (string.IsNullOrEmpty(questionText))
+                                    continue;
+
+                                // 2. Assemble the base Question entity parameters
+                                var question = new Question
+                                {
+                                    ClassID = classId,
+                                    SubjectId = subjectId,
+                                    QuestionText = questionText,
+                                    Option1 = opt1,
+                                    Option2 = opt2,
+                                    Option3 = opt3,
+                                    Option4 = opt4,
+                                    Summary = solutionText, // Mapping solution string directly into Summary text field
+                                    CreatedBy = User.Identity?.Name,
+                                    CreatedDate = DateTime.Now,
+                                    isActive = true,
+                                    InstituteId = loggedInUserDeatails.InstituteId,
+                                    isSetAsQuestion = true
+                                };
+                                ///await _unitOfWork.Questions.InsertAsync(question);
+                                ///await _unitOfWork.Options.SaveAsync();
+
+                                // 4. Populate your strong-typed relational child option structures
+                                question.Options.Add(new Option { OptionText = opt1, isAnswer = false });
+                                question.Options.Add(new Option { OptionText = opt2, isAnswer = false });
+                                question.Options.Add(new Option { OptionText = opt3, isAnswer = false });
+                                question.Options.Add(new Option { OptionText = opt4, isAnswer = false });
+
+                                for (int i = 0; i < 4; i++)
+                                {
+                                    question.Options[i].isAnswer = correctAnswerLetter switch
+                                    {
+                                        "A" => (i == 0),
+                                        "B" => (i == 1),
+                                        "C" => (i == 2),
+                                        "D" => (i == 3)
+                                    };
+                                    //_unitOfWork.Options.InsertAsync(question.Options[i]);
+                                }
+                                questions.Add(question);
+
+
+                                //options.Add(new Option { OptionId = question.OptionId1, QuestionId = question.QuestionId, OptionText = question.Option1, isAnswer = false });
+                                //options.Add(new Option { OptionId = question.OptionId2, QuestionId = question.QuestionId, OptionText = question.Option1, isAnswer = false });
+                                //options.Add(new Option { OptionId = question.OptionId3, QuestionId = question.QuestionId, OptionText = question.Option1, isAnswer = false });
+                                //options.Add(new Option { OptionId = question.OptionId4, QuestionId = question.QuestionId, OptionText = question.Option1, isAnswer = false });
+
+                                //for (int i = 0; i < 4; i++)
+                                //{
+                                //    if (i == question.AnswerOptionId)
+                                //    {
+                                //        question.Options[i].isAnswer = true;
+                                //        break;
+                                //    }                            
+                                //}
+                            }
+                            _unitOfWork.Questions.AddQuestionFromExcel(questions);
+                            _unitOfWork.Questions.SaveAsync();
+                            _unitOfWork.Commit();
+                            return Ok("File uploaded successfully.");
+                        }
+                        catch (Exception ex)
+                        {
+                            _unitOfWork.Rollback();
+                            return BadRequest("Please select a excel file");
+                        }                     
+                    }
+                    else
+                    {
+                        return BadRequest("Excel parsing failed: Row 1 must declare structural Class and Subject contexts.");
+                    }
+                }
+            }
+        }
+        else
+        {
+            return BadRequest("Please select a excel file");
         }
     }
 

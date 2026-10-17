@@ -52,5 +52,9 @@ namespace SWSS_v1.UnitOfWork
         {
             _context.Options.Where(x => x.QuestionId == questionId).ExecuteDeleteAsync();
         }
+        public async Task AddOptionFromExcel(List<Option> options)
+        {
+            await _context.Options.AddRangeAsync(options);
+        }
     }
 }

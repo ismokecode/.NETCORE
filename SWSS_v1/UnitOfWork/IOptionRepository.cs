@@ -4,5 +4,6 @@ namespace SWSS_v1.UnitOfWork
     public interface IOptionRepository:IRepository<Option>
     {
         public Task DeleteOptionByQuestionIdAsync(int questionId);
+        Task AddOptionFromExcel(List<Option> options);
     }
 }

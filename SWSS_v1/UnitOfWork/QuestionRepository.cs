@@ -113,5 +113,9 @@ namespace SWSS_v1.UnitOfWork
                 .ExecuteUpdateAsync(s => s.SetProperty(q => q.isSetAsQuestion, true));
                 await _context.SaveChangesAsync();
         }
+        public async Task AddQuestionFromExcel(List<Question>questions)
+        {
+            await _context.Questions.AddRangeAsync(questions);
+        }
     }
 }

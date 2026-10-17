@@ -53,5 +53,10 @@ namespace SWSS_v1.UnitOfWork
             var result = _context.Classes.Where(x => x.InstituteId == Id && x.isActive == true);
             return result;
         }
+        public async Task<int> GetClassIdByName(string Name)
+        {
+            var result = await _context.Classes.Where(x => x.ClassName == Name && x.isActive == true).Select(x=>x.ClassesId).FirstOrDefaultAsync();
+            return result;
+        }
     }
 }

@@ -12,5 +12,6 @@ namespace SWSS_v1.UnitOfWork
         public Task<IQueryable<Question>> GetQuizQuestionByClassAndSubject(int clsId, int subId, int instituteId);
 
         public Task SetAsQuestions(int[] questionsId, int classId, int subjectId);
+        Task AddQuestionFromExcel(List<Question> questions);
     }
 }

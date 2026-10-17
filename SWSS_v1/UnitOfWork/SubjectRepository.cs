@@ -71,5 +71,10 @@ namespace SWSS_v1.UnitOfWork
             //var result = _context.Subjects.Where(x => x.InstituteId == instituteId && x.isActive == true && x.ClassId==classId);
             //return result;
         }
+        public async Task<int> GetSubjectIdByName(string Subject)
+        {
+            var result = await _context.Subjects.Where(x => x.SubjectName == Subject && x.isActive == true).Select(x => x.SubjectID).FirstOrDefaultAsync();
+            return result;
+        }
     }
 }
