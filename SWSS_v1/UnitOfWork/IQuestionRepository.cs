@@ -8,8 +8,8 @@ namespace SWSS_v1.UnitOfWork
         public Task<IEnumerable<Question>> GetQuestionOptionsAsync();
         public Task<Question> GetQuestionOptionsByIdAsync(int id);
         public Task<IQueryable<Question>> GetQuestionOptionsByInstituteAsync(int id);
-        public Task<IQueryable<Question>> GetQuestionsByClassAndSubject(int clsId,int subId, int instituteId);
-        public Task<IQueryable<Question>> GetQuizQuestionByClassAndSubject(int clsId, int subId, int instituteId);
+        public Task<IQueryable<Question>> GetQuestionsByClassAndSubject(int clsId,int subId, int instituteId,int totalQuestion);
+        public Task<IQueryable<Question>> GetQuizQuestionByClassAndSubject(int clsId, int subId, int instituteId, int totalQuestion);
 
         public Task SetAsQuestions(int[] questionsId, int classId, int subjectId);
         Task AddQuestionFromExcel(List<Question> questions);

@@ -2069,7 +2069,7 @@ public class AppController : ControllerBase
             // 2. Get the list of role names associated with that user
             var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
             int InstituteId = loggedInUserDeatails.InstituteId;
-            response._results = await _iquestionRepos.GetQuestionsByClassAndSubject(classId, subjectId, InstituteId);
+            response._results = await _iquestionRepos.GetQuestionsByClassAndSubject(classId, subjectId, InstituteId,45);
             if (response._results.Count() == 0)
             {
                 response._success.Add("Sorry no records found.");
@@ -2098,7 +2098,7 @@ public class AppController : ControllerBase
             // 2. Get the list of role names associated with that user
             var loggedInUserDeatails = await _userManager.FindByNameAsync(loggedInUser);
             int InstituteId = loggedInUserDeatails.InstituteId;
-            var results = await _iquestionRepos.GetQuizQuestionByClassAndSubject(classId, subjectId, InstituteId);
+            var results = await _iquestionRepos.GetQuizQuestionByClassAndSubject(classId, subjectId, InstituteId,45);
 
             if (results.Count() > 0)
             {
@@ -2144,7 +2144,7 @@ public class AppController : ControllerBase
             //int InstituteId = loggedInUserDeatails.InstituteId;
             var InstituteId = _configuration.GetSection("InstituteSection");
             int instId = InstituteId.GetValue<int>("instituteId");
-            var results = await _iquestionRepos.GetQuizQuestionByClassAndSubject(classId, subjectId, instId);
+            var results = await _iquestionRepos.GetQuizQuestionByClassAndSubject(classId, subjectId, instId,45);
             if (results.Count() > 0)
             {
                 foreach (var quiz in results)
@@ -2560,11 +2560,11 @@ public class AppController : ControllerBase
                         // Assign the integer value from your database entity (e.g., Duration, TotalTime, etc.)
                         //?? nullable operator works only if model variable marked as nullable to
                         response.Duration = obj.Durations==0?15:obj.Durations; // <-- Replace 'Duration' with your actual property name
-
+                        obj.TotalQuestions = obj.TotalQuestions == 0 ? 45 : obj.TotalQuestions;
                         // Check link expiry start
                         if (_unitOfWork.TestLinks.isEarlier(obj.ExpiryDateTime ?? DateTime.Now))
                         {
-                            var results = await _iquestionRepos.GetQuizQuestionByClassAndSubject(obj.ClassId, obj.SubjectId, obj.InstituteId ?? 0);
+                            var results = await _iquestionRepos.GetQuizQuestionByClassAndSubject(obj.ClassId, obj.SubjectId, obj.InstituteId ?? 0,obj.TotalQuestions);
 
                             if (results.Count() > 0)
                             {

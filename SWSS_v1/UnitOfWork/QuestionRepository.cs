@@ -79,7 +79,7 @@ namespace SWSS_v1.UnitOfWork
             return questionWithOptions;
         }
 
-        public async Task<IQueryable<Question>> GetQuestionsByClassAndSubject(int clsId, int subId,int instituteId)
+        public async Task<IQueryable<Question>> GetQuestionsByClassAndSubject(int clsId, int subId,int instituteId,int totalQuestion)
         {
             var questionWithOptions = _context.Questions
                              .Where(x => x.InstituteId == instituteId && x.ClassID == clsId && x.SubjectId == subId)
@@ -89,11 +89,13 @@ namespace SWSS_v1.UnitOfWork
                              // Group by the composite key to find duplicates
                             .GroupBy(x => new { x.ClassID, x.SubjectId, x.QuestionText })
                             // Select the first complete Question object (including its relation data) from each group
-                            .Select(g => g.First());
+                            .Select(g => g.First())
+                            .OrderBy(x=>EF.Functions.Random())
+                            .Take(totalQuestion);
                             //.ToList();
             return questionWithOptions;
         }
-        public async Task<IQueryable<Question>> GetQuizQuestionByClassAndSubject(int clsId, int subId, int instituteId)
+        public async Task<IQueryable<Question>> GetQuizQuestionByClassAndSubject(int clsId, int subId, int instituteId,int totalQuestion)
         {
             int count = await _context.Questions.CountAsync();
             int index = new Random().Next(0, count);
@@ -106,7 +108,9 @@ namespace SWSS_v1.UnitOfWork
                              // Group by the composite key to find duplicates
                             .GroupBy(x => new { x.ClassID, x.SubjectId, x.QuestionText })
                             // Select the first complete Question object (including its relation data) from each group
-                            .Select(g => g.First());
+                            .Select(g => g.First())
+                            .OrderBy(x => EF.Functions.Random())
+                            .Take(totalQuestion); ;
             return questionWithOptions;
         }
         public async Task SetAsQuestions(int[] questionsIds,int classId, int subjectId)
