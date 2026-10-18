@@ -1704,7 +1704,7 @@ public class AppController : ControllerBase
                             await _unitOfWork.Subjects.InsertAsync(sub);
                             await _unitOfWork.Subjects.SaveAsync();
                         }
-                        
+
                         //_unitOfWork.BeginTransaction();
                         try
                         {
@@ -1796,9 +1796,25 @@ public class AppController : ControllerBase
                         catch (Exception ex)
                         {
                             _unitOfWork.Rollback();
-                            return BadRequest("Please select a excel file");
-                        }                     
-                    }
+                            return StatusCode(500, $"Internal server error: " + ex.Message);
+                        }
+                        finally
+                        {
+                            // THIS IS THE CORRECT PLACE: 
+                            // Code here always runs, whether the process succeeds or throws an exception.
+                            if (System.IO.File.Exists(uploadedFilePath))
+                            {
+                                try
+                                {
+                                    System.IO.File.Delete(uploadedFilePath);
+                                }
+                                catch (Exception deleteEx)
+                                {
+                                    // Optional: Log if cleanup fails so server storage doesn't quietly fill up
+                                }
+                            }
+                        }
+                     }
                     else
                     {
                         return BadRequest("Excel parsing failed: Row 1 must declare structural Class and Subject contexts.");
